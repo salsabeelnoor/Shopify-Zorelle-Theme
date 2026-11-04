@@ -1,5 +1,3 @@
-
-
 {% if section.blocks.size > 1 %}
   <script
     src="{{ 'announcement-bar.js' | asset_url }}"
@@ -25,13 +23,13 @@
   %}
 
   <announcement-bar-component
-    class="announcement-bar__slider"
+    class="container announcement-bar__slider"
     {% if autoplay == true %}
       autoplay="{{ section.settings.speed }}" aria-live="polite"
     {% endif %}
   >
     {% if show_arrows %}
-      {% render 'slideshow-arrows', icon_style: 'chevron' %}
+      {% render 'slideshow-arrows', icon_style: 'chevron', arrows_position: 'left' %}
     {% endif %}
 
     <div class="announcement-bar__slides">
@@ -59,9 +57,38 @@
   .announcement-bar__slides {
     display: grid;
     grid: [stack] auto / [stack] auto;
-    width: calc(100% - var(--button-size) * 2);
+    /* Both arrows sit at the start edge; reserve room on each side so text stays centered. */
+    width: calc(100% - 20px * 4);
     max-width: 680px;
     margin-inline: auto;
+  }
+
+  .announcement-bar__slider slideshow-arrows[position='left'] {
+    align-items: center;
+  }
+
+  /* Grouped arrows: narrower buttons so the pair sits close together (height keeps the tap target). */
+  @media screen and (min-width: 768px) {
+    .announcement-bar__slider slideshow-arrows[position='left'] {
+      gap: var(--gap-2xs, 4px);
+    }
+
+    .announcement-bar__slider slideshow-arrows[position='left'] .slideshow-control {
+      width: calc(var(--icon-size-xs) + 8px);
+      transform: none;
+    }
+  }
+
+  /* Below 768px, split the arrows back to both sides. */
+  @media screen and (max-width: 767px) {
+    .announcement-bar__slides {
+      width: calc(100% - 20px * 2);
+    }
+
+    .announcement-bar__slider slideshow-arrows[position='left'] {
+      justify-content: space-between;
+      padding-inline: 0;
+    }
   }
 
   .announcement-bar__slides > * {
@@ -90,18 +117,23 @@
   .announcement-bar__slider .slideshow-control {
     display: flex;
     padding: 0;
-    width: var(--button-size);
-    height: var(--button-size);
+    min-width: 20px;
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
     align-items: center;
     justify-content: center;
     opacity: 1;
     animation: none;
 
-    @media screen and (min-width: 750px) {
-      --slideshow-control-offset: calc((var(--button-size) - var(--icon-size-xs)) / 2);
+    @media screen and (min-width: 768px) {
+      --slideshow-control-offset: calc(20px - var(--icon-size-xs) / 2);
 
       .section--page-width &.slideshow-control--previous {
         transform: translateX(var(--slideshow-control-offset));
+      }
+      .section--page-width &.slideshow-control--next {
+        transform: translateX(-22px);
       }
     }
   }
@@ -114,7 +146,14 @@
   .announcement-bar__slide {
     place-content: center;
   }
-
+  .announcement-bar__text {
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+    strong {
+      letter-spacing: 0.5px;
+    }
+  }
   .announcement-bar__text:first-child {
     margin: 0;
   }
