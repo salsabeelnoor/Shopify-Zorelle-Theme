@@ -43,6 +43,12 @@
   endif
 %}
 
+{% style %}
+  header-drawer {
+    --zd-accent: {{ settings.color_palette.color1 | default: 'currentcolor' }};
+  }
+{% endstyle %}
+
 <script
   src="{{ 'header-drawer.js' | asset_url }}"
   type="module"
@@ -81,16 +87,8 @@
         {% endif %}
       "
     >
-      <button
-        class="button close-button menu-drawer__close-button focus-inset"
-        type="button"
-        aria-label="{{ 'actions.close' | t }}"
-        on:click="/close"
-      >
-        <span class="svg-wrapper header-drawer-icon header-drawer-icon--close">
-          {{- 'icon-close-menu.svg' | inline_asset_content -}}
-        </span>
-      </button>
+      {% render 'menu-drawer-top', id: block.id %}
+
       <nav
         class="menu-drawer__navigation"
         style="
@@ -341,6 +339,7 @@
                         >
                           {% assign first_accordion_open = false -%}
                           {%- for childlink in link.links -%}
+                            {%- if childlink.url == '#' and childlink.links == blank -%}{%- continue -%}{%- endif -%}
                             <li
                               class="
                                 menu-drawer__list-item
@@ -452,20 +451,10 @@
                                   %}
                                 {% else %}
                                   {%- comment -%}
-                                    Flat menus for links with children, in menus with 3 levels of links
+                                    Flat menus for links with children, in menus with 3 levels of links.
+                                    Headings linked to "#" in Navigation render as a plain label.
                                   {%- endcomment -%}
-                                  <a
-                                    id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
-                                    href="{{ childlink.url }}"
-                                    class="menu-drawer__menu-item menu-drawer__menu-item--parent{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
-                                    {% if childlink.current %}
-                                      aria-current="page"
-                                    {% endif %}
-                                  >
-                                    <span class="menu-drawer__menu-item-text wrap-text">
-                                      {{- childlink.title | escape -}}
-                                    </span>
-                                  </a>
+                                  {% render 'menu-drawer-group-heading', link: childlink, parent_handle: link.handle %}
                                   {% liquid
                                     assign render_link_image = false
                                     if block_settings.menu_style == 'collection_images'
@@ -820,6 +809,46 @@
     height: var(--icon-size-xs);
   }
 
+  /* Zorelle hamburger: larger staggered lines that extend on hover/focus. */
+  .header__icon--summary .header-drawer-icon--open {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .header__icon--summary .header-drawer-icon--open svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .icon-menu__line {
+    transition: d 0.3s var(--ease-out-quad, ease-out);
+  }
+
+  @media (hover: hover) {
+    .header__icon--summary:hover .icon-menu__line--middle {
+      d: path('M3 12H21');
+    }
+
+    .header__icon--summary:hover .icon-menu__line--bottom {
+      d: path('M3 17.5H21');
+    }
+  }
+
+  .header__icon--summary:focus-visible .icon-menu__line--middle {
+    d: path('M3 12H21');
+  }
+
+  .header__icon--summary:focus-visible .icon-menu__line--bottom {
+    d: path('M3 17.5H21');
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .icon-menu__line {
+      transition: none;
+    }
+  }
+
   .menu-drawer__featured-content {
     z-index: var(--layer-base);
     container-type: inline-size;
@@ -950,6 +979,11 @@
     opacity: 1;
     display: flex;
     flex-direction: column;
+  }
+  @media only screen and (max-width: 450px) {
+    .menu-open > .menu-drawer {
+      width: 100%;
+    }
   }
 
   .menu-drawer__inner-container {
@@ -1341,6 +1375,186 @@
     margin-inline-end: var(--padding-md);
     width: var(--icon-size-xs);
     height: var(--icon-size-xs);
+  }
+
+  /* ==========================================================================
+     Zorelle drawer: header (account | logo | close), search row, uppercase
+     rows with hairline dividers, and centered submenus that open beneath the
+     header and search so both stay visible.
+     ========================================================================== */
+  .menu-drawer {
+    --zd-header-height: 3.5rem;
+    --zd-search-height: 3.25rem;
+    --zd-top-offset: calc(var(--safe-area-inset-top, 0px) + var(--zd-header-height) + var(--zd-search-height));
+    --zd-divider: rgb(var(--color-foreground-rgb) / var(--opacity-10, 0.1));
+    --zd-row-height: 3.125rem;
+    --zd-gutter: 1.25rem;
+  }
+
+  /* Top-level rows */
+  .menu-drawer__menu.has-submenu {
+    margin: 0;
+    padding-inline: 0;
+  }
+
+  .menu-drawer__menu.has-submenu > .menu-drawer__list-item {
+    min-height: 0;
+    margin: 0;
+    border-block-end: 1px solid var(--zd-divider);
+  }
+
+  .menu-drawer__menu-item--mainlist {
+    min-height: var(--zd-row-height);
+    padding: 0 var(--zd-gutter);
+    font-family: var(--font-body--family);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+  }
+
+  .menu-drawer__menu-item--mainlist > .svg-wrapper {
+    padding: 0;
+  }
+
+  /* Submenu panel opens below the header + search rows */
+  .menu-drawer__submenu {
+    top: var(--zd-top-offset);
+    height: calc(100dvh - var(--zd-top-offset));
+    padding-block-start: 0;
+  }
+
+  .menu-drawer__inner-submenu {
+    margin-top: 0;
+  }
+
+  .menu-drawer__submenu .menu-drawer__nav-buttons {
+    flex-shrink: 0;
+    min-height: var(--zd-row-height);
+    border-block-end: 1px solid var(--zd-divider);
+  }
+
+  .menu-drawer__submenu .menu-drawer__nav-buttons .menu-drawer__back-button {
+    padding: 0 var(--zd-gutter);
+    height: var(--zd-row-height);
+  }
+
+  /* The drawer header already has a close button; keep the grid balanced. */
+  .menu-drawer__submenu .menu-drawer__nav-buttons .menu-drawer__close-button {
+    visibility: hidden;
+  }
+
+  .menu-drawer__submenu .menu-drawer__title {
+    font-family: var(--font-body--family);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Submenu rows: centered, uppercase, hairline dividers */
+  .menu-drawer__submenu .menu-drawer__menu--childlist,
+  .menu-drawer__submenu .menu-drawer__menu--grandchildlist {
+    margin: 0;
+    padding-inline: 0;
+  }
+
+  .menu-drawer__submenu .menu-drawer__menu--childlist > .menu-drawer__list-item,
+  .menu-drawer__submenu .menu-drawer__menu--grandchildlist > .menu-drawer__list-item {
+    min-height: 0;
+    margin: 0;
+    border-block-end: 1px solid var(--zd-divider);
+  }
+
+  .menu-drawer__submenu .menu-drawer__menu--childlist > .menu-drawer__list-item--flat {
+    align-items: stretch;
+    margin-block-end: 0;
+  }
+
+  .menu-drawer__submenu .menu-drawer__menu--grandchildlist {
+    width: 100%;
+    padding-block-end: 0;
+  }
+
+  .menu-drawer__submenu .menu-drawer__menu--grandchildlist > .menu-drawer__list-item:last-child {
+    border-block-end: 0;
+  }
+
+  .menu-drawer__submenu .menu-drawer__menu-item--parent,
+  .menu-drawer__submenu .menu-drawer__menu-item--child {
+    justify-content: center;
+    min-height: var(--zd-row-height);
+    padding: 0 var(--zd-gutter);
+    font-family: var(--font-body--family);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: 0.12em;
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+  }
+
+  /* Group labels ("#" headings): small, muted, on a faint band */
+  .menu-drawer__submenu .menu-drawer__menu-item--label {
+    min-height: 2.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-60, 0.6));
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5, 0.05));
+  }
+
+  /* Interaction states for drawer rows (labels excluded).
+     hover: faint plum band; tap/active: deeper band + palette accent text;
+     keyboard focus: inset accent outline; current page: accent text + edge bar. */
+  .menu-drawer__menu-item--mainlist,
+  .menu-drawer__submenu a.menu-drawer__menu-item,
+  .menu-drawer__submenu .menu-drawer__back-button {
+    transition: background-color 0.2s ease, color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (hover: hover) {
+    .menu-drawer__menu-item--mainlist:hover,
+    .menu-drawer__submenu a.menu-drawer__menu-item:hover,
+    .menu-drawer__submenu .menu-drawer__back-button:hover {
+      background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5, 0.05));
+    }
+  }
+
+  .menu-drawer__menu-item--mainlist:active,
+  .menu-drawer__submenu a.menu-drawer__menu-item:active,
+  .menu-drawer__submenu .menu-drawer__back-button:active,
+  .menu-drawer__menu-container[open] > .menu-drawer__menu-item--mainlist {
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-10, 0.1));
+    color: var(--zd-accent);
+  }
+
+  .menu-drawer__menu-item--mainlist:focus-visible,
+  .menu-drawer__submenu a.menu-drawer__menu-item:focus-visible,
+  .menu-drawer__submenu .menu-drawer__back-button:focus-visible,
+  .menu-drawer__search-submit:focus-visible,
+  .menu-drawer__header-icon:focus-visible,
+  .menu-drawer__logo:focus-visible {
+    outline: 2px solid var(--zd-accent);
+    outline-offset: -2px;
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5, 0.05));
+  }
+
+  .menu-drawer__menu-item--mainlist[aria-current='page'],
+  .menu-drawer__menu-item--mainlist.menu-drawer__menu-item--active,
+  .menu-drawer__submenu a.menu-drawer__menu-item[aria-current='page'] {
+    color: var(--zd-accent);
+    box-shadow: inset 2px 0 0 var(--zd-accent);
+  }
+
+  [dir='rtl'] .menu-drawer__menu-item--mainlist[aria-current='page'],
+  [dir='rtl'] .menu-drawer__menu-item--mainlist.menu-drawer__menu-item--active,
+  [dir='rtl'] .menu-drawer__submenu a.menu-drawer__menu-item[aria-current='page'] {
+    box-shadow: inset -2px 0 0 var(--zd-accent);
   }
 
   .menu-drawer__utility-links {

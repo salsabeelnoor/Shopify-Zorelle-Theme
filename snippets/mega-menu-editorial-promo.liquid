@@ -1,0 +1,68 @@
+{%- doc -%}
+  Renders one promo card (image, caption, call to action) for the editorial mega menu.
+  Styles live in `mega-menu-editorial`, which is the only caller.
+
+  @param {object} promo - A `mega_menu_promo` metaobject entry.
+
+  @example
+  {% render 'mega-menu-editorial-promo', promo: promo %}
+{%- enddoc -%}
+
+{% liquid
+  assign promo_image = promo.image.value
+  assign promo_url = promo.link.value | append: ''
+
+  # URL fields require an absolute URL. If it points at this store (myshopify or primary
+  # domain), keep only the path so links survive domain changes and avoid redirects.
+  assign url_rest = promo_url | remove_first: 'https://' | remove_first: 'http://'
+  assign url_host = url_rest | split: '/' | first | split: '?' | first | downcase
+  if url_host == shop.permanent_domain or url_host == shop.domain or url_host == request.host
+    assign url_path = url_rest | remove_first: url_host
+    if url_path == blank
+      assign url_path = '/'
+    endif
+    assign promo_url = url_path
+  endif
+
+  assign caption = promo.caption.value | strip
+  assign link_text = promo.link_text.value | strip
+
+  if promo_url != blank
+    assign tag = 'a'
+  else
+    assign tag = 'div'
+  endif
+%}
+
+<{{ tag }}
+  class="mega-menu-editorial__promo"
+  {% if promo_url != blank %}
+    href="{{ promo_url }}"
+  {% endif %}
+>
+  <span class="mega-menu-editorial__promo-media">
+    {%- if promo_image != blank -%}
+      {{-
+        promo_image
+        | image_url: width: 900
+        | image_tag:
+          widths: '300, 450, 600, 900',
+          sizes: '(min-width: 990px) 22vw, 33vw',
+          loading: 'lazy',
+          alt: promo_image.alt
+      -}}
+    {%- else -%}
+      {{- 'image' | placeholder_svg_tag: 'mega-menu-editorial__placeholder' -}}
+    {%- endif -%}
+    {%- if caption != blank or link_text != blank -%}
+      <span class="mega-menu-editorial__promo-overlay">
+        {%- if caption != blank -%}
+          <span class="mega-menu-editorial__promo-caption">{{ caption | escape }}</span>
+        {%- endif -%}
+        {%- if link_text != blank -%}
+          <span class="mega-menu-editorial__promo-cta">{{ link_text | escape }}</span>
+        {%- endif -%}
+      </span>
+    {%- endif -%}
+  </span>
+</{{ tag }}>

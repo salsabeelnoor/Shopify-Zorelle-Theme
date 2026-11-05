@@ -1,0 +1,30 @@
+{%- doc -%}
+  Renders a group heading inside a mobile drawer submenu. Headings linked to "#"
+  in Navigation render as a non-clickable label; others render as a link.
+
+  @param {object} link - The menu link for the group heading.
+  @param {string} parent_handle - Handle of the top-level link, used for a unique ID.
+
+  @example
+  {% render 'menu-drawer-group-heading', link: childlink, parent_handle: link.handle %}
+{%- enddoc -%}
+
+{%- if link.url == '#' -%}
+  <span
+    id="HeaderDrawer-{{ parent_handle }}-{{ link.handle }}"
+    class="menu-drawer__menu-item menu-drawer__menu-item--parent menu-drawer__menu-item--label"
+  >
+    <span class="menu-drawer__menu-item-text wrap-text">{{- link.title | escape -}}</span>
+  </span>
+{%- else -%}
+  <a
+    id="HeaderDrawer-{{ parent_handle }}-{{ link.handle }}"
+    href="{{ link.url }}"
+    class="menu-drawer__menu-item menu-drawer__menu-item--parent{% if link.current %} menu-drawer__menu-item--active{% endif %}"
+    {% if link.current %}
+      aria-current="page"
+    {% endif %}
+  >
+    <span class="menu-drawer__menu-item-text wrap-text">{{- link.title | escape -}}</span>
+  </a>
+{%- endif -%}

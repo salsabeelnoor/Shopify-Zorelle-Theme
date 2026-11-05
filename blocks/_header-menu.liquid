@@ -147,6 +147,13 @@
               >
                 {% assign list_id = 'MegaMenuList-' | append: forloop.index %}
                 <div class="mega-menu section section--full-width-margin section--{{ section.settings.section_width }}">
+                  {%- if menu_content_type == 'editorial' -%}
+                    {% render 'mega-menu-editorial',
+                      parent_link: link,
+                      id: list_id,
+                      image_border_radius: image_border_radius
+                    %}
+                  {%- else -%}
                   <div
                     class="mega-menu__grid"
                     data-menu-grid-id="{{ list_id }}"
@@ -163,6 +170,7 @@
                       image_border_radius: image_border_radius
                     %}
                   </div>
+                  {%- endif -%}
                 </div>
               </div>
             </div>
@@ -226,6 +234,14 @@
 {% style %}
   .header__underlay {
     --color-submenu: rgb({{effective_submenu_color.rgb}});
+  }
+
+  :root {
+    --menu-sale-color: {{ settings.color_palette.color1 | default: 'currentcolor' }};
+  }
+
+  .header-menu {
+    --menu-top-level-letter-spacing: {% if block_settings.type_case_primary_link == 'uppercase' %}0.06em{% else %}normal{% endif %};
   }
 {% endstyle %}
 {% stylesheet %}
@@ -320,6 +336,7 @@
     font-size: var(--menu-top-level-font-size);
     line-height: var(--menu-top-level-font-line-height);
     text-transform: var(--menu-top-level-font-case);
+    letter-spacing: var(--menu-top-level-letter-spacing, normal);
     color: var(--menu-top-level-font-color);
     text-decoration: none;
     display: flex;
@@ -401,6 +418,44 @@
 
   .menu-list__link-title {
     padding-inline: var(--gap-sm);
+  }
+
+  /* Thin underline under the hovered / open / current top-level item. */
+  .menu-list__list-item:not([slot='overflow']) .menu-list__link-title {
+    background-image: linear-gradient(currentcolor, currentcolor);
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    background-size: 0 1px;
+    background-origin: content-box;
+    padding-block-end: 4px;
+    transition: background-size var(--animation-speed, 0.2s) var(--ease-out-quad, ease-out);
+  }
+
+  .menu-list__list-item:not([slot='overflow']):hover .menu-list__link-title,
+  .menu-list__list-item:not([slot='overflow']):focus-within .menu-list__link-title,
+  .menu-list__link--active .menu-list__link-title {
+    background-size: 100% 1px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .menu-list__list-item .menu-list__link-title {
+      transition: none;
+    }
+  }
+
+  /* Zorelle: the mega menu fades in place (no downward reveal). The clip and the
+     content offset still apply; they just change instantly, while the content
+     fades with the panel background in sections/header.liquid. */
+  .header-menu .menu-list__list-item:where(:not([slot='overflow'])) > .menu-list__submenu {
+    --submenu-content-animation: opacity 0.35s var(--ease-out-quad, ease-out);
+
+    transition: none;
+  }
+
+  /* A top-level "Sale" item (link to a collection whose handle contains "sale") uses the
+     palette accent color passed in as --menu-sale-color. */
+  .menu-list__link[href*='/collections/sale'] {
+    color: var(--menu-sale-color, currentcolor);
   }
   [slot='overflow'] .menu-list__link-title {
     padding-inline: 0;
@@ -963,6 +1018,10 @@
         {
           "value": "featured_collections",
           "label": "t:options.featured_collections"
+        },
+        {
+          "value": "editorial",
+          "label": "t:options.editorial"
         }
       ],
       "default": "collection_images"

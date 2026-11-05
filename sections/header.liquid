@@ -700,8 +700,28 @@
       var(--color-background-bottom-row) var(--top-row-height) var(--header-height),
       var(--color-submenu) var(--header-height) 100%
     );
-    /* header-height is updated via js, the transition works automagically */
-    transition: height var(--submenu-animation-speed) var(--ease-out-cubic);
+    /* Fade the open panel in place instead of growing it downward. Height snaps
+       immediately on open, and only after the fade-out on close. */
+    --submenu-fade-speed: 0.35s;
+
+    opacity: 0;
+    transition:
+      opacity var(--submenu-fade-speed) var(--ease-out-quad, ease-out),
+      height 0s linear var(--submenu-fade-speed);
+  }
+
+  #header-component:has(.header-menu [aria-expanded='true']) .header__underlay-open,
+  #header-component:has(.menu-list__submenu:hover) .header__underlay-open {
+    opacity: 1;
+    transition:
+      opacity var(--submenu-fade-speed) var(--ease-out-quad, ease-out),
+      height 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header__underlay-open {
+      transition: none;
+    }
   }
 
   .header__underlay-open::after {
@@ -921,6 +941,12 @@
       header-actions {
         grid-area: rightB;
         justify-content: flex-end;
+      }
+
+      /* Zorelle mobile bar: menu | logo | cart. Search and account live in the drawer. */
+      .search-action,
+      .account-button {
+        display: none;
       }
     }
   }

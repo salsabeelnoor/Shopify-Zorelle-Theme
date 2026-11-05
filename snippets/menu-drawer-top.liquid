@@ -1,0 +1,176 @@
+{%- doc -%}
+  Renders the top of the mobile menu drawer: an account | logo | close row and a
+  search form. Rendered inside `header-drawer`, whose component handles `/close`.
+
+  @param {string} id - Unique suffix for the search input ID (e.g. the menu block ID).
+
+  @example
+  {% render 'menu-drawer-top', id: block.id %}
+{%- enddoc -%}
+
+<div class="menu-drawer__header">
+  {%- if shop.customer_accounts_enabled -%}
+    <a
+      href="{{ routes.account_url }}"
+      class="menu-drawer__header-icon menu-drawer__account-link focus-inset"
+      aria-label="{{ 'accessibility.account' | t }}"
+    >
+      <span class="svg-wrapper" aria-hidden="true">{{- 'icon-account.svg' | inline_asset_content -}}</span>
+    </a>
+  {%- else -%}
+    <span class="menu-drawer__header-icon" aria-hidden="true"></span>
+  {%- endif -%}
+  <a href="{{ routes.root_url }}" class="menu-drawer__logo focus-inset">
+    {%- if settings.logo != blank -%}
+      {{-
+        settings.logo
+        | image_url: width: 400
+        | image_tag: class: 'menu-drawer__logo-image', widths: '200, 300, 400', sizes: '150px', alt: shop.name
+      -}}
+    {%- else -%}
+      <span class="menu-drawer__logo-text">{{ shop.name | escape }}</span>
+    {%- endif -%}
+  </a>
+  <button
+    class="button close-button menu-drawer__close-button menu-drawer__header-icon focus-inset"
+    type="button"
+    aria-label="{{ 'actions.close' | t }}"
+    on:click="/close"
+  >
+    <span class="svg-wrapper header-drawer-icon header-drawer-icon--close">
+      {{- 'icon-close-menu.svg' | inline_asset_content -}}
+    </span>
+  </button>
+</div>
+
+<form
+  action="{{ routes.search_url }}"
+  method="get"
+  role="search"
+  class="menu-drawer__search"
+>
+  <label for="MenuDrawerSearch-{{ id }}" class="visually-hidden">
+    {{- 'content.search_input_label' | t -}}
+  </label>
+  <input
+    id="MenuDrawerSearch-{{ id }}"
+    class="menu-drawer__search-input"
+    type="search"
+    name="q"
+    autocomplete="off"
+    placeholder="{{ 'content.search_input_placeholder' | t }}"
+  >
+  <button
+    type="submit"
+    class="button-unstyled menu-drawer__search-submit focus-inset"
+    aria-label="{{ 'content.search' | t }}"
+  >
+    <span class="svg-wrapper" aria-hidden="true">{{- 'icon-search.svg' | inline_asset_content -}}</span>
+  </button>
+</form>
+
+{% stylesheet %}
+  .menu-drawer__header {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) 3rem;
+    align-items: center;
+    flex-shrink: 0;
+    height: var(--zd-header-height);
+    padding-inline: 0.5rem;
+    border-block-end: 1px solid var(--zd-divider);
+  }
+
+  .menu-drawer__header-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    color: var(--color-foreground);
+  }
+
+  .menu-drawer__header .menu-drawer__close-button {
+    justify-self: end;
+    padding: 0;
+  }
+
+  .menu-drawer__header-icon .svg-wrapper,
+  .menu-drawer__header-icon svg {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+
+  .menu-drawer__logo {
+    justify-self: center;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    color: var(--color-foreground);
+    text-decoration: none;
+  }
+
+  .menu-drawer__logo-image {
+    display: block;
+    width: auto;
+    height: 1.75rem;
+    max-width: 10rem;
+    object-fit: contain;
+  }
+
+  .menu-drawer__logo-text {
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: 1.125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .menu-drawer__search {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    height: var(--zd-search-height);
+    padding-inline: var(--zd-gutter) 0.5rem;
+    border-block-end: 1px solid var(--zd-divider);
+  }
+
+  .menu-drawer__search:focus-within {
+    box-shadow: inset 0 -1px 0 var(--color-foreground);
+  }
+
+  .menu-drawer__search-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-foreground);
+    font-family: var(--font-body--family);
+    font-size: 1rem; /* 16px avoids iOS zoom-on-focus */
+    outline: none;
+    appearance: none;
+  }
+
+  .menu-drawer__search-input::placeholder {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-50, 0.5));
+    font-style: italic;
+  }
+
+  .menu-drawer__search-input::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  .menu-drawer__search-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--color-foreground);
+  }
+
+  .menu-drawer__search-submit svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+{% endstylesheet %}

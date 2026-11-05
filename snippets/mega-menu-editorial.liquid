@@ -1,0 +1,333 @@
+{%- doc -%}
+  Renders an editorial mega menu panel for one top-level menu link:
+  - level-2 links without children become a large primary link list
+  - level-2 links with children become a small-caps heading column
+  - up to two promo cards from `mega_menu_promo` metaobject entries whose
+    "Menu item" field matches the top-level link title (case-insensitive)
+
+  Metaobject type `mega_menu_promo` fields (all optional except menu_item):
+  menu_item (single line text), image (file), caption (single line text),
+  link_text (single line text), link (URL).
+
+  @param {object} parent_link - The top-level link whose children are rendered.
+  @param {string} id - Unique ID for the menu list.
+  @param {number} [image_border_radius] - Border radius for promo images in px.
+
+  @example
+  {% render 'mega-menu-editorial', parent_link: link, id: 'MegaMenuList-1', image_border_radius: 0 %}
+{%- enddoc -%}
+
+{% liquid
+  assign primary_count = 0
+  assign group_count = 0
+  # A "#" item with no children is an empty heading placeholder: skip it.
+  for link in parent_link.links
+    if link.links == blank and link.url == '#'
+      continue
+    elsif link.links == blank
+      assign primary_count = primary_count | plus: 1
+    else
+      assign group_count = group_count | plus: 1
+    endif
+  endfor
+
+  assign parent_title = parent_link.title | strip | downcase
+
+  assign promo_count = 0
+  capture promos
+    for promo in shop.metaobjects.mega_menu_promo.values
+      assign promo_target = promo.menu_item.value | strip | downcase
+      if promo_target == parent_title and promo_count < 2
+        assign promo_count = promo_count | plus: 1
+        render 'mega-menu-editorial-promo', promo: promo
+      endif
+    endfor
+  endcapture
+
+  assign column_count = group_count
+  if primary_count > 0
+    assign column_count = column_count | plus: 1
+  endif
+  assign total_columns = column_count | plus: promo_count | at_least: 4
+%}
+
+{% style %}
+  .mega-menu-editorial[data-menu-list-id='{{ id }}'] {
+    --mega-editorial-columns: {{ total_columns }};
+    --mega-editorial-promos: {{ promo_count }};
+    --menu-image-border-radius: {{ image_border_radius | default: 0 }}px;
+  }
+{% endstyle %}
+
+<div
+  class="mega-menu-editorial"
+  data-menu-list-id="{{ id }}"
+>
+  {%- if primary_count > 0 -%}
+    <ul class="mega-menu-editorial__column mega-menu-editorial__primary list-unstyled">
+      {%- for link in parent_link.links -%}
+        {%- if link.links != blank or link.url == '#' -%}{%- continue -%}{%- endif -%}
+        <li>
+          <a
+            href="{{ link.url }}"
+            class="mega-menu-editorial__primary-link"
+            {% if link.current %}
+              aria-current="page"
+            {% endif %}
+          >
+            {{- link.title -}}
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+
+  {%- for group in parent_link.links -%}
+    {%- if group.links == blank -%}{%- continue -%}{%- endif -%}
+    <div class="mega-menu-editorial__column">
+      {%- comment -%} Headings linked to "#" in Navigation render as plain text. {%- endcomment -%}
+      {%- if group.url == '#' or group.url == blank -%}
+        <p class="mega-menu-editorial__heading">{{- group.title -}}</p>
+      {%- else -%}
+        <a href="{{ group.url }}" class="mega-menu-editorial__heading">
+          {{- group.title -}}
+        </a>
+      {%- endif -%}
+      <ul class="list-unstyled">
+        {%- for child in group.links -%}
+          <li>
+            <a
+              href="{{ child.url }}"
+              class="mega-menu-editorial__link"
+              {% if child.current %}
+                aria-current="page"
+              {% endif %}
+            >
+              {{- child.title -}}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endfor -%}
+
+  {%- if promo_count > 0 -%}
+    <div class="mega-menu-editorial__promos">
+      {{ promos }}
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  /*
+    Editorial mega menu, modern-luxury styling (reference: Broadcast).
+    Text uses the Body font; promo overlays use the Heading font.
+    Colors come only from the theme palette.
+  */
+  .menu-list__submenu-inner:has(.mega-menu-editorial) {
+    padding-block-start: 0;
+    padding-block-end: 0;
+  }
+
+  .mega-menu-editorial {
+    --mega-editorial-gap: clamp(1.25rem, 2.2vw, 2rem);
+    --mega-editorial-sans: var(--font-body--family);
+    --mega-editorial-display: var(--font-heading--family);
+
+    display: grid;
+    grid-template-columns: repeat(var(--mega-editorial-columns, 4), minmax(0, 1fr));
+    column-gap: var(--mega-editorial-gap);
+    align-items: start;
+    width: 100%;
+    padding-block: 2.5rem 3rem;
+  }
+
+  .mega-menu-editorial__column {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* Primary links (All Rings, Best Sellers, ...) */
+  .mega-menu-editorial__primary {
+    gap: 0.875rem;
+  }
+
+  .mega-menu-editorial__primary-link {
+    display: inline-block;
+    font-family: var(--mega-editorial-sans);
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.35;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+    overflow-wrap: anywhere;
+  }
+
+  /* Column headings (Collections, Shop By, ...) */
+  /* Column headings read as labels, not links: small, uppercase, tracked, muted,
+     with a hairline rule that sets them apart from the primary link list. */
+  .mega-menu-editorial__heading {
+    display: block;
+    font-family: var(--mega-editorial-display);
+    font-weight: var(--font-heading--weight, 600);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-60, 0.6));
+    margin-block: 0.3rem 1.25rem;
+    padding-block-end: 0.75rem;
+    border-block-end: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10, 0.1));
+  }
+
+  a.mega-menu-editorial__heading:hover,
+  a.mega-menu-editorial__heading:focus-visible {
+    color: var(--color-foreground);
+  }
+
+  .mega-menu-editorial__column ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .mega-menu-editorial__link {
+    font-family: var(--mega-editorial-sans);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.45;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-80, 0.8));
+    overflow-wrap: anywhere;
+    transition: color var(--animation-speed, 0.2s) ease;
+
+    &:hover,
+    &:focus-visible {
+      color: var(--color-foreground);
+    }
+  }
+
+  .mega-menu-editorial__primary-link,
+  a.mega-menu-editorial__heading,
+  .mega-menu-editorial__link {
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.25em;
+    text-decoration-thickness: 1px;
+    transition: text-decoration-color var(--animation-speed, 0.2s) ease, color var(--animation-speed, 0.2s) ease;
+
+    &:hover,
+    &:focus-visible,
+    &[aria-current='page'] {
+      text-decoration-color: currentcolor;
+    }
+  }
+
+  /* Promo cards: pinned to the last columns, text overlaid on the image. */
+  .mega-menu-editorial__promos {
+    grid-column: span var(--mega-editorial-promos) / -1;
+    display: grid;
+    grid-template-columns: repeat(var(--mega-editorial-promos), minmax(0, 1fr));
+    column-gap: var(--mega-editorial-gap);
+    min-width: 0;
+  }
+
+  .mega-menu-editorial__promo {
+    display: block;
+    min-width: 0;
+    color: var(--palette-lightest);
+    text-decoration: none;
+  }
+
+  .mega-menu-editorial__promo-media {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: var(--menu-image-border-radius, 0);
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5, 0.05));
+  }
+
+  .mega-menu-editorial__promo-media img,
+  .mega-menu-editorial__promo-media svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s var(--ease-out-quad, ease-out);
+  }
+
+  .mega-menu-editorial__promo:hover .mega-menu-editorial__promo-media img {
+    transform: scale(1.04);
+  }
+
+  /* Each time a menu opens, its images settle from a slight zoom to normal size.
+     The media box clips overflow; `backwards` hands transform back to the hover rule after. */
+  .menu-list__list-item:has([aria-expanded='true']) .mega-menu-editorial__promo-media img {
+    animation: mega-menu-editorial-image-in 2s var(--ease-out-quad, ease-out) backwards;
+  }
+
+  @keyframes mega-menu-editorial-image-in {
+    from {
+      transform: scale(1.15);
+    }
+
+    to {
+      transform: scale(1);
+    }
+  }
+
+  .mega-menu-editorial__promo-overlay {
+    position: absolute;
+    inset: auto 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 3rem 1rem 1rem;
+    background: linear-gradient(to top, rgb(var(--palette-darkest-rgb) / 0.6), transparent);
+  }
+
+  .mega-menu-editorial__promo-caption {
+    font-family: var(--mega-editorial-sans);
+    font-weight: 400;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
+  .mega-menu-editorial__promo-cta {
+    font-family: var(--mega-editorial-display);
+    font-weight: var(--font-heading--weight, 700);
+    font-size: 0.9375rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+
+  .mega-menu-editorial__promo:hover .mega-menu-editorial__promo-cta,
+  .mega-menu-editorial__promo:focus-visible .mega-menu-editorial__promo-cta {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Tablet: 3 columns, promos wrap under the links. */
+  @media screen and (max-width: 989px) {
+    .mega-menu-editorial {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      row-gap: 2rem;
+    }
+
+    .mega-menu-editorial__promos {
+      grid-column: 1 / -1;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mega-menu-editorial__promo-media img,
+    .menu-list__list-item:has([aria-expanded='true']) .mega-menu-editorial__promo-media img {
+      transition: none;
+      animation: none;
+    }
+  }
+{% endstylesheet %}
