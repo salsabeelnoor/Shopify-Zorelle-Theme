@@ -985,19 +985,6 @@
     }
   }
 
-  .menu-drawer__inner-container {
-    position: relative;
-    height: 100%;
-  }
-
-  .menu-drawer__navigation-container {
-    display: grid;
-    grid-template-rows: 1fr auto;
-    align-content: space-between;
-    overflow-y: auto;
-    height: 100%;
-  }
-
   .menu-drawer__inner-submenu {
     display: flex;
     flex-direction: column;
@@ -1564,32 +1551,7 @@
     margin-inline-start: var(--padding-xl);
   }
 
-  .menu-drawer__account {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--gap-xs);
-    text-decoration: none;
-    height: 44px;
-    font-size: 1.4rem;
-    color: rgb(var(--color-foreground));
-  }
-
-  .menu-drawer__account svg {
-    height: var(--icon-size-sm);
-    width: var(--icon-size-sm);
-  }
-
-  .menu-drawer__account shop-user-avatar {
-    --shop-avatar-size: 2.4rem;
-
-    margin-inline-end: 0.55rem;
-    margin-inline-start: -0.45rem;
-  }
-
-  .menu-drawer__link-image,
-  .menu-drawer__featured-product-image,
-  .menu-drawer__featured-collection-image,
-  .menu-drawer__featured-collection-link::before {
+  .menu-drawer__link-image {
     border-radius: var(--menu-image-border-radius);
   }
 
@@ -1711,12 +1673,6 @@
 
   .drawer-localization img {
     width: var(--icon-size-sm);
-  }
-
-  .drawer-localization .localization-button__icon,
-  .drawer-localization .localization-button__icon svg {
-    width: var(--icon-size-xs);
-    height: var(--icon-size-xs);
   }
 
   .drawer-localization summary.is-disabled {

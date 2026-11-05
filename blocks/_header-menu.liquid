@@ -810,10 +810,6 @@
     }
   }
 
-  .mega-menu__submenu .mega-menu__column--wide-collection-image {
-    grid-column: span 1;
-  }
-
   .mega-menu__content-list {
     display: grid;
     justify-content: end;
@@ -865,18 +861,6 @@
 
   .mega-menu__content-list li {
     white-space: normal;
-  }
-
-  /* mega more menu */
-  .mega-menu__more-list {
-    --menu-child-font-size: var(--font-size--xl);
-
-    width: 200px;
-  }
-
-  .mega-menu__submenu {
-    /* preserves the inherited grid layout when this submenu wrapper is used */
-    display: contents;
   }
 
   /* Hide product cards in collapsed submenus from the IntersectionObserver that fires product view events */
