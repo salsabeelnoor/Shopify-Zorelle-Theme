@@ -146,6 +146,27 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    margin-block: 0;
+  }
+
+  /* Keep every column's first item on the same line. */
+  .mega-menu-editorial__column ul,
+  .mega-menu-editorial__column li {
+    margin-block: 0;
+  }
+
+  /* Inside the header "More" dropdown the item title sits in a left column:
+     start the panel flush with it and use tighter rows. */
+  [slot='overflow'] .mega-menu-editorial {
+    padding-block: 0; /* the More dropdown frame supplies 40px top and bottom */
+  }
+
+  [slot='overflow'] .mega-menu-editorial__primary {
+    gap: 0.5rem;
+  }
+
+  [slot='overflow'] .mega-menu-editorial__column ul {
+    gap: 0.5rem;
   }
 
   /* Primary links (All Rings, Best Sellers, ...) */

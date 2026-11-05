@@ -803,13 +803,20 @@ export class ResizeNotifier extends ResizeObserver {
 /**
  * Sets the menuStyle dataset attribute on the header component element.
  */
+/**
+ * Zorelle: viewports at or below this width always use the drawer (hamburger) menu.
+ */
+const HEADER_DRAWER_MEDIA_QUERY = '(max-width: 1200px)';
+
 export function setHeaderMenuStyle() {
   const headerComponent = /** @type {HTMLElement} | null */ (document.querySelector('#header-component'));
   if (headerComponent) {
     window.requestAnimationFrame(() => {
       const overflowList = headerComponent?.querySelector('overflow-list');
       const hasReachedMinimum = overflowList && overflowList.hasAttribute('minimum-reached');
-      headerComponent.dataset.menuStyle = isTouchDevice() || hasReachedMinimum ? 'drawer' : 'menu';
+      const isDrawerViewport = window.matchMedia(HEADER_DRAWER_MEDIA_QUERY).matches;
+      headerComponent.dataset.menuStyle =
+        isTouchDevice() || hasReachedMinimum || isDrawerViewport ? 'drawer' : 'menu';
     });
   }
 }

@@ -36,7 +36,6 @@
       %}
       <div
         class="menu-list menu-list--mobile{% if transparent == blank %} color-custom-{{ block.id }}{% endif %}"
-        style="--menu-horizontal-gap: 15px; --mobile-nav-margin: auto;"
         data-hydration-key="header-menu-mobile-navigation-bar"
         data-navigation-bar-enabled
       >
@@ -143,7 +142,6 @@
               <div
                 id="submenu-{{ forloop.index }}"
                 class="menu-list__submenu-inner"
-                style="{% render 'submenu-font-styles', settings: block_settings %}"
               >
                 {% assign list_id = 'MegaMenuList-' | append: forloop.index %}
                 <div class="mega-menu section section--full-width-margin section--{{ section.settings.section_width }}">
@@ -209,7 +207,6 @@
         <nav
           class="menu-list"
           aria-label="{{ 'accessibility.header_navigation_label' | t }}"
-          style="{% render 'menu-font-styles', settings: block_settings, menu_type: 'mega_menu' %}"
         >
           {% assign class = 'overflow-menu' | append: background_color_classes %}
           {% render 'overflow-list',
@@ -240,11 +237,25 @@
     --menu-sale-color: {{ settings.color_palette.color1 | default: 'currentcolor' }};
   }
 
+  .header-menu .menu-list:not(.menu-list--mobile) {
+    {% render 'menu-font-styles', settings: block_settings, menu_type: 'mega_menu' %}
+  }
+
+  .header-menu .menu-list__submenu-inner {
+    {% render 'submenu-font-styles', settings: block_settings %}
+  }
+
   .header-menu {
     --menu-top-level-letter-spacing: {% if block_settings.type_case_primary_link == 'uppercase' %}0.06em{% else %}normal{% endif %};
   }
 {% endstyle %}
 {% stylesheet %}
+  /* Mobile navigation bar spacing (was inline on .menu-list--mobile). */
+  .menu-list--mobile {
+    --menu-horizontal-gap: 15px;
+    --mobile-nav-margin: auto;
+  }
+
   .header__drawer {
     --header-drawer-min-height: 60px;
     display: flex;
@@ -427,7 +438,6 @@
     background-position: center bottom;
     background-size: 0 1px;
     background-origin: content-box;
-    padding-block-end: 4px;
     transition: background-size var(--animation-speed, 0.2s) var(--ease-out-quad, ease-out);
   }
 
@@ -459,6 +469,11 @@
   }
   [slot='overflow'] .menu-list__link-title {
     padding-inline: 0;
+  }
+
+  /* Zorelle: equal 40px top/bottom space around both columns of the More dropdown. */
+  .header-menu .overflow-menu::part(overflow-list) {
+    padding-block: 40px;
   }
 
   .menu-list__list-item:not([slot='overflow']) {

@@ -7,6 +7,15 @@
 {%- assign block_index = section.blocks | find_index: 'id', block.id -%}
 
 {%- unless plain_text == '' -%}
+  {% style %}
+    .announcement-bar__slide.text-block--{{ block.id }} {
+      {% render 'typography-style', settings: block_settings, preset: 'custom' %}
+      {% if block_settings.text_color != blank %}--color: {{ block_settings.text_color }}; --color-rgb: {{ block_settings.text_color.rgb }};{% endif %}
+      --width: 100%;
+      --text-align: center;
+      --line-height: 1;
+    }
+  {% endstyle %}
   <slideshow-slide
     ref="slides[]"
     class="
@@ -18,13 +27,6 @@
       custom-typography
       {% if block_settings.font_size != "" %}custom-font-size{% endif %}
       {% if block_settings.weight != "" %}custom-font-weight{% endif %}
-    "
-    style="
-      {% render 'typography-style', settings: block_settings, preset: 'custom' %}
-      {% if block_settings.text_color != blank %}--color: {{ block_settings.text_color }}; --color-rgb: {{ block_settings.text_color.rgb }};{% endif %}
-      --width: 100%;
-      --text-align: center;
-      --line-height: 1;
     "
     {{ block.shopify_attributes }}
     aria-hidden="{% if block_index == 0 %}false{% else %}true{% endif %}"

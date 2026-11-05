@@ -23,6 +23,39 @@
   assign alt_text_fallback = 'accessibility.home_logo_alt' | t: store_name: shop.name
 %}
 
+{% liquid
+  assign logo_width = settings.logo_height | times: settings.logo.aspect_ratio | ceil
+  assign logo_width_mobile = settings.logo_height_mobile | times: settings.logo.aspect_ratio | ceil
+  assign inverse_logo_width = settings.logo_height | times: inverse_logo.aspect_ratio | ceil
+  assign inverse_logo_width_mobile = settings.logo_height_mobile | times: inverse_logo.aspect_ratio | ceil
+%}
+
+{% style %}
+  .header-logo--{{ block.id }} {
+    {% render 'size-style', settings: block_settings %}
+    {% render 'spacing-style', settings: block_settings %}
+    --font-family: var(--font-body--family);
+    --font-style: var(--font-body--style);
+    --font-weight: 600;
+  }
+
+  .header-logo--{{ block.id }} [data-testid='header-logo'] .header-logo__image {
+    --header-logo-image-width: {{ logo_width }}px;
+    --header-logo-image-width-mobile: {{ logo_width_mobile }}px;
+    --header-logo-image-height: {{ settings.logo_height }}px;
+    --header-logo-image-height-mobile: {{ settings.logo_height_mobile }}px;
+  }
+
+  {%- if use_inverse_logo %}
+    .header-logo--{{ block.id }} [data-testid='header-logo-inverse'] .header-logo__image {
+      --header-logo-image-width: {{ inverse_logo_width }}px;
+      --header-logo-image-width-mobile: {{ inverse_logo_width_mobile }}px;
+      --header-logo-image-height: {{ settings.logo_height }}px;
+      --header-logo-image-height-mobile: {{ settings.logo_height_mobile }}px;
+    }
+  {%- endif %}
+{% endstyle %}
+
 {% comment %}
   Output all logo variants, use CSS to hide/show the appropriate one
   based on the .header[transparent] selector
@@ -32,25 +65,9 @@
     data-hidden-on-home-page
   {% endif %}
   href="{{ routes.root_url }}"
-  class="size-style spacing-style header-logo"
-  style="
-    {% render 'size-style', settings: block_settings %}
-    {% render 'spacing-style', settings: block_settings %}
-    --font-family: var(--font-body--family);
-    --font-style: var(--font-body--style);
-    --font-weight: 600;
-  "
+  class="size-style spacing-style header-logo header-logo--{{ block.id }}"
   {{ block.shopify_attributes }}
 >
-  {% liquid
-    assign logo_width = settings.logo_height | times: settings.logo.aspect_ratio | ceil
-    assign logo_width_mobile = settings.logo_height_mobile | times: settings.logo.aspect_ratio | ceil
-    assign inverse_logo_width = settings.logo_height | times: inverse_logo.aspect_ratio | ceil
-    assign inverse_logo_width_mobile = settings.logo_height_mobile | times: inverse_logo.aspect_ratio | ceil
-    assign logo_style = '--header-logo-image-width: ' | append: logo_width | append: 'px;' | append: '--header-logo-image-width-mobile: ' | append: logo_width_mobile | append: 'px; --header-logo-image-height: ' | append: settings.logo_height | append: 'px; --header-logo-image-height-mobile: ' | append: settings.logo_height_mobile | append: 'px;'
-    assign inverse_logo_style = '--header-logo-image-width: ' | append: inverse_logo_width | append: 'px;' | append: '--header-logo-image-width-mobile: ' | append: inverse_logo_width_mobile | append: 'px; --header-logo-image-height: ' | append: settings.logo_height | append: 'px; --header-logo-image-height-mobile: ' | append: settings.logo_height_mobile | append: 'px;'
-  %}
-
   <span
     {% if use_inverse_logo %}
       class="header-logo__solid-header-image-container"
@@ -62,8 +79,7 @@
       class: 'header-logo__image',
       height: settings.logo_height,
       alt_text_fallback: alt_text_fallback,
-      text_fallback: shop.name,
-      style: logo_style
+      text_fallback: shop.name
     %}
   </span>
 
@@ -77,8 +93,7 @@
         class: 'header-logo__image',
         height: settings.logo_height,
         alt_text_fallback: alt_text_fallback,
-        text_fallback: shop.name,
-        style: inverse_logo_style
+        text_fallback: shop.name
       %}
     </span>
   {% endif %}

@@ -1,0 +1,122 @@
+/*
+  Zorelle buttons
+  ------------------------------------------------------------------
+  Shared look for every primary (.button) and secondary
+  (.button-secondary) text button on the storefront. Loaded right
+  after base.css from snippets/stylesheets.liquid.
+
+  Colors, corner radius (square = 0), border width and text case come
+  from Theme settings > Buttons / Colors, so they stay editable in the
+  theme editor. Edit the tokens below to change typography, sizing and
+  the hover animation everywhere at once.
+
+  Icon-style controls that also carry .button (close, back, remove,
+  search and localization toggles) are excluded via :not(...) so they
+  keep their own compact styling.
+*/
+
+:root {
+  /* Typography */
+  --btn-font-size: 0.8125rem;
+  --btn-font-weight: 500;
+  --btn-letter-spacing: 0.1em;
+  --btn-line-height: 1.2;
+
+  /* Sizing */
+  --btn-padding-block: 0.9375rem;
+  --btn-padding-inline: 1.75rem;
+  --btn-min-height: 2.875rem;
+
+  /* Hover animation: a fill sweeps in from the start edge */
+  --btn-sweep-duration: 0.45s;
+  --btn-sweep-easing: cubic-bezier(0.65, 0, 0.35, 1);
+  --btn-press-scale: 0.98;
+}
+
+:is(.button, .button-secondary):not(
+    .button-unstyled,
+    .button--unstyled,
+    .close-button,
+    .menu-drawer__back-button,
+    .variant-item__remove,
+    .cart-items__remove,
+    .predictive-search__close-modal-button,
+    .predictive-search__search-button,
+    .dropdown-localization__button
+  ) {
+  --button-padding-block: var(--btn-padding-block);
+  --button-padding-inline: var(--btn-padding-inline);
+
+  /* Hover colors the sweep reveals; secondary overrides below. */
+  --btn-fill: var(--color-primary-button-hover-background);
+  --btn-rest-background: var(--color-primary-button-background);
+  --btn-hover-text: var(--color-primary-button-hover-text);
+  --btn-hover-border: var(--color-primary-button-hover-border);
+
+  min-height: var(--btn-min-height);
+  font-size: var(--btn-font-size);
+  font-weight: var(--btn-font-weight);
+  line-height: var(--btn-line-height);
+  letter-spacing: var(--btn-letter-spacing);
+  background-image: linear-gradient(var(--btn-fill), var(--btn-fill));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 0% 100%;
+  transition:
+    background-size var(--btn-sweep-duration) var(--btn-sweep-easing),
+    color var(--btn-sweep-duration) var(--btn-sweep-easing),
+    box-shadow var(--btn-sweep-duration) var(--btn-sweep-easing),
+    transform 0.15s ease;
+
+  &.button-secondary {
+    --btn-fill: var(--color-secondary-button-hover-background);
+    --btn-rest-background: var(--color-secondary-button-background);
+    --btn-hover-text: var(--color-secondary-button-hover-text);
+    --btn-hover-border: var(--color-secondary-button-hover-border);
+  }
+
+  [dir='rtl'] & {
+    background-position: right center;
+  }
+
+  /* Hover/focus: base color stays put while the fill sweeps across it. */
+  &:is(:hover, :focus-visible):not(:disabled, [aria-disabled='true']) {
+    --button-color: var(--btn-hover-text);
+    --button-background-color: var(--btn-rest-background);
+    --button-border-color: var(--btn-hover-border);
+
+    background-size: 100% 100%;
+  }
+
+  &:active:not(:disabled, [aria-disabled='true']) {
+    transform: scale(var(--btn-press-scale));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &:active {
+      transform: none;
+    }
+  }
+}
+
+/*
+  Buttons placed over photos or video (add .buttons--on-media to a wrapper).
+  The secondary button becomes a light outline that fills light on hover,
+  so it stays visible on dark imagery. Primary keeps its palette colors.
+  Override --btn-on-media-light / -dark on the wrapper if needed.
+*/
+.buttons--on-media {
+  --btn-on-media-light: var(--palette-lightest);
+  --btn-on-media-dark: var(--palette-darkest);
+}
+
+.buttons--on-media .button-secondary:not(.button-unstyled) {
+  --button-color: var(--btn-on-media-light);
+  --button-border-color: var(--btn-on-media-light);
+  --btn-rest-background: transparent;
+  --btn-fill: var(--btn-on-media-light);
+  --btn-hover-text: var(--btn-on-media-dark);
+  --btn-hover-border: var(--btn-on-media-light);
+}

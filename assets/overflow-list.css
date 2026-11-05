@@ -2,7 +2,7 @@
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: var(--overflow-list-alignment);
+  justify-content: center;
   column-gap: 1rem;
   padding-block: var(--overflow-list-padding-block, 0);
   padding-inline: var(--overflow-list-padding-inline, 0);

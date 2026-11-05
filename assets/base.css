@@ -9,7 +9,7 @@ body {
   flex-direction: column;
   margin: 0;
   min-height: 100svh;
-  font-variation-settings: 'slnt' 0;
+  font-variation-settings: "slnt" 0;
 }
 
 :root {
@@ -21,7 +21,8 @@ body {
 html {
   /* Firefox */
   scrollbar-width: thin;
-  scrollbar-color: rgb(var(--color-foreground-rgb) / var(--opacity-40)) var(--color-background);
+  scrollbar-color: rgb(var(--color-foreground-rgb) / var(--opacity-40))
+    var(--color-background);
   scroll-behavior: smooth;
 }
 
@@ -49,7 +50,8 @@ html[scroll-lock] {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  transition: margin-inline-end var(--animation-speed) var(--animation-timing-fade-out);
+  transition: margin-inline-end var(--animation-speed)
+    var(--animation-timing-fade-out);
 }
 
 @media (min-width: 990px) {
@@ -58,7 +60,8 @@ html[scroll-lock] {
     overflow-y: auto;
     scroll-behavior: smooth;
     scrollbar-width: thin;
-    scrollbar-color: rgb(var(--color-foreground-rgb) / var(--opacity-40)) var(--color-background);
+    scrollbar-color: rgb(var(--color-foreground-rgb) / var(--opacity-40))
+      var(--color-background);
   }
 
   .page-wrapper--drawer-open shopify-account::part(dialog) {
@@ -66,7 +69,7 @@ html[scroll-lock] {
   }
 
   /* The theme drawer opens from the inline-end edge, so the shift mirrors in RTL */
-  [dir='rtl'] .page-wrapper--drawer-open shopify-account::part(dialog) {
+  [dir="rtl"] .page-wrapper--drawer-open shopify-account::part(dialog) {
     translate: var(--theme-drawer-width, var(--sidebar-width));
   }
 }
@@ -108,7 +111,8 @@ select {
 .predictive-search-results__card--product,
 .predictive-search-results__card {
   position: relative;
-  transition: transform var(--hover-transition-duration) var(--hover-transition-timing),
+  transition:
+    transform var(--hover-transition-duration) var(--hover-transition-timing),
     box-shadow var(--hover-transition-duration) var(--hover-transition-timing);
   z-index: var(--layer-flat);
 }
@@ -188,11 +192,13 @@ p:empty {
     pointer-events: none;
   }
 
-  html:active-view-transition-type(page-navigation) main[data-page-transition-enabled='true'] {
+  html:active-view-transition-type(page-navigation)
+    main[data-page-transition-enabled="true"] {
     view-transition-name: main-content;
   }
 
-  html:active-view-transition-type(page-navigation) main[data-product-transition='true'][data-template*='product'] {
+  html:active-view-transition-type(page-navigation)
+    main[data-product-transition="true"][data-template*="product"] {
     view-transition-name: none;
   }
 
@@ -205,11 +211,11 @@ p:empty {
   }
 
   html:active-view-transition-type(product-image-transition) {
-    [data-view-transition-type='product-image-transition'] {
+    [data-view-transition-type="product-image-transition"] {
       view-transition-name: product-image-transition;
     }
 
-    [data-view-transition-type='product-details'] {
+    [data-view-transition-type="product-details"] {
       view-transition-name: product-details;
     }
   }
@@ -269,20 +275,24 @@ p:empty {
 /* Set up page widths & margins. Gutters grow to the device safe-area insets (viewport-fit=cover)
    so section backgrounds bleed edge-to-edge while content stays clear of the notch; taking the
    larger of both insets keeps the centered page grid symmetric. */
+/* Zorelle container: content spans 92% of the viewport (4% gutter each side), capped by
+   the page width setting (Narrow = 1440px). Matches the .container utility below so
+   every section, the header, and custom blocks share one content edge. */
+:root {
+  --container-max-width: 1440px;
+  --container-width: 92%;
+  --container-gutter: 4vw;
+}
+
 .page-width-wide,
 .page-width-normal,
 .page-width-narrow,
 .page-width-content {
-  --page-margin: max(16px, var(--safe-area-inset-left, 0px), var(--safe-area-inset-right, 0px));
-}
-
-@media screen and (min-width: 750px) {
-  .page-width-wide,
-  .page-width-normal,
-  .page-width-narrow,
-  .page-width-content {
-    --page-margin: max(40px, var(--safe-area-inset-left, 0px), var(--safe-area-inset-right, 0px));
-  }
+  --page-margin: max(
+    var(--container-gutter),
+    var(--safe-area-inset-left, 0px),
+    var(--safe-area-inset-right, 0px)
+  );
 }
 
 .page-width-wide {
@@ -317,18 +327,22 @@ p:empty {
     calc(100% - var(--page-margin) * 2)
   );
   --full-page-grid-margin: minmax(var(--page-margin), 1fr);
-  --full-page-grid-with-margins: var(--full-page-grid-margin) var(--full-page-grid-central-column-width)
-    var(--full-page-grid-margin);
+  --full-page-grid-with-margins: var(--full-page-grid-margin)
+    var(--full-page-grid-central-column-width) var(--full-page-grid-margin);
 
   /* Utility variable gives the grid's first column width. Provides an offset width for components like carousels */
   --util-page-margin-offset: max(
     var(--page-margin),
-    calc((100% - min(var(--page-content-width), 100% - var(--page-margin) * 2)) / 2)
+    calc(
+      (100% - min(var(--page-content-width), 100% - var(--page-margin) * 2)) / 2
+    )
   );
 
   /* Offset for full-width sections to account for the page margin,
   used for Marquee — note that --util-page-margin-offset doesn't work here */
-  --full-page-margin-inline-offset: calc(((100vw - var(--full-page-grid-central-column-width)) / 2) * -1);
+  --full-page-margin-inline-offset: calc(
+    ((100vw - var(--full-page-grid-central-column-width)) / 2) * -1
+  );
 
   width: 100%;
 
@@ -338,7 +352,7 @@ p:empty {
   /* Set up the grid */
   display: grid;
   grid-template-columns: var(--full-page-grid-with-margins);
-  min-height: var(--section-min-height, 'auto');
+  min-height: var(--section-min-height, "auto");
 }
 
 /* Place all direct children in the center column by default */
@@ -356,7 +370,7 @@ p:empty {
 }
 
 .shopify-section:not(.header-section) .section-background {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   z-index: var(--layer-section-background);
@@ -410,7 +424,9 @@ p:empty {
 }
 
 .section-content-wrapper.section-content-wrapper {
-  min-height: calc(var(--section-min-height, 'auto') - var(--section-height-offset, 0px));
+  min-height: calc(
+    var(--section-min-height, "auto") - var(--section-height-offset, 0px)
+  );
   position: relative;
   width: 100%;
   height: 100%;
@@ -481,8 +497,11 @@ p:empty {
   .grid {
     display: grid;
     gap: 0;
-    grid-template-columns: var(--margin-4xl) repeat(var(--centered-column-number), minmax(0, 1fr)) var(--margin-4xl);
-    grid-template-areas: 'column-0 column-1 column-2 column-3 column-4 column-5 column-6 column-7 column-8 column-9 column-10 column-11 column-12 column-13';
+    grid-template-columns: var(--margin-4xl) repeat(
+        var(--centered-column-number),
+        minmax(0, 1fr)
+      ) var(--margin-4xl);
+    grid-template-areas: "column-0 column-1 column-2 column-3 column-4 column-5 column-6 column-7 column-8 column-9 column-10 column-11 column-12 column-13";
   }
 }
 
@@ -491,7 +510,13 @@ p:empty {
     grid-template-columns:
       1fr repeat(
         var(--centered-column-number),
-        minmax(0, calc((var(--page-width) - var(--page-margin) * 2) / var(--centered-column-number)))
+        minmax(
+          0,
+          calc(
+            (var(--page-width) - var(--page-margin) * 2) /
+              var(--centered-column-number)
+          )
+        )
       )
       1fr;
   }
@@ -594,7 +619,7 @@ p:empty {
   fill: currentColor;
 }
 
-[data-placeholder='true'] * {
+[data-placeholder="true"] * {
   cursor: default;
 }
 
@@ -636,7 +661,7 @@ h1,
   font-family: var(--font-h1--family);
   font-style: var(--font-h1--style);
   font-weight: var(--font-h1--weight);
-  font-size: var(--font-h1--size);
+  font-size: clamp(32px, calc(32px + 20px * (100vw - 320px) / 1600px), 52px);
   line-height: var(--font-h1--line-height);
   letter-spacing: var(--font-h1--letter-spacing);
   text-transform: var(--font-h1--case);
@@ -776,7 +801,8 @@ a {
   text-decoration-color: transparent;
   text-decoration-thickness: 0.075em;
   text-underline-offset: 0.125em;
-  transition: text-decoration-color var(--animation-speed) var(--animation-easing),
+  transition:
+    text-decoration-color var(--animation-speed) var(--animation-easing),
     color var(--animation-speed) var(--animation-easing);
 }
 
@@ -786,7 +812,9 @@ a {
 
 /* Add underline to text using our paragraph styles only. */
 p:not(.h1, .h2, .h3, .h4, .h5, .h6) a:where(:not(.button, .button-secondary)),
-.rte :is(p, ul, ol, table):not(.h1, .h2, .h3, .h4, .h5, .h6) a:where(:not(.button, .button-secondary)) {
+.rte
+  :is(p, ul, ol, table):not(.h1, .h2, .h3, .h4, .h5, .h6)
+  a:where(:not(.button, .button-secondary)) {
   text-decoration-color: currentcolor;
 
   &:hover {
@@ -797,8 +825,8 @@ p:not(.h1, .h2, .h3, .h4, .h5, .h6) a:where(:not(.button, .button-secondary)),
 
 /* Global content container */
 .container {
-  max-width: 1400px;
-  width: 92%;
+  max-width: var(--container-max-width);
+  width: var(--container-width);
   margin-inline: auto;
 }
 
@@ -834,7 +862,8 @@ button.shopify-payment-button__button--unbranded {
   font-size: var(--font-paragraph--size);
   line-height: var(--font-paragraph--line-height);
   margin-block: 0;
-  transition: color var(--animation-speed) var(--animation-easing),
+  transition:
+    color var(--animation-speed) var(--animation-easing),
     box-shadow var(--animation-speed) var(--animation-easing),
     background-color var(--animation-speed) var(--animation-easing);
   cursor: pointer;
@@ -851,7 +880,10 @@ button.shopify-payment-button__button--unbranded {
 }
 
 .button:not(.button-secondary, .button-unstyled) {
-  outline-color: var(--button-focus-outline-color, var(--button-background-color));
+  outline-color: var(
+    --button-focus-outline-color,
+    var(--button-background-color)
+  );
 }
 
 .button-secondary {
@@ -866,7 +898,7 @@ button.shopify-payment-button__button--unbranded {
 }
 
 textarea,
-input:not([type='checkbox'], [type='radio']) {
+input:not([type="checkbox"], [type="radio"]) {
   background-color: var(--color-input-background);
   border-color: var(--color-input-border);
 }
@@ -886,8 +918,8 @@ input:not(:placeholder-shown)::placeholder {
   display: none;
 }
 
-.button[aria-disabled='true'],
-.button-secondary[aria-disabled='true'],
+.button[aria-disabled="true"],
+.button-secondary[aria-disabled="true"],
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -932,7 +964,10 @@ button.shopify-payment-button__button--unbranded:hover:not([disabled]) {
   font-family: var(--button-font-family-primary);
   text-transform: var(--button-text-case-primary);
   border-radius: var(--style-border-radius-buttons-primary);
-  outline-color: var(--button-focus-outline-color, var(--button-background-color));
+  outline-color: var(
+    --button-focus-outline-color,
+    var(--button-background-color)
+  );
 }
 
 .button-custom:hover {
@@ -1021,7 +1056,7 @@ summary:hover {
 }
 
 /* Safe-area env() values are physical; in RTL the button sits by the left-side notch */
-[dir='rtl'] .close-button {
+[dir="rtl"] .close-button {
   inset-inline-end: max(var(--margin-lg), var(--safe-area-inset-left, 0px));
 }
 
@@ -1039,7 +1074,7 @@ summary:hover {
   }
 
   .close-button:focus-visible::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: calc(-1 * var(--focus-outline-offset));
     border: var(--focus-outline-width) solid currentColor;
@@ -1049,7 +1084,8 @@ summary:hover {
 }
 
 .dialog--closed .close-button {
-  animation: elementSlideOutBottom calc(var(--animation-speed) * 0.5) var(--animation-easing) forwards;
+  animation: elementSlideOutBottom calc(var(--animation-speed) * 0.5)
+    var(--animation-easing) forwards;
 }
 
 .close-button:hover {
@@ -1106,7 +1142,10 @@ summary:hover {
   --margin-inline-start: var(--margin-inline, 0px);
   --margin-inline-end: var(--margin-inline, 0px);
 
-  padding-block: calc(var(--padding-block-start) + var(--section-top-offset, 0px)) var(--padding-block-end);
+  padding-block: calc(
+      var(--padding-block-start) + var(--section-top-offset, 0px)
+    )
+    var(--padding-block-end);
   padding-inline: var(--padding-inline-start) var(--padding-inline-end);
   margin-block: var(--margin-block-start) var(--margin-block-end);
   margin-inline: var(--margin-inline-start) var(--margin-inline-end);
@@ -1228,7 +1267,9 @@ summary:hover {
     }
 
     > .group-block--height-fill {
-      height: calc(var(--section-min-height, auto) - var(--section-height-offset, 0px));
+      height: calc(
+        var(--section-min-height, auto) - var(--section-height-offset, 0px)
+      );
     }
   }
 }
@@ -1251,7 +1292,9 @@ summary:hover {
   flex-grow: 1;
   text-align: start;
   border-radius: var(--style-border-radius-inputs);
-  transition: box-shadow var(--animation-speed) ease, background-color var(--animation-speed) ease;
+  transition:
+    box-shadow var(--animation-speed) ease,
+    background-color var(--animation-speed) ease;
   padding: var(--input-padding);
   box-shadow: var(--input-box-shadow);
   background-color: var(--color-input-background);
@@ -1287,7 +1330,9 @@ summary:hover {
   margin-bottom: 0;
   pointer-events: none;
   position: absolute;
-  transition: top var(--animation-speed) ease, font-size var(--animation-speed) ease;
+  transition:
+    top var(--animation-speed) ease,
+    font-size var(--animation-speed) ease;
 }
 
 /* RTE styles */
@@ -1317,7 +1362,8 @@ summary:hover {
     margin-inline: 1.5em 2.3em;
     margin-block: 3.8em;
     padding-inline-start: 0.8em;
-    border-inline-start: 1.5px solid rgb(var(--color-foreground-rgb) / var(--opacity-25));
+    border-inline-start: 1.5px solid
+      rgb(var(--color-foreground-rgb) / var(--opacity-25));
     font-style: italic;
     font-weight: 500;
   }
@@ -1340,7 +1386,8 @@ summary:hover {
   }
 
   tr:has(td) {
-    border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10));
+    border-bottom: 1px solid
+      rgb(var(--color-foreground-rgb) / var(--opacity-10));
   }
 
   th,
@@ -1356,8 +1403,8 @@ summary:hover {
 }
 
 /* Radio buttons and checkboxes - shared base styles */
-:where(input[type='radio']),
-:where(input[type='checkbox']) {
+:where(input[type="radio"]),
+:where(input[type="checkbox"]) {
   width: var(--checkbox-size);
   height: var(--checkbox-size);
   aspect-ratio: 1;
@@ -1373,19 +1420,21 @@ summary:hover {
 }
 
 /* Radio buttons */
-input[type='radio'] {
+input[type="radio"] {
   border-radius: var(--style-border-radius-50);
   background: transparent;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
 }
 
-:where(input[type='radio']):checked {
+:where(input[type="radio"]):checked {
   border-color: var(--color-foreground);
   background: var(--color-background);
 }
 
-:where(input[type='radio']):checked::after {
-  content: '';
+:where(input[type="radio"]):checked::after {
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%; /* stylelint-disable-line csstools/use-logical -- centring pair with a physical translate(-50%) */
@@ -1397,44 +1446,46 @@ input[type='radio'] {
   transition: background 0.2s ease;
 }
 
-:where(input[type='radio']):disabled {
+:where(input[type="radio"]):disabled {
   border-color: var(--input-disabled-border-color);
   background-color: var(--input-disabled-background-color);
   cursor: not-allowed;
 }
 
-:where(input[type='radio']):disabled:checked::after {
+:where(input[type="radio"]):disabled:checked::after {
   background: var(--input-disabled-background-color);
 }
 
-:where(input[type='radio']):not(:disabled):hover {
+:where(input[type="radio"]):not(:disabled):hover {
   border-color: rgb(var(--color-foreground-rgb) / var(--opacity-40-60));
   background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
 }
 
-:where(input[type='radio']):not(:disabled):hover:checked {
+:where(input[type="radio"]):not(:disabled):hover:checked {
   border-color: var(--color-foreground);
   background-color: var(--color-background);
 }
 
-:where(input[type='radio']):not(:disabled):hover:checked::after {
+:where(input[type="radio"]):not(:disabled):hover:checked::after {
   background: rgb(var(--color-foreground-rgb) / var(--opacity-85));
 }
 
 /* Checkboxes */
-:where(input[type='checkbox']) {
+:where(input[type="checkbox"]) {
   border-radius: var(--checkbox-border-radius);
   background-color: var(--color-background);
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
 }
 
-:where(input[type='checkbox']):checked {
+:where(input[type="checkbox"]):checked {
   background-color: var(--color-foreground);
   border-color: var(--color-foreground);
 }
 
-:where(input[type='checkbox']):checked::after {
-  content: '';
+:where(input[type="checkbox"]):checked::after {
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%; /* stylelint-disable-line csstools/use-logical -- centring pair with a physical translate(-50%) */
@@ -1448,36 +1499,36 @@ input[type='radio'] {
   mask-position: center;
 }
 
-:where(input[type='checkbox']):not(:disabled):hover {
+:where(input[type="checkbox"]):not(:disabled):hover {
   border-color: rgb(var(--color-foreground-rgb) / var(--opacity-40-60));
   background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
 }
 
-:where(input[type='checkbox']):not(:disabled):hover:checked {
+:where(input[type="checkbox"]):not(:disabled):hover:checked {
   border-color: var(--color-foreground);
   background-color: rgb(var(--color-foreground-rgb) / var(--opacity-85));
 }
 
-:where(input[type='checkbox']):disabled {
+:where(input[type="checkbox"]):disabled {
   background-color: var(--input-disabled-background-color);
   border-color: var(--input-disabled-border-color);
   cursor: not-allowed;
 }
 
-:where(input[type='checkbox']):disabled:checked::after {
+:where(input[type="checkbox"]):disabled:checked::after {
   background-color: var(--input-disabled-text-color);
 }
 
 /* Shared styles for radio buttons and checkboxes */
-:where(input[type='radio']) + label,
-:where(input[type='checkbox']) + label {
+:where(input[type="radio"]) + label,
+:where(input[type="checkbox"]) + label {
   display: inline;
   vertical-align: middle;
   cursor: pointer;
 }
 
-:where(input[type='radio']):disabled + label,
-:where(input[type='checkbox']):disabled + label {
+:where(input[type="radio"]):disabled + label,
+:where(input[type="checkbox"]):disabled + label {
   color: var(--input-disabled-text-color);
   cursor: not-allowed;
 }
@@ -1680,19 +1731,29 @@ input[type='radio'] {
 /* Slideshow Arrow Hover Animation - must stay in base.css for proper CSS cascade */
 
 slideshow-container[animate-arrows]:hover > slideshow-arrows .slideshow-control,
-slideshow-component:focus-within > slideshow-container[animate-arrows] > slideshow-arrows .slideshow-control {
-  animation: arrowsSlideIn var(--animation-speed) var(--animation-easing) forwards;
+slideshow-component:focus-within
+  > slideshow-container[animate-arrows]
+  > slideshow-arrows
+  .slideshow-control {
+  animation: arrowsSlideIn var(--animation-speed) var(--animation-easing)
+    forwards;
 }
 
 /* Clipped controls preserve accessible paging without intercepting touch taps. */
 @media (hover: none) and (pointer: coarse) {
-  .resource-list__carousel > [animate-arrows] > :where(slideshow-arrows) > .slideshow-control:not(:focus-visible) {
+  .resource-list__carousel
+    > [animate-arrows]
+    > :where(slideshow-arrows)
+    > .slideshow-control:not(:focus-visible) {
     position: absolute;
     clip: rect(0 0 0 0);
     animation: none;
   }
 
-  .resource-list__carousel > [animate-arrows] > :where(slideshow-arrows) > .slideshow-control:focus-visible {
+  .resource-list__carousel
+    > [animate-arrows]
+    > :where(slideshow-arrows)
+    > .slideshow-control:focus-visible {
     opacity: 1;
     animation: none;
   }
@@ -1727,8 +1788,12 @@ slideshow-component:focus-within > slideshow-container[animate-arrows] > slidesh
   display: none;
 }
 
-:where(.section-resource-list.section--full-width) product-card[data-product-transition] > .group-block,
-:where(.section-carousel.section--full-width) product-card[data-product-transition] > .group-block {
+:where(.section-resource-list.section--full-width)
+  product-card[data-product-transition]
+  > .group-block,
+:where(.section-carousel.section--full-width)
+  product-card[data-product-transition]
+  > .group-block {
   @media screen and (max-width: 749px) {
     padding-inline: max(var(--padding-xs), var(--padding-inline-start))
       max(var(--padding-xs), var(--padding-inline-end));
@@ -1751,7 +1816,8 @@ slideshow-component:focus-within > slideshow-container[animate-arrows] > slidesh
 }
 
 /* Container styles */
-.section-content-wrapper.section-content-wrapper:where(.layout-panel-flex) .group-block--fill {
+.section-content-wrapper.section-content-wrapper:where(.layout-panel-flex)
+  .group-block--fill {
   flex: 1;
 }
 
@@ -1851,7 +1917,9 @@ slideshow-component:focus-within > slideshow-container[animate-arrows] > slidesh
 main > .shopify-section:first-child .section:not(.disable-section-top-offset) {
   &.spacing-style,
   .spacing-style {
-    --section-top-offset: calc(var(--header-height) * var(--transparent-header-offset-boolean));
+    --section-top-offset: calc(
+      var(--header-height) * var(--transparent-header-offset-boolean)
+    );
 
     /* Any nested sections should not be offset */
     .spacing-style {
@@ -1861,6 +1929,8 @@ main > .shopify-section:first-child .section:not(.disable-section-top-offset) {
 
   /* Make sticky content immediately stick to the top of the page */
   .sticky-content {
-    margin-top: calc(var(--header-height) * var(--transparent-header-offset-boolean) * -1);
+    margin-top: calc(
+      var(--header-height) * var(--transparent-header-offset-boolean) * -1
+    );
   }
 }

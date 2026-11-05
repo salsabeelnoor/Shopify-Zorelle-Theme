@@ -46,7 +46,21 @@
 {% style %}
   header-drawer {
     --zd-accent: {{ settings.color_palette.color1 | default: 'currentcolor' }};
+    --menu-image-border-radius: {{ image_border_radius }}px;
+    --resource-card-corner-radius: {{ image_border_radius }}px;
   }
+
+  header-drawer .menu-drawer__navigation {
+    {%- render 'menu-font-styles', settings: block_settings, menu_type: 'drawer' %}
+    {%- render 'submenu-font-styles', settings: block_settings %}
+  }
+
+  /* Staggered entrance order (was an inline index on every row). Submenus inherit their row's index. */
+  {%- for i in (1..30) %}
+    header-drawer .menu-drawer__menu > :nth-child({{ i }}) { --menu-drawer-animation-index: {{ i }}; }
+  {%- endfor %}
+  header-drawer .menu-drawer__utility-links { --menu-drawer-animation-index: {{ linklist.links.size }}; }
+  header-drawer .menu-drawer__featured-content { --menu-drawer-animation-index: {{ linklist.links.size | plus: 1 }}; }
 {% endstyle %}
 
 <script
@@ -57,7 +71,6 @@
 
 <header-drawer
   class="header-drawer {{ class }}"
-  style="--menu-image-border-radius: {{ image_border_radius }}px; --resource-card-corner-radius: {{ image_border_radius }}px;"
 >
   <details
     id="Details-menu-drawer-container"
@@ -91,10 +104,6 @@
 
       <nav
         class="menu-drawer__navigation"
-        style="
-          {%- render 'menu-font-styles', settings: block_settings, menu_type: 'drawer' %}
-          {%- render 'submenu-font-styles', settings: block_settings %}
-        "
         aria-label="{{ 'accessibility.header_navigation_label' | t }}"
       >
         <ul
@@ -110,7 +119,6 @@
             {%- for link in linklist.links -%}
               {% assign animation_index = animation_index | plus: 1 %}
               <li
-                style="--menu-drawer-animation-index: {{ animation_index }};"
                 class="{%- if block_settings.drawer_accordion -%}menu-drawer__list-item--deep{%- else -%}menu-drawer__list-item--flat{%- endif -%}{% if block_settings.drawer_dividers %} menu-drawer__list-item--divider{% endif %}"
               >
                 {% if block_settings.drawer_accordion and link.links != blank %}
@@ -156,7 +164,6 @@
                         {%- for childlink in link.links -%}
                           <li
                             class="menu-drawer__list-item"
-                            style="--menu-drawer-animation-index: {{ forloop.index }};"
                           >
                             <a
                               id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
@@ -217,7 +224,6 @@
                     {%- for childlink in link.links -%}
                       <li
                         class="menu-drawer__list-item"
-                        style="--menu-drawer-animation-index: {{ animation_index }};"
                       >
                         <a
                           href="{{ childlink.url }}"
@@ -264,7 +270,6 @@
               {% assign animation_index = animation_index | plus: 1 %}
               <li
                 class="menu-drawer__list-item"
-                style="--menu-drawer-animation-index: {{ animation_index }};"
               >
                 {%- if link.links != blank -%}
                   {%- comment -%}
@@ -288,7 +293,6 @@
                       id="link-{{ link.handle | escape }}"
                       class="menu-drawer__submenu has-submenu"
                       tabindex="-1"
-                      style="--menu-drawer-animation-index: {{ animation_index }};"
                     >
                       <div class="menu-drawer__inner-submenu">
                         <div class="menu-drawer__nav-buttons menu-drawer__nav-buttons--with-title">
@@ -419,7 +423,6 @@
                                         {%- for grandchildlink in childlink.links -%}
                                           <li
                                             class="menu-drawer__list-item"
-                                            style="--menu-drawer-animation-index: {{ forloop.index }};"
                                           >
                                             <a
                                               id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
@@ -474,7 +477,6 @@
                                     {%- for grandchildlink in childlink.links -%}
                                       <li
                                         class="menu-drawer__list-item"
-                                        style="--menu-drawer-animation-index: {{ forloop.index }};"
                                       >
                                         <a
                                           id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
@@ -522,7 +524,6 @@
                         {% if featured_collections.size > 0 or featured_products_collection.products_count > 0 %}
                           <div
                             class="menu-drawer__featured-content menu-drawer__featured-content--childlist"
-                            style="--menu-drawer-animation-index: {{ linklist.links.size | plus: 1 }};"
                           >
                             <ul class="menu-drawer__featured-content-list list-unstyled">
                               {% if featured_collections.size > 0 %}
@@ -580,7 +581,6 @@
       </nav>
       <div
         class="menu-drawer__utility-links menu-drawer__animated-element"
-        style="--menu-drawer-animation-index: {{ linklist.links.size }};"
       >
         {% liquid
           assign show_language = section.settings.show_language
@@ -732,7 +732,6 @@
       {% if top_level_featured_collections.size > 0 or top_level_featured_products_collection.products_count > 0 %}
         <div
           class="menu-drawer__featured-content"
-          style="--menu-drawer-animation-index: {{ linklist.links.size | plus: 1 }};"
         >
           <ul class="menu-drawer__featured-content-list menu-drawer__animated-element list-unstyled">
             {% if top_level_featured_collections.size > 0 %}

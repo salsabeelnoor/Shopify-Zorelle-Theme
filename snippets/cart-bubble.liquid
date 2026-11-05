@@ -12,10 +12,16 @@
   assign bubble_text_fallback = settings.page_background_color
 %}
 
+{% style %}
+  .cart-bubble {
+    --cart-bubble-background-fallback: {{ bubble_bg_fallback }};
+    --cart-bubble-text-fallback: {{ bubble_text_fallback }};
+  }
+{% endstyle %}
+
 <div
   ref="cartBubble"
   class="cart-bubble{% if cart == empty %} visually-hidden{% endif %}"
-  style="--cart-bubble-background-fallback: {{ bubble_bg_fallback }}; --cart-bubble-text-fallback: {{ bubble_text_fallback }};"
   {% assign item_count = cart.item_count %}
   {% if item_count <= 99 %}
     data-maintain-ratio

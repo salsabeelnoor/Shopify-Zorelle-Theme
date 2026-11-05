@@ -337,6 +337,28 @@
   }
 </script>
 
+{% style %}
+  #header-component {
+    --color-background-top-row: rgba({{ section.settings.background_color_top.rgba | default: settings.page_background_color.rgba }});
+    --color-background-bottom-row: rgba({{ section.settings.background_color_bottom.rgba | default: settings.page_background_color.rgba }});
+    {% if transparent and text_color_transparent != blank %}
+      --color-transparent-text: {{ text_color_transparent }};
+      --color-transparent-text-rgb: {{ text_color_transparent.rgb }};
+      --color-transparent-text-contrast: {{ transparent_text_contrast }};
+    {% endif %}
+    {% if cart_bubble_color_override %}
+      --cart-bubble-background: {{ cart_bubble_background }};
+      --cart-bubble-text: {{ cart_bubble_text }};
+    {% endif %}
+    {% if section.settings.actions_display_style == 'text' %}
+      --header-actions-font-size: {{ section.settings.actions_font_size | default: '1rem' }};
+      --header-actions-font-family: var(--font-{{ section.settings.actions_font | default: 'heading' }}--family);
+      --header-actions-font-weight: var(--font-{{ section.settings.actions_font | default: 'heading' }}--weight);
+      --header-actions-text-case: {{ section.settings.actions_text_case | default: 'none' }};
+    {% endif %}
+  }
+{% endstyle %}
+
 <header-component
   id="header-component"
   class="{{ class }}"
@@ -359,25 +381,6 @@
   {% if has_second_row == false %}
     data-header-rows="single"
   {% endif %}
-  style="
-    --color-background-top-row: rgba({{ section.settings.background_color_top.rgba | default: settings.page_background_color.rgba }});
-    --color-background-bottom-row: rgba({{ section.settings.background_color_bottom.rgba | default: settings.page_background_color.rgba }});
-    {% if transparent and text_color_transparent != blank %}
-      --color-transparent-text: {{ text_color_transparent }};
-      --color-transparent-text-rgb: {{ text_color_transparent.rgb }};
-      --color-transparent-text-contrast: {{ transparent_text_contrast }};
-    {% endif %}
-    {% if cart_bubble_color_override %}
-      --cart-bubble-background: {{ cart_bubble_background }};
-      --cart-bubble-text: {{ cart_bubble_text }};
-    {% endif %}
-    {% if section.settings.actions_display_style == 'text' %}
-      --header-actions-font-size: {{ section.settings.actions_font_size | default: '1rem' }};
-      --header-actions-font-family: var(--font-{{ section.settings.actions_font | default: 'heading' }}--family);
-      --header-actions-font-weight: var(--font-{{ section.settings.actions_font | default: 'heading' }}--weight);
-      --header-actions-text-case: {{ section.settings.actions_text_case | default: 'none' }};
-    {% endif %}
-  "
 >
   <div class="header__underlay header__underlay-closed"></div>
   <div
@@ -460,12 +463,14 @@
 
     {% assign stripped_content = content | strip %}
     {% if stripped_content != blank %}
+      {%- if style != blank -%}
+        {% style %}
+          #header-component .header__row--{{ row }} { {{ style | strip }} }
+        {% endstyle %}
+      {%- endif -%}
       <div
         class="{{ class | strip }}"
         ref="headerRowTop"
-        {%- if style != blank -%}
-          style="{{ style | strip }}"
-        {%- endif -%}
       >
         <div class="header__columns spacing-style">
           {{ content }}
@@ -551,6 +556,9 @@
     z-index: var(--layer-overlay);
 
     &[transparent='not-sticky'][data-sticky-state='active'],
+    /* Always-sticky headers never report sticky-state 'active'; once the page has
+       scrolled away from the top, header.js sets a scroll direction instead. */
+    &[sticky='always']:is([data-scroll-direction='up'], [data-scroll-direction='down']),
     &:has(.menu-list__list-item > .menu-list__link:not([aria-haspopup]):hover) {
       --header-logo-display: unset;
       --header-logo-inverse-display: unset;
@@ -564,7 +572,9 @@
     }
 
     /** For transparent header, apply transparent text color to rows when menu is not hovered */
-    &:not([data-sticky-state='active']):not(:has(.menu-list__link:hover)):not(:has(header-menu[aria-expanded='true']))
+    &:not([data-sticky-state='active'], [sticky='always'][data-scroll-direction='up'], [sticky='always'][data-scroll-direction='down']):not(
+        :has(.menu-list__link:hover)
+      ):not(:has(header-menu[aria-expanded='true']))
       .header__row {
       --color-foreground: var(--color-transparent-text);
       --color-foreground-rgb: var(--color-transparent-text-rgb);
@@ -576,7 +586,7 @@
 
     /* Swap the cart bubble in transparent state only when using the default
        style. Custom bubble colors apply unchanged across header states. */
-    &[data-bubble-style='default']:not([data-sticky-state='active']):not(:has(.menu-list__link:hover)):not(
+    &[data-bubble-style='default']:not([data-sticky-state='active'], [sticky='always'][data-scroll-direction='up'], [sticky='always'][data-scroll-direction='down']):not(:has(.menu-list__link:hover)):not(
         :has(header-menu[aria-expanded='true'])
       )
       .header__row {
@@ -597,6 +607,40 @@
       --color-border: inherit;
       --color-border-rgb: inherit;
       --header-content-transition-timing: var(--submenu-animation-speed) var(--ease-out-cubic);
+    }
+  }
+
+  /* Zorelle: dark gradient behind the transparent (home page) nav. Drawn on the
+     header element itself, behind the underlays and rows, so the menu rows and
+     their overflow measurement are untouched. Hidden whenever the header turns
+     solid: mega menu open, mobile drawer open, or page scrolled. */
+  .header[transparent]::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: var(--layer-lowest);
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgb(54 38 43 / 36%), rgb(var(--palette-darkest-rgb) / 0));;
+    pointer-events: none;
+    transition: opacity var(--animation-speed, 0.2s) var(--ease-out-quad, ease-out);
+  }
+
+  .header[transparent]:is(
+      :has(header-menu[aria-expanded='true']),
+      :has(.menu-list__link:hover),
+      :has(.menu-drawer-container[open]),
+      [data-sticky-state='active'],
+      [sticky='always'][data-scroll-direction='up'],
+      [sticky='always'][data-scroll-direction='down']
+    )::before {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .header[transparent]::before {
+      transition: none;
     }
   }
 

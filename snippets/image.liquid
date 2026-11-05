@@ -28,11 +28,20 @@
     {% assign style_value = style_value | append: 'object-position: inherit;' %}
   {% endif %}
 
-  {{
-    image
-    | image_url: height: image_height
-    | image_tag: class: class, srcset: image_srcset, style: style_value, alt: image_alt_text
-  }}
+  {%- comment -%} Only emit a style attribute when there is something in it. {%- endcomment -%}
+  {%- if style_value != blank -%}
+    {{
+      image
+      | image_url: height: image_height
+      | image_tag: class: class, srcset: image_srcset, style: style_value, alt: image_alt_text
+    }}
+  {%- else -%}
+    {{
+      image
+      | image_url: height: image_height
+      | image_tag: class: class, srcset: image_srcset, alt: image_alt_text
+    }}
+  {%- endif -%}
 {% elsif text_fallback %}
   {{ text_fallback }}
 {% endif %}

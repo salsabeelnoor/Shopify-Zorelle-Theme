@@ -1,0 +1,29 @@
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+.npmrc
+
+# Shopify CLI local state
+.shopify/
+shopify.theme.toml
+
+# Dependencies and build output
+node_modules/
+dist/
+*.log
+npm-debug.log*
+
+# OS and editor clutter
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
