@@ -1,0 +1,306 @@
+{% comment %}
+  Section contract.
+  A row of square collection tiles: image + uppercase label, each linking to a
+  collection. Each tile is a block with a collection picker, an optional image
+  (falls back to the collection image) and an optional label (falls back to the
+  collection title).
+  @example
+  <!-- Add "Collection tiles" to any page; add up to 8 Collection blocks. -->
+{% endcomment %}
+
+{% liquid
+  assign s = section.settings
+  assign columns = s.columns
+
+  case s.aspect_ratio
+    when 'portrait'
+      assign ratio = '4 / 5'
+    when 'landscape'
+      assign ratio = '4 / 3'
+    else
+      assign ratio = '1 / 1'
+  endcase
+
+  if s.section_width == 'full'
+    assign image_sizes = '(min-width: 990px) calc(100vw / ' | append: columns | append: '), (min-width: 750px) 50vw, 100vw'
+  else
+    assign image_sizes = '(min-width: 990px) calc(min(1440px, 92vw) / ' | append: columns | append: '), (min-width: 750px) 46vw, 92vw'
+  endif
+%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .collection-tiles {
+    --tiles-columns: {{ columns }};
+    --tiles-gap: {{ s.gap }}px;
+    --tiles-ratio: {{ ratio }};
+    --tiles-padding-top: {{ s.padding_top }}px;
+    --tiles-padding-bottom: {{ s.padding_bottom }}px;
+  }
+{% endstyle %}
+
+{%- if section.blocks.size > 0 -%}
+  <div class="collection-tiles{% if s.section_width == 'page' %} collection-tiles--page{% endif %}">
+    <ul class="collection-tiles__grid list-unstyled{% if s.section_width == 'page' %} container{% endif %}">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign collection = block.settings.collection
+          assign image = block.settings.image | default: collection.featured_image
+          assign label = block.settings.label | default: collection.title
+          if collection != blank
+            assign url = collection.url
+          else
+            assign url = routes.all_products_collection_url
+          endif
+          if section.index <= 2
+            assign loading = 'eager'
+          else
+            assign loading = 'lazy'
+          endif
+        -%}
+        <li class="collection-tiles__item" {{ block.shopify_attributes }}>
+          <a href="{{ url }}" class="collection-tiles__link">
+            <span class="collection-tiles__media">
+              {%- if image != blank -%}
+                {{
+                  image
+                  | image_url: width: 1200
+                  | image_tag:
+                    widths: '300, 450, 600, 800, 1000, 1200',
+                    sizes: image_sizes,
+                    loading: loading,
+                    alt: '',
+                    class: 'collection-tiles__image'
+                }}
+              {%- else -%}
+                {%- assign placeholder_index = forloop.index0 | modulo: 6 | plus: 1 -%}
+                {{ 'collection-' | append: placeholder_index | placeholder_svg_tag: 'collection-tiles__image collection-tiles__placeholder' }}
+              {%- endif -%}
+            </span>
+            {%- if label != blank -%}
+              <span class="collection-tiles__label">{{ label | escape }}</span>
+            {%- endif -%}
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .collection-tiles {
+    padding-block: var(--tiles-padding-top) var(--tiles-padding-bottom);
+  }
+
+  .collection-tiles__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr); /* one column on mobile */
+    gap: var(--tiles-gap);
+    margin-block: 0;
+    padding: 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    .collection-tiles__grid {
+      grid-template-columns: repeat(min(2, var(--tiles-columns)), minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .collection-tiles__grid {
+      grid-template-columns: repeat(var(--tiles-columns), minmax(0, 1fr));
+    }
+  }
+
+  .collection-tiles__item {
+    min-width: 0;
+  }
+
+  .collection-tiles__link {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: var(--color-foreground);
+    text-decoration: none;
+  }
+
+  .collection-tiles__media {
+    display: block;
+    overflow: hidden;
+    aspect-ratio: var(--tiles-ratio);
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5, 0.05));
+  }
+
+  .collection-tiles__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s var(--ease-out-quad, ease-out);
+  }
+
+  .collection-tiles__link:hover .collection-tiles__image,
+  .collection-tiles__link:focus-visible .collection-tiles__image {
+    transform: scale(1.04);
+  }
+
+  .collection-tiles__label {
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: 0.9375rem;
+    line-height: 1.3;
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.3em;
+    transition: text-decoration-color 0.2s ease;
+  }
+
+  .collection-tiles__link:hover .collection-tiles__label,
+  .collection-tiles__link:focus-visible .collection-tiles__label {
+    text-decoration-color: currentcolor;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .collection-tiles__image {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:categories.collections",
+  "class": "collection-tiles-section",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.section_width",
+      "options": [
+        {
+          "value": "page",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:settings.columns",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "t:settings.gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "t:settings.image_ratio",
+      "options": [
+        {
+          "value": "square",
+          "label": "t:options.square"
+        },
+        {
+          "value": "portrait",
+          "label": "t:options.portrait"
+        },
+        {
+          "value": "landscape",
+          "label": "t:options.landscape"
+        }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tile",
+      "name": "t:names.collection",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "t:settings.collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:settings.image"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:settings.label"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:categories.collections",
+      "blocks": [
+        {
+          "type": "tile"
+        },
+        {
+          "type": "tile"
+        },
+        {
+          "type": "tile"
+        },
+        {
+          "type": "tile"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

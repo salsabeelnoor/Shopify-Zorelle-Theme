@@ -226,10 +226,58 @@
         "padding-block-start": 48,
         "padding-block-end": 48
       }
+    },
+    "collection_tiles_main": {
+      "type": "collection-tiles",
+      "blocks": {
+        "tile_necklaces": {
+          "type": "tile",
+          "settings": {
+            "collection": "necklaces",
+            "label": ""
+          }
+        },
+        "tile_bracelets": {
+          "type": "tile",
+          "settings": {
+            "collection": "bracelets",
+            "label": ""
+          }
+        },
+        "tile_rings": {
+          "type": "tile",
+          "settings": {
+            "collection": "rings",
+            "label": ""
+          }
+        },
+        "tile_earrings": {
+          "type": "tile",
+          "settings": {
+            "collection": "earrings",
+            "label": ""
+          }
+        }
+      },
+      "block_order": [
+        "tile_necklaces",
+        "tile_bracelets",
+        "tile_rings",
+        "tile_earrings"
+      ],
+      "settings": {
+        "section_width": "full",
+        "columns": 4,
+        "gap": 20,
+        "aspect_ratio": "square",
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
     }
   },
   "order": [
     "hero_banner_main",
+    "collection_tiles_main",
     "product_list_fa6P9H"
   ]
 }
