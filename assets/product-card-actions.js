@@ -12,6 +12,9 @@ class CardActions extends HTMLElement {
   /** @type {ResizeObserver | undefined} */
   #resizeObserver;
 
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  #scrollTimer;
+
   connectedCallback() {
     this.#abortController?.abort();
     this.#abortController = new AbortController();
@@ -23,10 +26,14 @@ class CardActions extends HTMLElement {
     this.addEventListener('pointerleave', () => this.setOpen(false), { signal });
 
     const track = this.track;
-    const scrollButton = this.querySelector('[data-card-actions-scroll]');
-    if (track && scrollButton instanceof HTMLButtonElement) {
-      scrollButton.addEventListener('click', () => track.scrollBy({ left: track.clientWidth * 0.75 }), { signal });
+    if (track) {
+      for (const button of this.querySelectorAll('[data-card-actions-scroll]')) {
+        if (!(button instanceof HTMLButtonElement)) continue;
+        const step = button.dataset.cardActionsScroll === 'prev' ? -1 : 1;
+        button.addEventListener('click', () => this.#scrollSizes(step), { signal });
+      }
       track.addEventListener('scroll', () => this.#updateScrollButton(), { signal, passive: true });
+      track.addEventListener('scrollend', () => this.#updateScrollButton(), { signal });
       this.#resizeObserver = new ResizeObserver(() => this.#updateScrollButton());
       this.#resizeObserver.observe(track);
     }
@@ -35,6 +42,7 @@ class CardActions extends HTMLElement {
   disconnectedCallback() {
     this.#abortController?.abort();
     this.#resizeObserver?.disconnect();
+    clearTimeout(this.#scrollTimer);
   }
 
   get toggleButton() {
@@ -87,13 +95,34 @@ class CardActions extends HTMLElement {
     this.toggleButton?.focus();
   };
 
+  /**
+   * Scrolls the size list one step towards the end (1) or the start (-1).
+   * @param {1 | -1} step
+   */
+  #scrollSizes(step) {
+    const track = this.track;
+    if (!track) return;
+    const rtl = getComputedStyle(track).direction === 'rtl' ? -1 : 1;
+    track.scrollBy({ left: track.clientWidth * 0.75 * step * rtl });
+    // Fallback for browsers without scrollend: re-check once smooth scrolling settles.
+    clearTimeout(this.#scrollTimer);
+    this.#scrollTimer = setTimeout(() => this.#updateScrollButton(), 400);
+  }
+
+  /** Shows each arrow only when there are more sizes in that direction. */
   #updateScrollButton() {
     const track = this.track;
-    const scrollButton = this.querySelector('[data-card-actions-scroll]');
-    if (!track || !(scrollButton instanceof HTMLButtonElement)) return;
+    if (!track) return;
 
-    const hasMore = track.scrollLeft + track.clientWidth < track.scrollWidth - 1;
-    scrollButton.hidden = !hasMore;
+    // scrollLeft is negative in RTL; use its distance from the start edge.
+    const fromStart = Math.abs(track.scrollLeft);
+    const canGoBack = fromStart > 1;
+    const canGoForward = fromStart + track.clientWidth < track.scrollWidth - 1;
+
+    for (const button of this.querySelectorAll('[data-card-actions-scroll]')) {
+      if (!(button instanceof HTMLButtonElement)) continue;
+      button.hidden = button.dataset.cardActionsScroll === 'prev' ? !canGoBack : !canGoForward;
+    }
   }
 }
 

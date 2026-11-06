@@ -98,6 +98,17 @@
             role="group"
             aria-label="{{ option.name | escape }}"
           >
+            <button
+              type="button"
+              class="card-actions__scroll card-actions__scroll--prev"
+              aria-label="{{ 'content.pagination.previous' | t }}"
+              data-card-actions-scroll="prev"
+              hidden
+            >
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 10 16">
+                <path d="M8 2L2 8l6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              </svg>
+            </button>
             <div class="card-actions__track" data-card-actions-track>
               {%- for v in product.variants -%}
                 <button
@@ -117,7 +128,7 @@
               type="button"
               class="card-actions__scroll"
               aria-label="{{ 'content.pagination.next' | t }}"
-              data-card-actions-scroll
+              data-card-actions-scroll="next"
               hidden
             >
               <svg aria-hidden="true" focusable="false" viewBox="0 0 10 16">
@@ -157,7 +168,8 @@
   /* Fade in up on card hover / keyboard focus. */
   .product-card:hover .card-actions,
   .card-gallery:hover .card-actions,
-  .card-actions:focus-within,
+  /* :focus-visible only: keyboard focus keeps it open, mouse clicks do not. */
+  .card-actions:has(:focus-visible),
   .card-actions[open] {
     opacity: 1;
     transform: none;
@@ -205,11 +217,14 @@
     opacity: 0.7;
   }
 
-  /* Size picker: replaces the toggle in the same spot. */
+  /* Size picker: replaces the toggle in the same spot.
+     Hidden with visibility (not display: none) so the list keeps its layout and
+     scroll position between hovers. Hidden content is also not focusable. */
   .card-actions__sizes {
     position: absolute;
     inset: 0;
-    display: none;
+    display: flex;
+    visibility: hidden;
     align-items: center;
     gap: 0.25rem;
     padding: 0.375rem;
@@ -219,7 +234,7 @@
 
   @media (hover: hover) {
     .card-actions--sizes:hover .card-actions__sizes {
-      display: flex;
+      visibility: visible;
     }
 
     .card-actions--sizes:hover .card-actions__toggle {
@@ -228,12 +243,12 @@
   }
 
   .card-actions--sizes[open] .card-actions__sizes,
-  .card-actions--sizes:has(.card-actions__sizes:focus-within) .card-actions__sizes {
-    display: flex;
+  .card-actions--sizes:has(.card-actions__sizes :focus-visible) .card-actions__sizes {
+    visibility: visible;
   }
 
   .card-actions--sizes[open] .card-actions__toggle,
-  .card-actions--sizes:has(.card-actions__sizes:focus-within) .card-actions__toggle {
+  .card-actions--sizes:has(.card-actions__sizes :focus-visible) .card-actions__toggle {
     visibility: hidden;
   }
 

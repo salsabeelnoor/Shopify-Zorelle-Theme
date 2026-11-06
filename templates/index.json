@@ -28,6 +28,53 @@
         "overlay_opacity": 45
       }
     },
+    "collection_tiles_main": {
+      "type": "collection-tiles",
+      "blocks": {
+        "tile_necklaces": {
+          "type": "tile",
+          "settings": {
+            "collection": "necklaces",
+            "label": ""
+          }
+        },
+        "tile_bracelets": {
+          "type": "tile",
+          "settings": {
+            "collection": "bracelets",
+            "label": ""
+          }
+        },
+        "tile_rings": {
+          "type": "tile",
+          "settings": {
+            "collection": "rings",
+            "label": ""
+          }
+        },
+        "tile_earrings": {
+          "type": "tile",
+          "settings": {
+            "collection": "earrings",
+            "label": ""
+          }
+        }
+      },
+      "block_order": [
+        "tile_necklaces",
+        "tile_bracelets",
+        "tile_rings",
+        "tile_earrings"
+      ],
+      "settings": {
+        "section_width": "full",
+        "columns": 4,
+        "gap": 20,
+        "aspect_ratio": "square",
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
+    },
     "product_list_fa6P9H": {
       "type": "product-list",
       "blocks": {
@@ -137,6 +184,7 @@
               "type": "_product-card-gallery",
               "name": "t:names.product_card_media",
               "settings": {
+                "personalize_label": "Personalise",
                 "image_ratio": "adapt",
                 "border": "none",
                 "border_width": 1,
@@ -208,67 +256,20 @@
       },
       "name": "t:names.product_list",
       "settings": {
-        "collection": "all",
+        "collection": "best-sellers",
         "layout_type": "grid",
         "carousel_on_mobile": false,
-        "max_products": 8,
+        "max_products": 16,
         "columns": 4,
         "mobile_card_size": "60cqw",
-        "columns_gap": 8,
-        "rows_gap": 24,
+        "columns_gap": 24,
+        "rows_gap": 30,
         "icons_style": "arrow",
         "icons_shape": "none",
         "gap": 28,
         "background_color": "{{ settings.color_palette.background }}",
         "padding-block-start": 48,
         "padding-block-end": 48
-      }
-    },
-    "collection_tiles_main": {
-      "type": "collection-tiles",
-      "blocks": {
-        "tile_necklaces": {
-          "type": "tile",
-          "settings": {
-            "collection": "necklaces",
-            "label": ""
-          }
-        },
-        "tile_bracelets": {
-          "type": "tile",
-          "settings": {
-            "collection": "bracelets",
-            "label": ""
-          }
-        },
-        "tile_rings": {
-          "type": "tile",
-          "settings": {
-            "collection": "rings",
-            "label": ""
-          }
-        },
-        "tile_earrings": {
-          "type": "tile",
-          "settings": {
-            "collection": "earrings",
-            "label": ""
-          }
-        }
-      },
-      "block_order": [
-        "tile_necklaces",
-        "tile_bracelets",
-        "tile_rings",
-        "tile_earrings"
-      ],
-      "settings": {
-        "section_width": "full",
-        "columns": 4,
-        "gap": 20,
-        "aspect_ratio": "square",
-        "padding_top": 40,
-        "padding_bottom": 40
       }
     }
   },

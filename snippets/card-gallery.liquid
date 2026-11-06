@@ -89,10 +89,6 @@
   {% if hover_is_second_slide %}
     data-hover-second-slide
   {% endif %}
-  {% if settings.show_second_image_on_hover and product.media.size > 1 and hover_image == blank %}
-    on:pointerenter="/previewImage"
-    on:pointerleave="/resetImage"
-  {% endif %}
   {% if settings.transition_to_main_product %}
     data-view-transition-to-main-product
   {% endif %}

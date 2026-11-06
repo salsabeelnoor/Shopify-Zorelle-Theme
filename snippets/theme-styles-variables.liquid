@@ -660,6 +660,14 @@
     --quick-add-background: {{ settings.quick_add_background }};
     --quick-add-foreground: {{ settings.quick_add_text }};
   }
+
+  /* Zorelle: product badge appearance from theme settings (was inline on every badge). */
+  .product-badges {
+    --badge-border-radius: {{ settings.badge_corner_radius }}px;
+    --badge-font-family: var(--font-{{ settings.badge_font_family }}--family);
+    --badge-font-weight: var(--font-{{ settings.badge_font_family }}--weight);
+    --badge-text-transform: {{ settings.badge_text_transform }};
+  }
 {% endstyle %}
 
 {% render 'contrast-override',
