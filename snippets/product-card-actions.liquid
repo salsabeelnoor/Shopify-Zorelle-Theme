@@ -1,0 +1,318 @@
+{%- doc -%}
+  Zorelle product card call-to-action, overlaid at the bottom of the card image.
+  It fades up on card hover (always visible on touch screens) and adapts to the product:
+  - tagged "personalized"  -> "Personalise" link to the product page
+  - sold out               -> disabled "Sold out"
+  - one variant            -> "Add to cart" (adds directly)
+  - one option, many sizes -> "Add to cart" that reveals size buttons; a size adds that variant
+  - several options        -> "Choose" link to the product page
+  Add to cart uses Horizon's product-form-component, so the cart drawer and
+  fly-to-cart behaviour are unchanged.
+
+  @param {object} product - The product.
+  @param {string} section_id - The section ID (for the product form).
+  @param {string} [personalize_label] - Label for personalised products.
+
+  @example
+  {% render 'product-card-actions', product: product, section_id: section.id, personalize_label: 'Personalise' %}
+{%- enddoc -%}
+
+{% liquid
+  assign variant = product.selected_or_first_available_variant
+  assign add_label = 'actions.add_to_cart' | t
+  assign form_id = 'CardActions-' | append: section_id | append: '-' | append: product.id
+
+  assign mode = 'sizes'
+  if product.tags contains 'personalized'
+    assign mode = 'personalize'
+  elsif product.available == false
+    assign mode = 'sold-out'
+  elsif product.requires_selling_plan or product.options.size > 1
+    assign mode = 'choose'
+  elsif product.variants_count == 1
+    assign mode = 'single'
+  endif
+%}
+
+<script src="{{ 'product-card-actions.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
+<card-actions class="card-actions card-actions--{{ mode }}">
+  {%- case mode -%}
+    {%- when 'personalize' -%}
+      <a href="{{ product.url }}" class="button-secondary card-actions__button">
+        {{- personalize_label | default: 'Personalise' | escape -}}
+      </a>
+
+    {%- when 'sold-out' -%}
+      <button type="button" class="button-secondary card-actions__button" disabled>
+        {{- 'blocks.sold_out' | t -}}
+      </button>
+
+    {%- when 'choose' -%}
+      <a href="{{ product.url }}" class="button-secondary card-actions__button">
+        {{- 'actions.choose' | t -}}
+      </a>
+
+    {%- when 'single' -%}
+      <product-form-component
+        data-section-id="{{ section_id }}"
+        data-product-id="{{ product.id }}"
+        on:submit="/handleSubmit"
+        class="card-actions__form"
+      >
+        <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
+        {%- form 'product', product, id: form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+          <input type="hidden" name="id" ref="variantId" value="{{ variant.id }}">
+          <input type="hidden" name="quantity" value="{{ variant.quantity_rule.min | default: 1 }}">
+          <button type="submit" name="add" class="button-secondary card-actions__button">
+            {{- add_label -}}
+          </button>
+        {%- endform -%}
+      </product-form-component>
+
+    {%- when 'sizes' -%}
+      {%- assign option = product.options_with_values | first -%}
+      {%- assign sizes_id = form_id | append: '-sizes' -%}
+      <button
+        type="button"
+        class="button-secondary card-actions__button card-actions__toggle"
+        aria-expanded="false"
+        aria-controls="{{ sizes_id }}"
+        data-card-actions-toggle
+      >
+        {{- add_label -}}
+      </button>
+      <product-form-component
+        data-section-id="{{ section_id }}"
+        data-product-id="{{ product.id }}"
+        on:submit="/handleSubmit"
+        class="card-actions__form"
+      >
+        <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
+        {%- form 'product', product, id: form_id, novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+          <input type="hidden" name="id" ref="variantId" value="{{ variant.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <div
+            id="{{ sizes_id }}"
+            class="card-actions__sizes"
+            role="group"
+            aria-label="{{ option.name | escape }}"
+          >
+            <div class="card-actions__track" data-card-actions-track>
+              {%- for v in product.variants -%}
+                <button
+                  type="button"
+                  class="card-actions__size"
+                  data-variant-id="{{ v.id }}"
+                  aria-label="{{ add_label }}: {{ v.option1 | escape }}"
+                  {% unless v.available %}
+                    disabled
+                  {% endunless %}
+                >
+                  {{- v.option1 | escape -}}
+                </button>
+              {%- endfor -%}
+            </div>
+            <button
+              type="button"
+              class="card-actions__scroll"
+              aria-label="{{ 'content.pagination.next' | t }}"
+              data-card-actions-scroll
+              hidden
+            >
+              <svg aria-hidden="true" focusable="false" viewBox="0 0 10 16">
+                <path d="M2 2l6 6-6 6" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        {%- endform -%}
+      </product-form-component>
+  {%- endcase -%}
+</card-actions>
+
+{% stylesheet %}
+  /*
+    Product card CTA. Uses the shared button system (assets/buttons.css) with a light
+    card surface; hover fills with the foreground colour (the "normal" button hover).
+  */
+  .card-actions {
+    --card-actions-inset: 0.75rem;
+
+    /* Page-level palette colours: product cards can set --color-background to
+       transparent, which made the button see-through. */
+    --card-actions-surface: var(--palette-lightest);
+    --card-actions-ink: var(--palette-darkest);
+
+    position: absolute;
+    inset: auto var(--card-actions-inset) var(--card-actions-inset);
+    z-index: 3;
+    opacity: 0;
+    transform: translateY(0.75rem);
+    transition:
+      opacity 0.35s var(--ease-out-quad, ease-out),
+      transform 0.35s var(--ease-out-quad, ease-out);
+    pointer-events: none;
+  }
+
+  /* Fade in up on card hover / keyboard focus. */
+  .product-card:hover .card-actions,
+  .card-gallery:hover .card-actions,
+  .card-actions:focus-within,
+  .card-actions[open] {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  /* Touch screens have no hover: keep the button visible. */
+  @media (hover: none) {
+    .card-actions {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+  }
+
+  .card-actions__form {
+    display: block;
+  }
+
+  /* Light surface at rest; solid dark fill with light text on hover/focus (no sweep). */
+  .card-actions__button.button-secondary {
+    --button-color: var(--card-actions-ink);
+    --button-background-color: var(--card-actions-surface);
+    --btn-rest-background: var(--card-actions-surface);
+    --button-border-color: rgb(var(--palette-darkest-rgb) / var(--opacity-20, 0.2));
+    --btn-min-height: 2.75rem;
+    --btn-padding-block: 0.75rem;
+
+    width: 100%;
+    font-size: 0.75rem;
+    background-image: none;
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .card-actions__button.button-secondary:is(:hover, :focus-visible):not(:disabled) {
+    --button-color: var(--card-actions-surface);
+    --button-background-color: var(--card-actions-ink);
+    --button-border-color: var(--card-actions-ink);
+  }
+
+  .card-actions__button[disabled] {
+    opacity: 0.7;
+  }
+
+  /* Size picker: replaces the toggle in the same spot. */
+  .card-actions__sizes {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem;
+    background: var(--card-actions-surface);
+    box-shadow: inset 0 0 0 1px rgb(var(--palette-darkest-rgb) / var(--opacity-20, 0.2));
+  }
+
+  @media (hover: hover) {
+    .card-actions--sizes:hover .card-actions__sizes {
+      display: flex;
+    }
+
+    .card-actions--sizes:hover .card-actions__toggle {
+      visibility: hidden;
+    }
+  }
+
+  .card-actions--sizes[open] .card-actions__sizes,
+  .card-actions--sizes:has(.card-actions__sizes:focus-within) .card-actions__sizes {
+    display: flex;
+  }
+
+  .card-actions--sizes[open] .card-actions__toggle,
+  .card-actions--sizes:has(.card-actions__sizes:focus-within) .card-actions__toggle {
+    visibility: hidden;
+  }
+
+  .card-actions__track {
+    display: flex;
+    flex: 1;
+    gap: 0.375rem;
+    min-width: 0;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+
+  .card-actions__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card-actions__size {
+    flex: 0 0 auto;
+    min-width: 2.5rem;
+    height: 2rem;
+    padding: 0 0.625rem;
+    border: 1px solid rgb(var(--palette-darkest-rgb) / var(--opacity-20, 0.2));
+    background: transparent;
+    color: var(--card-actions-ink);
+    font-family: var(--font-body--family);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--card-actions-ink);
+      border-color: var(--card-actions-ink);
+      color: var(--card-actions-surface);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--card-actions-ink);
+      outline-offset: 1px;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      text-decoration: line-through;
+      cursor: not-allowed;
+      background: transparent;
+      color: var(--card-actions-ink);
+    }
+  }
+
+  .card-actions__scroll {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 1.5rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--card-actions-ink);
+    cursor: pointer;
+
+    &[hidden] {
+      display: none;
+    }
+
+    svg {
+      width: 0.5rem;
+      height: 0.8rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-actions,
+    .card-actions__track {
+      transition: none;
+      scroll-behavior: auto;
+    }
+  }
+{% endstylesheet %}

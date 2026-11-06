@@ -22,6 +22,24 @@
     }
   }
 
+  /* Zorelle: product-card lists use the same 4 / 3 (≤1024) / 2 (≤768) / 1 (≤640) grid
+     as collection pages. Other resource lists (collections, blogs) are unchanged. */
+  .resource-list.resource-list--grid:has(product-card) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    @media screen and (max-width: 1024px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @media screen and (max-width: 768px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media screen and (max-width: 640px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
   .resource-list--grid {
     display: grid;
     gap: var(--resource-list-row-gap) var(--resource-list-column-gap);

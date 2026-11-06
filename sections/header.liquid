@@ -679,6 +679,10 @@
   #header-component {
     --submenu-height: 0px;
     --full-open-header-height: 0px;
+
+    /* Zorelle: header uses the site container width (base.css --container-max-width). */
+    --page-content-width: var(--container-max-width);
+    --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
   }
 
   #header-group:has(#header-component[sticky]) {

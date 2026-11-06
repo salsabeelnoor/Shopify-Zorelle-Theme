@@ -26,8 +26,13 @@
         </div>
       </div>
     {%- endif -%}
-    {% if product.available and settings.quick_add or settings.mobile_quick_add %}
-      {% render 'quick-add', product: product, section_id: section.id %}
+    {%- comment -%} Zorelle: card CTA (Add to cart / sizes / Personalise) replaces Horizon's quick-add icon. {%- endcomment -%}
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      {% render 'product-card-actions',
+        product: product,
+        section_id: section.id,
+        personalize_label: block.settings.personalize_label
+      %}
     {% endif %}
   {% endunless %}
 {% endcapture %}
@@ -54,6 +59,12 @@
     {
       "type": "paragraph",
       "content": "t:content.resource_reference_product_media"
+    },
+    {
+      "type": "text",
+      "id": "personalize_label",
+      "label": "t:settings.label",
+      "default": "Personalise"
     },
     {
       "type": "select",

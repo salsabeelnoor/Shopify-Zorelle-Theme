@@ -19,6 +19,34 @@
     overflow: hidden;
   }
 
+  /* Zorelle: product card title (500 weight face loaded in theme-styles-variables). */
+  product-card a.user-select-text .text-block > * {
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+
+  /* Zorelle: product card price (size from the price block setting: 14px).
+     .custom-typography is repeated to outrank the block's own typography variables. */
+  product-card product-price.custom-typography,
+  product-card product-price.custom-typography :is([ref='priceContainer'], .price, .price-item__group, bdi) {
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* 4px between the sale price and the compare-at price. inline-flex sizes to its
+     content (the price block is shrink-wrapped, so a block flex box collapsed to 0). */
+  product-card product-price [ref='priceContainer'] {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    column-gap: 4px;
+    white-space: nowrap;
+  }
+
+  product-card product-price .compare-at-price {
+    margin: 0;
+  }
+
   .product-grid__card swatches-variant-picker-component overflow-list::part(list) {
     flex-wrap: wrap;
   }

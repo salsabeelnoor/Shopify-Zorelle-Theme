@@ -213,6 +213,24 @@
     }
   }
 
+  /* Zorelle card grid: 4 per row, 3 at ≤1024px, 2 at ≤768px, 1 at ≤640px.
+     Overrides the card-size auto-fill (zoom-out view keeps its own grid). */
+  .product-grid.product-grid--grid:not([product-grid-view='zoom-out']) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+
+    @media screen and (max-width: 1024px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @media screen and (max-width: 768px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media screen and (max-width: 640px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
   .product-grid :is(h3, p) {
     margin: 0;
   }

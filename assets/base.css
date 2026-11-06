@@ -275,13 +275,13 @@ p:empty {
 /* Set up page widths & margins. Gutters grow to the device safe-area insets (viewport-fit=cover)
    so section backgrounds bleed edge-to-edge while content stays clear of the notch; taking the
    larger of both insets keeps the centered page grid symmetric. */
-/* Zorelle container: content spans 92% of the viewport (4% gutter each side), capped by
-   the page width setting (Narrow = 1440px). Matches the .container utility below so
-   every section, the header, and custom blocks share one content edge. */
+/* Zorelle container: ONE content width for the whole site.
+   .container, the header and every Horizon section (page width "Narrow") all use
+   these values, so text lines up everywhere. Change them here only. */
 :root {
-  --container-max-width: 1440px;
-  --container-width: 92%;
-  --container-gutter: 4vw;
+  --container-max-width: 1800px;
+  --container-gutter: max(1rem, 2vw); /* space on each side (≈96% width) */
+  --container-width: calc(100% - var(--container-gutter) * 2);
 }
 
 .page-width-wide,
@@ -307,8 +307,8 @@ p:empty {
 }
 
 .page-width-narrow {
-  /* NOTE: This results in a page width of 1400px because of how we set up margins with grid */
-  --page-content-width: var(--narrow-page-width);
+  /* Zorelle: the "Narrow" page width follows the site container. */
+  --page-content-width: var(--container-max-width);
   --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
 }
 

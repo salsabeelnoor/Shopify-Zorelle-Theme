@@ -1,5 +1,11 @@
 {% style %}
   {%- liquid
+    # Zorelle: medium (500) weight of the body font, used by product card titles.
+    assign primary_font_medium = settings.type_body_font | font_modify: 'weight', '500'
+    if primary_font_medium != blank
+      echo primary_font_medium | font_face: font_display: 'swap'
+    endif
+
     assign rendered_fonts = ''
 
     assign primary_font = settings.type_body_font
@@ -135,7 +141,7 @@
     --theme-drawer-width: 30rem;
     --narrow-content-width: 36rem;
     --normal-content-width: 42rem;
-    --narrow-page-width: 90rem;
+    --narrow-page-width: 112.5rem;
     --normal-page-width: 120rem;
     --wide-page-width: 150rem;
 

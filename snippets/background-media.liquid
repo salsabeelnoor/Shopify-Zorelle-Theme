@@ -86,8 +86,8 @@
         else
           case settings.page_width
             when 'narrow'
-              # Narrow: max 90rem (1440px)
-              assign sizes = '(min-width: 1440px) 1440px, 100vw'
+              # Narrow: max 112.5rem (1800px), the site container
+              assign sizes = '(min-width: 1800px) 1800px, 100vw'
             when 'normal'
               # Normal: max 120rem (1920px)
               assign sizes = '(min-width: 1920px) 1920px, 100vw'

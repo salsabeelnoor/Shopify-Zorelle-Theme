@@ -13,6 +13,15 @@
   assign block_settings = block.settings
   assign image_sizes = '(min-width: 750px) 50vw, 100vw'
 
+  # Zorelle: hover image crossfades over the first image. Uses the product metafield
+  # custom.hover_image when set, otherwise the second product image.
+  assign hover_image = product.metafields.custom.hover_image.value
+  if hover_image == blank and settings.show_second_image_on_hover and product.media.size > 1
+    assign second_media = product.media | reject: 'src', product.featured_media | first
+    assign hover_image = second_media.preview_image
+    assign hover_is_second_slide = true
+  endif
+
   # Check if product has badges and determine position
   assign has_badges = false
   assign badge_position = null
@@ -77,7 +86,10 @@
     --gallery-aspect-ratio: {{ ratio }};
   "
   data-product-id="{{ product.id }}"
-  {% if settings.show_second_image_on_hover and product.media.size > 1 %}
+  {% if hover_is_second_slide %}
+    data-hover-second-slide
+  {% endif %}
+  {% if settings.show_second_image_on_hover and product.media.size > 1 and hover_image == blank %}
     on:pointerenter="/previewImage"
     on:pointerleave="/resetImage"
   {% endif %}
@@ -210,6 +222,18 @@
           attributes: slideshow_attributes
         %}
       {%- endif -%}
+      {%- if hover_image != blank -%}
+        {{
+          hover_image
+          | image_url: width: 1200
+          | image_tag:
+            widths: '300, 450, 600, 800, 1000, 1200',
+            sizes: image_sizes,
+            loading: 'lazy',
+            alt: '',
+            class: 'card-gallery__hover-image'
+        }}
+      {%- endif -%}
     </a>
   {% elsif product != blank and product.media.size == 0 %}
     <div class="product-card-gallery__title-placeholder">
@@ -240,6 +264,10 @@
   {{ children }}
 </div>
 
+{%- if hover_is_second_slide -%}
+  <script src="{{ 'card-hover-slider.js' | asset_url }}" type="module" fetchpriority="low"></script>
+{%- endif -%}
+
 {% render 'slideshow-styles' %}
 {% render 'product-media-container-styles' %}
 
@@ -254,6 +282,44 @@
   @container (max-width: 70px) {
     .card-gallery:hover .quick-add__button {
       display: none;
+    }
+  }
+
+  /* Zorelle: hover image (second image or custom hover image) crossfades over the first. */
+  .card-gallery__hover-image {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @media (hover: hover) {
+    .card-gallery:hover .card-gallery__hover-image {
+      opacity: 1;
+    }
+
+    /* Hidden instantly once the first arrow click of a hover is used (card-hover-slider.js). */
+    .card-gallery[data-hover-engaged] .card-gallery__hover-image {
+      opacity: 0;
+      transition: none;
+    }
+
+    /* Hide it instantly once the carousel arrows move off the first slide,
+       so the slider itself has no added transition. */
+    .card-gallery:has(slideshow-slide:first-of-type[aria-hidden='true']) .card-gallery__hover-image {
+      opacity: 0;
+      transition: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card-gallery__hover-image {
+      transition: none;
     }
   }
 
