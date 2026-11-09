@@ -36,6 +36,41 @@
     flex-basis: 51%;
   }
 
+  /* Zorelle: dark quantity text (the global input text colour is the accent) and an
+     outlined Add to cart that sweeps to the dark palette colour on hover. */
+  .product-form-buttons .quantity-selector {
+    /* The number, minus and plus all read this variable. */
+    --color-input-text: var(--color-foreground);
+  }
+
+  .buy-buttons-block .product-form-buttons .add-to-cart-button.button-secondary {
+    --btn-fill: var(--palette-darkest);
+    --btn-hover-text: var(--palette-lightest);
+    --btn-hover-border: var(--palette-darkest);
+  }
+
+  /* Zorelle: on desktop, quantity + Add to cart + Buy it now share one row when it fits
+     (the buttons split the remaining width). Each button keeps room for its label on one
+     line (min 9.5rem), so in a narrow column they wrap onto the next line instead of
+     squeezing; full-width rows such as errors still wrap. */
+  @media screen and (min-width: 990px) {
+    .product-form-buttons:not(.product-form-buttons--stacked)
+      > *:not(.quantity-selector-wrapper, .quantity-rules, .quantity-label, .volume-pricing, .product-form-text__error) {
+      flex-basis: 0;
+      min-width: 9.5rem;
+    }
+
+    /* Narrower buttons in the shared row: keep the label on one line, no cart icon. */
+    .product-form-buttons:not(.product-form-buttons--stacked) .add-to-cart-button {
+      padding-inline: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .product-form-buttons:not(.product-form-buttons--stacked) .add-to-cart-icon {
+      display: none;
+    }
+  }
+
   .product-form-buttons button {
     width: 100%;
     padding-block: var(--padding-lg);

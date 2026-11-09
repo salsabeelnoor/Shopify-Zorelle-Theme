@@ -161,6 +161,27 @@
     color: var(--variant-option-label-color-subdued, var(--color-foreground-subdued));
   }
 
+  /* Zorelle: option labels as small uppercase "NAME: value" (value keeps its own case). */
+  .variant-option--buttons legend,
+  .variant-option[data-testid='variant-option-single'] {
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .variant-option__name::after {
+    content: ':';
+  }
+
+  .variant-option--buttons .variant-option__swatch-value,
+  .variant-option[data-testid='variant-option-single'] .variant-option__swatch-value {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
     .variant-option__button-label,
     .variant-option__select-wrapper,

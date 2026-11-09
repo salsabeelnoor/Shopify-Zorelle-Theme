@@ -328,4 +328,74 @@
   quick-add-dialog[header-sticky-active] .product-details.sticky-content--desktop {
     --sticky-header-offset: var(--header-height);
   }
+
+  /*
+    Zorelle: product page layout breakpoints (equal-columns layout, media on the left).
+    - 1201–1440px: details run to the container's end (see _product-details.liquid).
+    - 961–1200px: details column at most 400px; the images take the rest.
+    - 750–960px: stacked; images (with thumbnails) centred at most 738px, details full
+      container width.
+    Below 750px Horizon's own mobile layout applies.
+  */
+  /* The margin tracks are flexible (minmax(…, 1fr)), so the central tracks need exact
+     widths derived from the central column width, like Horizon's own half layout. */
+  @media screen and (min-width: 961px) and (max-width: 1200px) {
+    .product-information__grid:not(.product-information--media-none).product-information__grid--half.product-information--media-left {
+      --zorelle-details-track: min(
+        calc(var(--full-page-grid-central-column-width) / 2),
+        calc(400px + var(--gap, 0px) / 2)
+      );
+
+      grid-template-columns:
+        var(--full-page-grid-margin)
+        calc(var(--full-page-grid-central-column-width) - var(--zorelle-details-track))
+        var(--zorelle-details-track)
+        var(--full-page-grid-margin);
+    }
+  }
+
+  /* Below 750px: the image (with its thumbnails below) stays inside the container like
+     the details, instead of Horizon's edge-to-edge image. */
+  @media screen and (max-width: 749px) {
+    .product-information__grid .product-information__media {
+      grid-column: 2 / 3;
+    }
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 960px) {
+    .product-information__grid:not(.product-information--media-none).product-information__grid--half.product-information--media-left {
+      grid-template-columns:
+        var(--full-page-grid-margin)
+        var(--full-page-grid-central-column-width)
+        var(--full-page-grid-margin);
+      row-gap: var(--gap);
+    }
+
+    /* Doubled classes: Horizon's half-layout placement is nested in an :is() list that
+       includes a :has() variant, which raises its specificity by one class. */
+    .product-information__grid:not(.product-information--media-none).product-information__grid--half.product-information--media-left
+      .product-information__media.product-information__media,
+    .product-information__grid:not(.product-information--media-none).product-information__grid--half.product-information--media-left
+      .product-details.product-details {
+      grid-column: 2 / 3;
+      width: 100%;
+      padding-inline: 0;
+    }
+
+    /* Only the images + thumbnails are capped (738px, centred); the details use the
+       container's full width. */
+    .product-information__grid:not(.product-information--media-none).product-information__grid--half.product-information--media-left
+      .product-information__media.product-information__media {
+      /* Horizon sets min-width: 100% on the media column, which would beat max-width. */
+      min-width: 0;
+      max-width: 738px;
+      margin-inline: auto;
+    }
+
+    /* Stacked: nothing should stick while scrolling. */
+    .product-information__grid--half .sticky-content,
+    .product-information__grid--half .sticky-content--desktop {
+      position: static;
+    }
+  }
 {% endstylesheet %}

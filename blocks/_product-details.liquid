@@ -72,6 +72,58 @@
       align-self: var(--details-position, 'flex-start');
     }
   }
+
+  /* Zorelle: details start at the gallery side. Above 1440px they keep clear of the right
+     edge (at most 640px or 88% of the column); at 1440px and below they run to the
+     container's end (column widths per breakpoint: product-information-content.liquid). */
+  @media screen and (min-width: 750px) {
+    .product-details {
+      justify-content: flex-start;
+    }
+  }
+
+  @media screen and (min-width: 1441px) {
+    .product-details > .group-block {
+      max-width: min(40rem, 88%);
+    }
+  }
+
+  /* Zorelle: accordions in the product details (Description, Shipping & returns) use
+     small uppercase headings with the theme's dividers. */
+  .product-details .accordion .details__header {
+    padding-block: 1.125rem;
+    font-family: var(--font-body--family);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Smoother open/close: longer, softer ease-out than the theme default. Only the
+     timing changes; Horizon's animated properties stay as they are. */
+  .product-details accordion-custom details::details-content,
+  .product-details accordion-custom details .details-content {
+    transition-duration: 0.45s;
+    transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  /* Title: 1px letter spacing. */
+  .product-details .text-block h1 {
+    letter-spacing: 1px;
+  }
+
+  /* Sale: the original (crossed-out) price is smaller and softer than the current one. */
+  .product-details product-price .compare-at-price {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-60, 0.6));
+    font-size: 0.7em;
+  }
+
+  .product-details .accordion .details-content {
+    padding-block-end: 1.25rem;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-80, 0.8));
+    font-size: 0.875rem;
+    line-height: 1.75;
+  }
 {% endstylesheet %}
 
 {% schema %}

@@ -452,6 +452,22 @@
       {% endcapture %}
     {% endif %}
 
+    {%- comment -%}
+      Zorelle: "1 / 3" image counter over the image (shown at 960px and below, CSS).
+      Rendered with the arrows so it sits inside slideshow-container; kept in step by
+      media-gallery-counter.js. Thumbnail buttons already announce the slide, so it is
+      hidden from screen readers.
+    {%- endcomment -%}
+    {%- if media_presentation == 'carousel' and sorted_media.size > 1 -%}
+      {% capture slideshow_arrows %}
+        {{- slideshow_arrows -}}
+        <span class="media-gallery__counter" aria-hidden="true">
+          <span data-media-counter-current>1</span> / {{ sorted_media.size }}
+        </span>
+      {% endcapture %}
+      <script src="{{ 'media-gallery-counter.js' | asset_url }}" type="module" fetchpriority="low"></script>
+    {%- endif -%}
+
     {% render 'slideshow',
       ref: 'slideshow',
       class: slideshow_class,
@@ -1063,15 +1079,12 @@
     }
   }
 
+  /* Zorelle: no edge padding on the arrows themselves. They are round buttons now, and
+     the edge spacing comes from slideshow-arrows' padding-inline (see the Zorelle gallery
+     arrow rules below); padding here stretched the circles. */
   .media-gallery--carousel slideshow-arrows .slideshow-control {
-    padding-inline: 0 var(--padding-md);
+    padding-inline: 0;
     opacity: 1;
-  }
-
-  /* The end-side padding reads as edge spacing only through the previous control's
-     flip-x mirror; RTL swaps which control is mirrored, so swap the padding side too */
-  [dir='rtl'] .media-gallery--carousel slideshow-arrows .slideshow-control {
-    padding-inline: var(--padding-md) 0;
   }
 
   @media screen and (max-width: 749px) {
@@ -1092,5 +1105,221 @@
 
   slideshow-slide.product-media-container--tallest {
     content-visibility: visible;
+  }
+
+  /* Zorelle: 961–1024px (two columns, narrow image) the left thumbnails move below the
+     image as a row. Same selector chain as Horizon's left layout above, so it applies. */
+  @media screen and (min-width: 961px) and (max-width: 1024px) {
+    .media-gallery--carousel
+      slideshow-component:has(slideshow-controls[thumbnails]):has(slideshow-controls[pagination-position='left']) {
+      grid-template:
+        'container' auto
+        'arrows' min-content
+        'controls' auto
+        / minmax(0, 1fr);
+      row-gap: 0.75rem;
+    }
+
+    .media-gallery--carousel slideshow-controls[thumbnails][pagination-position='left'] {
+      order: 0;
+      height: auto;
+      min-height: 0;
+
+      .slideshow-controls__thumbnails-container {
+        position: static;
+        overflow: auto hidden;
+      }
+
+      .slideshow-controls__thumbnails {
+        flex-direction: row;
+        justify-content: flex-start;
+        margin-inline: 0;
+      }
+    }
+  }
+
+  /* Zorelle: the sticky side thumbnails stop 55px from the top, clear of the header.
+     Horizon uses var(--sticky-header-offset, 0), which isn't defined here, so it was 0.
+     Leading media-gallery makes this one step more specific than Horizon's rule. */
+  @media screen and (min-width: 750px) {
+    media-gallery
+      slideshow-controls[thumbnails]:is([pagination-position='right'], [pagination-position='left']):not(
+        [controls-on-media]
+      )
+      .slideshow-controls__thumbnails-container {
+      top: 55px;
+    }
+  }
+
+  /* Zorelle: "1 / 3" counter pill at the bottom centre of the image, 960px and below. */
+  .media-gallery__counter {
+    position: absolute;
+    inset-block-end: 1rem;
+    inset-inline-start: 50%;
+    z-index: var(--layer-raised, 2);
+    display: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: var(--palette-lightest);
+    color: var(--palette-darkest);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
+    white-space: nowrap;
+    pointer-events: none;
+    translate: -50% 0;
+  }
+
+  [dir='rtl'] .media-gallery__counter {
+    translate: 50% 0;
+  }
+
+  @media screen and (max-width: 960px) {
+    .media-gallery__counter {
+      display: block;
+    }
+  }
+
+  /* Zorelle: smaller gallery arrows at 1024px and below: 30px circle, 16px icon
+     (same size as the product card image arrows, card-gallery.liquid). */
+  @media screen and (max-width: 1024px) {
+    media-gallery slideshow-arrows .slideshow-control.slideshow-control {
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      min-height: 30px;
+
+      .svg-wrapper,
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  /* Zorelle: below 750px the thumbnails under the image are 64px and left-aligned
+     (Horizon: clamp(44px, 7vw, 72px), centred with auto margins). */
+  @media screen and (max-width: 749px) {
+    /* No side padding, so the first thumbnail lines up with the image edge. */
+    media-gallery slideshow-controls[thumbnails] .slideshow-controls__thumbnails {
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+
+    media-gallery slideshow-controls[thumbnails] .slideshow-control.slideshow-controls__thumbnail {
+      width: 64px;
+
+      /* Focus ring drawn inside, so the scroll container cannot clip it. */
+      &:focus-visible {
+        outline-offset: -2px;
+      }
+    }
+  }
+
+  /* Zorelle: gallery arrows on a light circle so they read on any photo, inset from the
+     image edges. They fade in on hover / keyboard focus. Fade only: Horizon's slide-in
+     moved them past the edge, where the image's overflow clipped them.
+     Specificity (0,4,2) beats base.css's hover and focus-within slide-in rules (0,3,x). */
+  media-gallery slideshow-arrows {
+    padding-inline: 1rem;
+    mix-blend-mode: normal;
+  }
+
+  media-gallery
+    slideshow-arrows
+    .slideshow-control.slideshow-control.slideshow-control:is(
+      .slideshow-control--previous,
+      .slideshow-control--next
+    ) {
+    opacity: 0;
+    animation: none;
+    transition:
+      opacity 0.25s ease,
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  media-gallery
+    slideshow-component:is(:hover, :focus-within)
+    slideshow-arrows
+    .slideshow-control.slideshow-control.slideshow-control:is(
+      .slideshow-control--previous,
+      .slideshow-control--next
+    ) {
+    opacity: 1;
+  }
+
+  /* Touch screens have no hover: keep them visible. */
+  @media (hover: none) {
+    media-gallery
+      slideshow-arrows
+      .slideshow-control.slideshow-control.slideshow-control:is(
+        .slideshow-control--previous,
+        .slideshow-control--next
+      ) {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    media-gallery slideshow-arrows .slideshow-control {
+      transition: none;
+    }
+  }
+
+  media-gallery slideshow-arrows .slideshow-control {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--palette-lightest);
+    box-shadow: 0 1px 6px rgb(var(--palette-darkest-rgb) / var(--opacity-15, 0.15));
+    color: var(--palette-darkest);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+
+    &:hover {
+      background: var(--palette-darkest);
+      color: var(--palette-lightest);
+    }
+  }
+
+  /* Zorelle: gallery thumbnails. Unselected are faded; hover brightens them with a light
+     frame; the selected one is fully clear with a solid dark frame and a small gap
+     around the image. Keyboard focus keeps a visible outline. */
+  media-gallery .slideshow-control.slideshow-controls__thumbnail {
+    padding: 3px;
+    border: 1px solid transparent;
+    opacity: 0.55;
+    transition:
+      opacity 0.2s ease,
+      border-color 0.2s ease;
+
+    &:hover {
+      border-color: rgb(var(--palette-darkest-rgb) / var(--opacity-30, 0.3));
+      opacity: 1;
+    }
+
+    &:is([aria-selected='true']) {
+      border-color: var(--palette-darkest);
+      outline: none;
+      opacity: 1;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--palette-darkest);
+      outline-offset: 2px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    media-gallery .slideshow-control.slideshow-controls__thumbnail {
+      transition: none;
+    }
   }
 {% endstylesheet %}

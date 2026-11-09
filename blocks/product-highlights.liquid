@@ -1,0 +1,82 @@
+{%- doc -%}
+  A light box with a check-marked list of short selling points (e.g. shipping, returns).
+  One item per line in the "Items" setting; empty lines are skipped.
+{%- enddoc -%}
+
+{%- assign items = block.settings.items | newline_to_br | split: '<br />' -%}
+
+{%- capture list_items -%}
+  {%- for item in items -%}
+    {%- assign item_text = item | strip -%}
+    {%- if item_text != blank -%}
+      <li class="product-highlights__item">
+        <svg class="product-highlights__icon" aria-hidden="true" focusable="false" viewBox="0 0 16 16">
+          <path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>{{ item_text | escape }}</span>
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if list_items != blank -%}
+  <ul class="product-highlights list-unstyled" {{ block.shopify_attributes }}>
+    {{ list_items }}
+  </ul>
+{%- elsif request.design_mode -%}
+  <div class="product-highlights product-highlights--empty" {{ block.shopify_attributes }}></div>
+{%- endif -%}
+
+{% stylesheet %}
+  .product-highlights {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgb(var(--palette-darkest-rgb) / var(--opacity-10, 0.1));
+    background: rgb(var(--palette-darkest-rgb) / var(--opacity-5, 0.05));
+    color: var(--color-foreground);
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .product-highlights__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .product-highlights__icon {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    margin-block-start: 0.1em;
+  }
+
+  .product-highlights--empty {
+    min-height: 3rem;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Highlights",
+  "tag": null,
+  "settings": [
+    {
+      "type": "textarea",
+      "id": "items",
+      "label": "Items (one per line)",
+      "default": "Free standard shipping on qualifying orders\n100% waterproof - never tarnishes\n14 days easy returns"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Highlights",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

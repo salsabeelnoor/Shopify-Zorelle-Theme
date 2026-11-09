@@ -1,0 +1,60 @@
+{%- doc -%}
+  Returns one part of a Zorelle product description.
+
+  Product descriptions are imported HTML with inline styles: an intro paragraph, a badges
+  row, an optional note, then a "Product Details" <h4> + <table>. This removes every
+  inline style (so the theme's fonts and palette apply) and returns either:
+  - 'summary': everything before the details table (intro, badges, note)
+  - 'details': only the <table> (the caller renders its own heading)
+  When a description has no table (e.g. edited in the admin), 'summary' returns the whole
+  description and 'details' returns nothing.
+
+  @param {string} description - The product description HTML.
+  @param {string} part - 'summary' or 'details'.
+
+  @example
+  {% render 'product-description-parts', description: closest.product.description, part: 'summary' %}
+{%- enddoc -%}
+
+{%- liquid
+  # 1. Drop inline style attributes: split on ' style="' and cut each chunk up to its closing quote.
+  assign chunks = description | split: ' style="'
+  capture clean
+    for chunk in chunks
+      if forloop.first
+        echo chunk
+      else
+        assign style_value = chunk | split: '"' | first
+        echo chunk | remove_first: style_value | remove_first: '"'
+      endif
+    endfor
+  endcapture
+
+  assign has_table = false
+  if clean contains '<table' and clean contains '<h4'
+    assign has_table = true
+  endif
+
+  if part == 'details'
+    if has_table
+      # 2a. Only the table.
+      assign after_table_tag = clean | split: '<table' | last
+      assign table_body = after_table_tag | split: '</table>' | first
+      echo '<table' | append: table_body | append: '</table>'
+    endif
+  else
+    if has_table
+      # 2b. Everything before the details heading, minus the details wrapper's opening
+      # <div>, plus one </div> to close the description wrapper that was cut off.
+      assign before_heading = clean | split: '<h4' | first | strip
+      assign last_five = before_heading | slice: -5, 5
+      if last_five == '<div>'
+        assign keep_length = before_heading.size | minus: 5
+        assign before_heading = before_heading | slice: 0, keep_length
+      endif
+      echo before_heading | append: '</div>'
+    else
+      echo clean
+    endif
+  endif
+-%}

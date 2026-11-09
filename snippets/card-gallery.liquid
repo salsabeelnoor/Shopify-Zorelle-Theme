@@ -370,6 +370,26 @@
     }
   }
 
+  /* 1024px and below: 30px arrow buttons with a 16px icon (same as the product page
+     gallery arrows, product-media-gallery-content.liquid). */
+  @media screen and (max-width: 1024px) {
+    .product-card .card-gallery slideshow-arrows .slideshow-control {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      min-height: 30px;
+      padding: 0;
+
+      .svg-wrapper,
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
   .card-gallery__placeholder svg {
     height: 100%;
     width: 100%;
