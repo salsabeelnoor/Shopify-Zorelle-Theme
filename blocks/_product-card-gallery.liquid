@@ -27,7 +27,8 @@
       {% render 'product-card-actions',
         product: product,
         section_id: section.id,
-        personalize_label: block.settings.personalize_label
+        personalize_label: block.settings.personalize_label,
+        size_heading: block.settings.size_heading
       %}
     {% endif %}
   {% endunless %}
@@ -61,6 +62,12 @@
       "id": "personalize_label",
       "label": "t:settings.label",
       "default": "Personalise"
+    },
+    {
+      "type": "text",
+      "id": "size_heading",
+      "label": "t:settings.heading",
+      "default": "Select size / option"
     },
     {
       "type": "select",

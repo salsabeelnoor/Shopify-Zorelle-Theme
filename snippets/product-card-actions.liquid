@@ -5,6 +5,7 @@
   - sold out               -> disabled "Sold out"
   - one variant            -> "Add to cart" (adds directly)
   - one option, many sizes -> "Add to cart" that reveals size buttons; a size adds that variant
+                              (options with a single value, e.g. one Color, are ignored)
   - several options        -> "Choose" link to the product page
   Add to cart uses Horizon's product-form-component, so the cart drawer and
   fly-to-cart behaviour are unchanged.
@@ -12,22 +13,37 @@
   @param {object} product - The product.
   @param {string} section_id - The section ID (for the product form).
   @param {string} [personalize_label] - Label for personalised products.
+  @param {string} [size_heading] - Heading of the size popover on screens up to 1024px.
+
+  Up to 1024px the CTA collapses to a square cart icon at the bottom-right of the image;
+  in size mode it opens a popover with the size buttons above the icon.
 
   @example
-  {% render 'product-card-actions', product: product, section_id: section.id, personalize_label: 'Personalise' %}
+  {% render 'product-card-actions', product: product, section_id: section.id, personalize_label: 'Personalise', size_heading: 'Select size / option' %}
 {%- enddoc -%}
 
 {% liquid
   assign variant = product.selected_or_first_available_variant
   assign add_label = 'actions.add_to_cart' | t
   assign form_id = 'CardActions-' | append: section_id | append: '-' | append: product.id
+  assign cart_icon = 'icon-add-to-cart.svg' | inline_asset_content
+
+  # Only options with more than one value need a choice; a single-value option
+  # (e.g. Color: 925 Sterling Silver) is fixed and doesn't force "Choose".
+  assign choice_count = 0
+  for product_option in product.options_with_values
+    if product_option.values.size > 1
+      assign choice_count = choice_count | plus: 1
+      assign size_option = product_option
+    endif
+  endfor
 
   assign mode = 'sizes'
   if product.tags contains 'personalized'
     assign mode = 'personalize'
   elsif product.available == false
     assign mode = 'sold-out'
-  elsif product.requires_selling_plan or product.options.size > 1
+  elsif product.requires_selling_plan or choice_count > 1
     assign mode = 'choose'
   elsif product.variants_count == 1
     assign mode = 'single'
@@ -40,7 +56,8 @@
   {%- case mode -%}
     {%- when 'personalize' -%}
       <a href="{{ product.url }}" class="button-secondary card-actions__button">
-        {{- personalize_label | default: 'Personalise' | escape -}}
+        <span class="card-actions__label">{{- personalize_label | default: 'Personalise' | escape -}}</span>
+        <span class="card-actions__icon" aria-hidden="true">{{ cart_icon }}</span>
       </a>
 
     {%- when 'sold-out' -%}
@@ -50,7 +67,8 @@
 
     {%- when 'choose' -%}
       <a href="{{ product.url }}" class="button-secondary card-actions__button">
-        {{- 'actions.choose' | t -}}
+        <span class="card-actions__label">{{- 'actions.choose' | t -}}</span>
+        <span class="card-actions__icon" aria-hidden="true">{{ cart_icon }}</span>
       </a>
 
     {%- when 'single' -%}
@@ -65,13 +83,17 @@
           <input type="hidden" name="id" ref="variantId" value="{{ variant.id }}">
           <input type="hidden" name="quantity" value="{{ variant.quantity_rule.min | default: 1 }}">
           <button type="submit" name="add" class="button-secondary card-actions__button">
-            {{- add_label -}}
+            <span class="card-actions__label">{{- add_label -}}</span>
+            <span class="card-actions__icon" aria-hidden="true">{{ cart_icon }}</span>
           </button>
         {%- endform -%}
       </product-form-component>
 
     {%- when 'sizes' -%}
-      {%- assign option = product.options_with_values | first -%}
+      {%- liquid
+        assign option = size_option | default: product.options_with_values.first
+        assign option_index = option.position | minus: 1
+      -%}
       {%- assign sizes_id = form_id | append: '-sizes' -%}
       <button
         type="button"
@@ -80,7 +102,8 @@
         aria-controls="{{ sizes_id }}"
         data-card-actions-toggle
       >
-        {{- add_label -}}
+        <span class="card-actions__label">{{- add_label -}}</span>
+        <span class="card-actions__icon" aria-hidden="true">{{ cart_icon }}</span>
       </button>
       <product-form-component
         data-section-id="{{ section_id }}"
@@ -98,6 +121,9 @@
             role="group"
             aria-label="{{ option.name | escape }}"
           >
+            <p class="card-actions__heading" aria-hidden="true">
+              {{- size_heading | default: 'Select size / option' | escape -}}
+            </p>
             <button
               type="button"
               class="card-actions__scroll card-actions__scroll--prev"
@@ -115,12 +141,12 @@
                   type="button"
                   class="card-actions__size"
                   data-variant-id="{{ v.id }}"
-                  aria-label="{{ add_label }}: {{ v.option1 | escape }}"
+                  aria-label="{{ add_label }}: {{ v.options[option_index] | escape }}"
                   {% unless v.available %}
                     disabled
                   {% endunless %}
                 >
-                  {{- v.option1 | escape -}}
+                  {{- v.options[option_index] | escape -}}
                 </button>
               {%- endfor -%}
             </div>
@@ -145,9 +171,12 @@
   /*
     Product card CTA. Uses the shared button system (assets/buttons.css) with a light
     card surface; hover fills with the foreground colour (the "normal" button hover).
+    Above 1024px: full-width bar that fades up on hover. Up to 1024px: square cart icon
+    at the bottom-right of the image, with the size popover above it.
   */
   .card-actions {
     --card-actions-inset: 0.75rem;
+    --card-actions-icon-size: 2.75rem;
 
     /* Page-level palette colours: product cards can set --color-background to
        transparent, which made the button see-through. */
@@ -163,26 +192,6 @@
       opacity 0.35s var(--ease-out-quad, ease-out),
       transform 0.35s var(--ease-out-quad, ease-out);
     pointer-events: none;
-  }
-
-  /* Fade in up on card hover / keyboard focus. */
-  .product-card:hover .card-actions,
-  .card-gallery:hover .card-actions,
-  /* :focus-visible only: keyboard focus keeps it open, mouse clicks do not. */
-  .card-actions:has(:focus-visible),
-  .card-actions[open] {
-    opacity: 1;
-    transform: none;
-    pointer-events: auto;
-  }
-
-  /* Touch screens have no hover: keep the button visible. */
-  @media (hover: none) {
-    .card-actions {
-      opacity: 1;
-      transform: none;
-      pointer-events: auto;
-    }
   }
 
   .card-actions__form {
@@ -217,9 +226,13 @@
     opacity: 0.7;
   }
 
-  /* Size picker: replaces the toggle in the same spot.
-     Hidden with visibility (not display: none) so the list keeps its layout and
-     scroll position between hovers. Hidden content is also not focusable. */
+  .card-actions__icon,
+  .card-actions__heading {
+    display: none;
+  }
+
+  /* Size picker. Hidden with visibility (not display: none) so the list keeps its
+     layout and scroll position between hovers. Hidden content is also not focusable. */
   .card-actions__sizes {
     position: absolute;
     inset: 0;
@@ -230,26 +243,6 @@
     padding: 0.375rem;
     background: var(--card-actions-surface);
     box-shadow: inset 0 0 0 1px rgb(var(--palette-darkest-rgb) / var(--opacity-20, 0.2));
-  }
-
-  @media (hover: hover) {
-    .card-actions--sizes:hover .card-actions__sizes {
-      visibility: visible;
-    }
-
-    .card-actions--sizes:hover .card-actions__toggle {
-      visibility: hidden;
-    }
-  }
-
-  .card-actions--sizes[open] .card-actions__sizes,
-  .card-actions--sizes:has(.card-actions__sizes :focus-visible) .card-actions__sizes {
-    visibility: visible;
-  }
-
-  .card-actions--sizes[open] .card-actions__toggle,
-  .card-actions--sizes:has(.card-actions__sizes :focus-visible) .card-actions__toggle {
-    visibility: hidden;
   }
 
   .card-actions__track {
@@ -280,8 +273,10 @@
     cursor: pointer;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 
+    /* [data-added]: the size just added, shown as selected until the picker closes. */
     &:hover,
-    &:focus-visible {
+    &:focus-visible,
+    &[data-added] {
       background: var(--card-actions-ink);
       border-color: var(--card-actions-ink);
       color: var(--card-actions-surface);
@@ -323,8 +318,186 @@
     }
   }
 
+  /* ---------- Above 1024px: full-width bar ---------- */
+  @media (min-width: 1025px) {
+    /* Fade in up on card hover / keyboard focus. */
+    .product-card:hover .card-actions,
+    .card-gallery:hover .card-actions,
+    /* :focus-visible only: keyboard focus keeps it open, mouse clicks do not. */
+    .card-actions:has(:focus-visible),
+    .card-actions[open] {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .card-actions--sizes[open] .card-actions__sizes,
+    .card-actions--sizes:has(.card-actions__sizes :focus-visible) .card-actions__sizes {
+      visibility: visible;
+    }
+
+    .card-actions--sizes[open] .card-actions__toggle,
+    .card-actions--sizes:has(.card-actions__sizes :focus-visible) .card-actions__toggle {
+      visibility: hidden;
+    }
+  }
+
+  @media (min-width: 1025px) and (hover: hover) {
+    .card-actions--sizes:hover .card-actions__sizes {
+      visibility: visible;
+    }
+
+    .card-actions--sizes:hover .card-actions__toggle {
+      visibility: hidden;
+    }
+  }
+
+  /* Large touch screens have no hover: keep the bar visible. */
+  @media (min-width: 1025px) and (hover: none) {
+    .card-actions {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+  }
+
+  /* ---------- Up to 1024px: cart icon + size popover ---------- */
+  @media (max-width: 1024px) {
+    /* Spans the image so the popover can use its width; only the icon and the
+       popover take taps, the rest of the image stays tappable. */
+    .card-actions {
+      display: flex;
+      justify-content: flex-end;
+      opacity: 1;
+      transform: none;
+    }
+
+    .card-actions--sold-out {
+      display: none;
+    }
+
+    /* Android Chrome highlights the whole clickable product card on tap; the icon
+       and size buttons give their own press feedback instead. */
+    .product-card:has(.card-actions),
+    .card-actions * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .card-actions .card-actions__button.button-secondary {
+      --button-color: var(--card-actions-surface);
+      --button-background-color: var(--card-actions-ink);
+      --button-border-color: var(--card-actions-ink);
+      --btn-min-height: var(--card-actions-icon-size);
+
+      display: grid;
+      place-items: center;
+      width: var(--card-actions-icon-size);
+      height: var(--card-actions-icon-size);
+      padding: 0;
+      pointer-events: auto;
+      touch-action: manipulation;
+      transition: transform 0.15s var(--ease-out-quad, ease-out);
+    }
+
+    .card-actions .card-actions__button.button-secondary:active,
+    .card-actions .card-actions__size:active:not(:disabled) {
+      transform: scale(0.92);
+    }
+
+    .card-actions .card-actions__size {
+      touch-action: manipulation;
+      transition: transform 0.15s var(--ease-out-quad, ease-out), background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .card-actions__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .card-actions__icon {
+      display: grid;
+      place-items: center;
+
+      svg {
+        width: 1.375rem;
+        height: 1.375rem;
+      }
+    }
+
+    /* The form only hosts the popover here; it takes no space in the row. */
+    .card-actions--sizes .card-actions__form {
+      display: contents;
+    }
+
+    .card-actions--sizes .card-actions__sizes {
+      inset: auto 0 calc(100% + 0.625rem);
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.875rem;
+      max-height: 18rem;
+      padding: 1.25rem;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      opacity: 0;
+      transform: translateY(0.375rem);
+      box-shadow: 0 0.5rem 1.5rem rgb(var(--palette-darkest-rgb) / var(--opacity-20, 0.2));
+      /* Closing: a slower fade so the chosen size stays readable as it leaves. */
+      transition:
+        opacity 0.5s var(--ease-out-quad, ease-out),
+        transform 0.5s var(--ease-out-quad, ease-out),
+        visibility 0s linear 0.5s;
+    }
+
+    .card-actions--sizes[open] .card-actions__sizes {
+      visibility: visible;
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+      transition:
+        opacity 0.25s var(--ease-out-quad, ease-out),
+        transform 0.25s var(--ease-out-quad, ease-out);
+    }
+
+    .card-actions__heading {
+      display: block;
+      margin: 0;
+      color: rgb(var(--palette-darkest-rgb) / var(--opacity-70, 0.7));
+      font-family: var(--font-body--family);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .card-actions__track {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      overflow: visible;
+    }
+
+    .card-actions .card-actions__size {
+      min-width: 3.5rem;
+      height: 2.75rem;
+      padding: 0 0.875rem;
+      font-size: 0.875rem;
+    }
+
+    .card-actions .card-actions__scroll {
+      display: none;
+    }
+
+    /* The image slider arrows would sit on top of the open popover. */
+    .card-gallery:has(.card-actions[open]) slideshow-arrows {
+      visibility: hidden;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .card-actions,
+    .card-actions__sizes,
     .card-actions__track {
       transition: none;
       scroll-behavior: auto;

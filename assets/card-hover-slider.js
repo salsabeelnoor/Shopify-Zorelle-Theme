@@ -2,14 +2,20 @@
  * Zorelle: keeps product card carousels in step with the hover image.
  *
  * While a card is hovered, its second image fades in over the first (CSS overlay),
- * but the carousel underneath is still on slide 1. On the first arrow click of a hover:
- *   - next     -> jump straight to slide 3 (slide 2 is already showing)
- *   - previous -> show slide 1 by hiding the overlay
- * After that the arrows behave normally. Leaving the card resets to slide 1.
+ * but the carousel underneath is still on slide 1. On the first arrow click of a hover
+ * the carousel jumps instantly (no animation) to slide 2, which looks identical to the
+ * overlay, and the overlay is hidden. The click then continues to the theme's own
+ * arrow handler, so next/previous slide from image 2 with the normal animation:
+ *   - next     -> slides to image 3 (or wraps to image 1 when there are only two)
+ *   - previous -> slides back to image 1
+ * Leaving the card resets to slide 1.
  * Applies to card galleries marked [data-hover-second-slide] (snippets/card-gallery.liquid).
  */
 
 const GALLERY = '.card-gallery[data-hover-second-slide]';
+
+// Must match the hover-image media query in snippets/card-gallery.liquid.
+const HOVER_IMAGE_QUERY = window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 750px)');
 
 /** @param {Element} gallery */
 function isOverlayShowing(gallery) {
@@ -17,8 +23,8 @@ function isOverlayShowing(gallery) {
   return gallery.hasAttribute('data-hovered') && !gallery.hasAttribute('data-hover-engaged');
 }
 
-// Registered on window (capture) so it runs before the theme's own delegated
-// arrow handler on document and can stop it for the remapped first click.
+// Registered on window (capture) so it runs before the theme's own delegated arrow
+// handler; it only lines the carousel up and lets the click through.
 window.addEventListener(
   'click',
   (event) => {
@@ -30,19 +36,10 @@ window.addEventListener(
     const slideshow = gallery.querySelector('slideshow-component');
     if (!slideshow || typeof slideshow.select !== 'function') return;
 
-    event.preventDefault();
-    event.stopImmediatePropagation();
+    // Instant select runs synchronously, so the theme's handler below already sees slide 2.
+    slideshow.select(1, undefined, { animate: false });
     // Marks the first click as used and hides the overlay instantly (see card-gallery.liquid).
     gallery.setAttribute('data-hover-engaged', '');
-
-    if (arrow.classList.contains('slideshow-control--next')) {
-      // Count slides from the markup; visibleSlides depends on what is on screen.
-      const slideCount = gallery.querySelectorAll('slideshow-slide:not([hidden])').length;
-      // With only two images, "next" after image 2 wraps back to image 1.
-      // With only two images, "next" after image 2 wraps back to image 1 (the overlay just hides).
-      if (slideCount > 2) slideshow.select(2, event);
-    }
-    // "previous": slide 1 is already underneath, hiding the overlay reveals it.
   },
   { capture: true }
 );
@@ -50,7 +47,7 @@ window.addEventListener(
 document.addEventListener(
   'pointerover',
   (event) => {
-    if (!(event.target instanceof Element) || event.pointerType !== 'mouse') return;
+    if (!(event.target instanceof Element) || event.pointerType !== 'mouse' || !HOVER_IMAGE_QUERY.matches) return;
     event.target.closest(GALLERY)?.setAttribute('data-hovered', '');
   },
   { passive: true }

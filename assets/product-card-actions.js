@@ -1,9 +1,10 @@
 /**
  * Zorelle product card CTA (<card-actions>), rendered by snippets/product-card-actions.liquid.
  *
- * Size mode: the "Add to cart" toggle reveals size buttons (on hover via CSS, on tap/Enter
- * via the [open] attribute). Choosing a size writes its variant ID into the product form
- * and submits it, so Horizon's product-form-component handles the add to cart.
+ * Size mode: the toggle reveals the size buttons (above 1024px on hover via CSS, otherwise
+ * via the [open] attribute; up to 1024px as a popover above the cart icon). Choosing a size
+ * writes its variant ID into the product form and submits it, so Horizon's
+ * product-form-component handles the add to cart, then the picker closes after a moment.
  */
 class CardActions extends HTMLElement {
   /** @type {AbortController | undefined} */
@@ -15,15 +16,43 @@ class CardActions extends HTMLElement {
   /** @type {ReturnType<typeof setTimeout> | undefined} */
   #scrollTimer;
 
+  /** @type {ReturnType<typeof setTimeout> | undefined} */
+  #closeTimer;
+
+  /** How long the chosen size stays highlighted before the picker closes (ms). */
+  static CLOSE_DELAY = 150;
+
   connectedCallback() {
     this.#abortController?.abort();
     this.#abortController = new AbortController();
     const { signal } = this.#abortController;
 
-    this.toggleButton?.addEventListener('click', () => this.setOpen(true, { focus: true }), { signal });
+    // Above 1024px the toggle is hidden while open; up to 1024px the cart icon stays
+    // visible and a second tap closes the popover.
+    this.toggleButton?.addEventListener('click', () => this.setOpen(!this.hasAttribute('open'), { focus: true }), {
+      signal,
+    });
     this.addEventListener('click', this.#handleSizeClick, { signal });
     this.addEventListener('keydown', this.#handleKeydown, { signal });
-    this.addEventListener('pointerleave', () => this.setOpen(false), { signal });
+    // Mouse only: a touch tap always fires pointerleave right after pointerup, which
+    // closed the picker before the tapped size or arrow received its click.
+    this.addEventListener(
+      'pointerleave',
+      (event) => {
+        if (event.pointerType === 'mouse') this.setOpen(false);
+      },
+      { signal }
+    );
+    // Touch: tapping anywhere outside the card CTA closes the picker.
+    document.addEventListener(
+      'pointerdown',
+      (event) => {
+        if (this.hasAttribute('open') && event.target instanceof Node && !this.contains(event.target)) {
+          this.setOpen(false);
+        }
+      },
+      { signal, passive: true }
+    );
 
     const track = this.track;
     if (track) {
@@ -43,6 +72,7 @@ class CardActions extends HTMLElement {
     this.#abortController?.abort();
     this.#resizeObserver?.disconnect();
     clearTimeout(this.#scrollTimer);
+    clearTimeout(this.#closeTimer);
   }
 
   get toggleButton() {
@@ -64,12 +94,17 @@ class CardActions extends HTMLElement {
     const toggle = this.toggleButton;
     if (!toggle) return;
 
+    clearTimeout(this.#closeTimer);
+    if (open) {
+      for (const button of this.querySelectorAll('[data-variant-id][data-added]')) button.removeAttribute('data-added');
+    }
     this.toggleAttribute('open', open);
     toggle.setAttribute('aria-expanded', `${open}`);
 
     if (open) {
       this.#updateScrollButton();
-      if (focus) this.querySelector('[data-variant-id]:not(:disabled)')?.focus();
+      const firstSize = this.querySelector('[data-variant-id]:not(:disabled)');
+      if (focus && firstSize instanceof HTMLButtonElement) firstSize.focus();
     }
   }
 
@@ -86,6 +121,19 @@ class CardActions extends HTMLElement {
     idInput.value = sizeButton.dataset.variantId ?? '';
     idInput.disabled = false;
     form.requestSubmit();
+
+    // Show the chosen size as selected for a moment, then close the picker (it fades out
+    // slowly via CSS). Focus returns to the toggle so it is not lost.
+    for (const button of this.querySelectorAll('[data-variant-id][data-added]')) button.removeAttribute('data-added');
+    sizeButton.setAttribute('data-added', '');
+    const hadFocus = sizeButton.matches(':focus');
+    clearTimeout(this.#closeTimer);
+    this.#closeTimer = setTimeout(() => {
+      this.setOpen(false);
+      if (hadFocus && this.contains(document.activeElement)) this.toggleButton?.focus({ preventScroll: true });
+      // Clear the selected look once the fade-out (0.5s in CSS) has finished.
+      this.#closeTimer = setTimeout(() => sizeButton.removeAttribute('data-added'), 600);
+    }, CardActions.CLOSE_DELAY);
   };
 
   /** @param {KeyboardEvent} event */

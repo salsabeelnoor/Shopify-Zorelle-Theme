@@ -77,14 +77,26 @@
   endif
 %}
 
-<div
-  ref="cardGallery"
-  class="card-gallery card-gallery-{{ block.id }} spacing-style border-style{% if has_badges %} card-gallery--badge-{{ badge_position }}{% endif %}"
-  style="
+{%- comment -%}
+  Zorelle: setting-driven vars in a scoped style block instead of inline styles.
+  Scoped by block and product: the "adapt" ratio comes from each product's own image.
+{%- endcomment -%}
+{% style %}
+  .card-gallery-{{ block.id }}[data-product-id='{{ product.id }}'] {
     {% render 'border-override', settings: block_settings %}
     {% render 'spacing-style', settings: block_settings %}
     --gallery-aspect-ratio: {{ ratio }};
-  "
+  }
+  {%- if media_fit != blank %}
+    .card-gallery-{{ block.id }} .product-media-container.media-fit {
+      --product-media-fit: {{ media_fit }};
+    }
+  {%- endif %}
+{% endstyle %}
+
+<div
+  ref="cardGallery"
+  class="card-gallery card-gallery-{{ block.id }} spacing-style border-style{% if has_badges %} card-gallery--badge-{{ badge_position }}{% endif %}"
   data-product-id="{{ product.id }}"
   {% if hover_is_second_slide %}
     data-hover-second-slide
@@ -123,10 +135,7 @@
         assign featured_media_class = media_class | replace: '[media_type]', featured_media.media_type | append: media_class_suffix
       %}
       {%- if product.media.size == 1 -%}
-        <div
-          class="{{ featured_media_class }}"
-          style="--product-media-fit: {{ media_fit | default: 'cover' }};"
-        >
+        <div class="{{ featured_media_class }}">
           {% render 'product-media',
             media: featured_media,
             sizes: featured_media_sizes,
@@ -200,7 +209,7 @@
           # Arrows can only reach slides that are rendered visible. Variant images past
           # the featured media are hidden, so a product whose only extra media are
           # variant images has a single navigable slide and would get inert arrows.
-          if product.media.size > 2 and visible_slide_count > 1
+          if visible_slide_count > 1
             assign show_arrows = true
           endif
 
@@ -275,12 +284,6 @@
     container-name: card-gallery-container; /* Optional: name the container */
   }
 
-  @container (max-width: 70px) {
-    .card-gallery:hover .quick-add__button {
-      display: none;
-    }
-  }
-
   /* Zorelle: hover image (second image or custom hover image) crossfades over the first. */
   .card-gallery__hover-image {
     position: absolute;
@@ -294,7 +297,9 @@
     transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  @media (hover: hover) {
+  /* Desktop with a mouse only; must match HOVER_IMAGE_QUERY in card-hover-slider.js.
+     Phones and touch screens show the first image with visible slider arrows instead. */
+  @media (hover: hover) and (pointer: fine) and (min-width: 750px) {
     .card-gallery:hover .card-gallery__hover-image {
       opacity: 1;
     }
@@ -316,6 +321,48 @@
   @media (prefers-reduced-motion: reduce) {
     .card-gallery__hover-image {
       transition: none;
+    }
+  }
+
+  /* Horizon keeps slider arrows visible while anything inside has focus (base.css). A mouse
+     click on an arrow focuses it, which left the arrows showing after the cursor moved to
+     another card. On cards, only keyboard focus (:focus-visible) keeps them visible. */
+  @media (hover: hover) and (pointer: fine) and (min-width: 750px) {
+    .card-gallery
+      slideshow-component:focus-within:not(:has(:focus-visible)):not(:hover)
+      > slideshow-container
+      > slideshow-arrows
+      .slideshow-control {
+      animation: none;
+    }
+  }
+
+  /* Phones and touch screens: always-visible slider arrows, centred so they clear
+     the card button at the bottom. Swiping still works. */
+  @media (max-width: 749px), (hover: none), (pointer: coarse) {
+    .card-gallery slideshow-arrows {
+      align-items: center;
+      padding-inline: 0.5rem;
+      mix-blend-mode: normal;
+    }
+
+    .product-card .card-gallery slideshow-arrows .slideshow-control {
+      display: grid;
+      place-items: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      min-width: 2.5rem;
+      min-height: 2.5rem;
+      padding: 0;
+      border-radius: 50%;
+      background: rgb(var(--palette-lightest-rgb) / var(--opacity-80, 0.8));
+      color: var(--palette-darkest);
+      opacity: 1;
+      animation: none;
+    }
+
+    [product-grid-view='zoom-out'] .card-gallery slideshow-arrows {
+      display: none;
     }
   }
 
@@ -510,7 +557,7 @@
   }
 
   /*
-   * Card galleries preview the next or previous images on 'pointerenter', so we
+   * Card gallery arrows reveal the next or previous image, so we
    * try to kick load them beforehand (they are lazy loaded otherwise).
    */
   .card-gallery
