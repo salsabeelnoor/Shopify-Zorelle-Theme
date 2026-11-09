@@ -1,0 +1,951 @@
+{% comment %}
+  Section contract.
+  Left side: either an image (fills the column, optional link) or text (heading, text,
+  up to two buttons, vertically centred). Right side: a collection's products as a
+  carousel (arrows + progress pagination below) or a grid. Cards are the site-wide
+  product card (static _product-card block), so they match every other product list.
+  Stacks the left side above the products at 1024px and below.
+  @example
+  <!-- Add "Product showcase", pick a collection, choose Carousel or Grid. -->
+{% endcomment %}
+
+{% liquid
+  assign s = section.settings
+  assign max_items = s.max_products
+  assign is_carousel = false
+  if s.layout_type == 'carousel'
+    assign is_carousel = true
+  endif
+
+  # Grid columns step down with the space available (repeat() needs a whole number).
+  assign columns = s.columns
+  assign columns_tablet = columns
+  if columns_tablet > 3
+    assign columns_tablet = 3
+  endif
+  assign columns_small = columns_tablet
+  if columns_small > 2
+    assign columns_small = 2
+  endif
+
+  # Mobile (640px and below): one or two cards across.
+  assign columns_mobile = s.mobile_columns | plus: 0
+  if columns_mobile > columns_small
+    assign columns_mobile = columns_small
+  endif
+
+  assign track_id = 'ProductShowcaseTrack-' | append: section.id
+
+  assign image_loading = 'lazy'
+  if section.index <= 2
+    assign image_loading = 'eager'
+  endif
+%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .showcase {
+    --showcase-columns: {{ columns }};
+    --showcase-columns-tablet: {{ columns_tablet }};
+    --showcase-columns-small: {{ columns_small }};
+    --showcase-columns-mobile: {{ columns_mobile }};
+    --showcase-grid-gap: {{ s.columns_gap }}px;
+    --showcase-row-gap: {{ s.rows_gap }}px;
+    --showcase-padding-top: {{ s.padding_top }}px;
+    --showcase-padding-bottom: {{ s.padding_bottom }}px;
+    {%- if s.background_color != blank %}
+      background-color: {{ s.background_color }};
+    {%- endif %}
+  }
+{% endstyle %}
+
+<div class="showcase showcase--{{ s.layout_type }} showcase--{{ s.content_type }}">
+  <div class="showcase__inner container">
+    {%- if s.content_type == 'image' -%}
+      <div class="showcase__media">
+        {%- if s.image_link != blank -%}
+          <a href="{{ s.image_link }}" class="showcase__media-link">
+        {%- endif -%}
+        {%- if s.image != blank -%}
+          {{
+            s.image
+            | image_url: width: 1200
+            | image_tag:
+              widths: '300, 450, 600, 800, 1000, 1200',
+              sizes: '(min-width: 1025px) calc(min(1800px, 96vw) / 4), 96vw',
+              loading: image_loading,
+              alt: s.image.alt,
+              class: 'showcase__image'
+          }}
+        {%- else -%}
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'showcase__image showcase__placeholder' }}
+        {%- endif -%}
+        {%- if s.image_link != blank -%}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- else -%}
+      <div class="showcase__intro showcase__intro--{{ s.text_alignment }}">
+        {%- if s.heading != blank -%}
+          <h2 class="showcase__heading h2">{{ s.heading | escape }}</h2>
+        {%- endif -%}
+        {%- if s.text != blank -%}
+          <div class="showcase__text">{{ s.text }}</div>
+        {%- endif -%}
+        {%- if s.button_1_label != blank or s.button_2_label != blank -%}
+          <div class="showcase__buttons">
+            {%- for i in (1..2) -%}
+              {%- liquid
+                assign label_key = 'button_' | append: i | append: '_label'
+                assign link_key = 'button_' | append: i | append: '_link'
+                assign style_key = 'button_' | append: i | append: '_style'
+                assign label = s[label_key]
+                assign link = s[link_key] | default: routes.all_products_collection_url
+                case s[style_key]
+                  when 'secondary'
+                    assign button_class = 'button-secondary'
+                  when 'link'
+                    assign button_class = 'showcase__link'
+                  else
+                    assign button_class = 'button'
+                endcase
+              -%}
+              {%- if label != blank -%}
+                <a href="{{ link }}" class="{{ button_class }}">{{ label | escape }}</a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="showcase__products">
+      {%- if is_carousel -%}
+        <script src="{{ 'product-showcase.js' | asset_url }}" type="module" fetchpriority="low"></script>
+        <product-showcase-slider class="showcase__slider">
+      {%- endif -%}
+
+      <ul
+        id="{{ track_id }}"
+        class="showcase__track list-unstyled"
+        {% if is_carousel %}
+          data-showcase-track
+        {% endif %}
+        role="list"
+      >
+        {%- if s.collection != blank and s.collection.products_count > 0 -%}
+          {%- for product in s.collection.products limit: max_items -%}
+            <li class="showcase__item" data-showcase-item>
+              {% content_for 'block',
+                type: '_product-card',
+                id: 'static-product-card',
+                closest.product: product,
+                product_view_context: 'collection'
+              %}
+            </li>
+          {%- endfor -%}
+        {%- else -%}
+          {%- for i in (1..max_items) -%}
+            <li class="showcase__item" data-showcase-item>
+              {% content_for 'block', type: '_product-card', id: 'static-product-card', closest.product: null %}
+            </li>
+          {%- endfor -%}
+        {%- endif -%}
+      </ul>
+
+      {%- if is_carousel -%}
+          <button
+            type="button"
+            class="showcase__arrow showcase__arrow--prev"
+            aria-label="{{ 'accessibility.slideshow_previous' | t }}"
+            aria-controls="{{ track_id }}"
+            data-showcase-prev
+            disabled
+          >
+            <span class="svg-wrapper" aria-hidden="true">{{ 'icon-chevron-left.svg' | inline_asset_content }}</span>
+          </button>
+          <button
+            type="button"
+            class="showcase__arrow showcase__arrow--next"
+            aria-label="{{ 'accessibility.slideshow_next' | t }}"
+            aria-controls="{{ track_id }}"
+            data-showcase-next
+          >
+            <span class="svg-wrapper" aria-hidden="true">{{ 'icon-chevron-right.svg' | inline_asset_content }}</span>
+          </button>
+          {%- comment -%} Progress pagination: thumb size/position set by product-showcase.js. {%- endcomment -%}
+          <div class="showcase__progress" aria-hidden="true">
+            <span class="showcase__progress-thumb"></span>
+          </div>
+        </product-showcase-slider>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .showcase {
+    /* 100cqw = page width without the scrollbar (unlike 100vw), so the bleed below
+       can never cause a horizontal page scroll. */
+    container-type: inline-size;
+    overflow-x: clip;
+    padding-block: var(--showcase-padding-top) var(--showcase-padding-bottom);
+  }
+
+  .showcase__inner {
+    display: grid;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  @media screen and (min-width: 1025px) {
+    .showcase__inner {
+      grid-template-columns: minmax(14rem, 1fr) minmax(0, 3fr);
+      gap: clamp(2rem, 4vw, 5rem);
+    }
+  }
+
+  /* ---------- Left side: image ---------- */
+  /* The image column stretches to the product row's height and crops to fit. */
+  .showcase--image .showcase__inner {
+    align-items: stretch;
+  }
+
+  .showcase__media {
+    position: relative;
+    min-width: 0;
+    min-height: 100%;
+    overflow: hidden;
+    /* Stacked above the products: wide on tablets, portrait on phones. */
+    aspect-ratio: 16 / 9;
+  }
+
+  @media screen and (max-width: 640px) {
+    .showcase__media {
+      aspect-ratio: 4 / 5;
+    }
+  }
+
+  @media screen and (min-width: 1025px) {
+    .showcase__media {
+      aspect-ratio: auto;
+    }
+  }
+
+  .showcase__media-link {
+    display: block;
+    height: 100%;
+  }
+
+  .showcase__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s var(--ease-out-quad, ease-out);
+  }
+
+  .showcase__media-link:hover .showcase__image {
+    transform: scale(1.03);
+  }
+
+  .showcase__placeholder {
+    background: rgb(var(--palette-darkest-rgb) / var(--opacity-5, 0.05));
+  }
+
+  /* ---------- Left side: text ---------- */
+  .showcase__intro {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-width: 0;
+    max-width: 32rem;
+    overflow-wrap: anywhere;
+  }
+
+  .showcase__intro--center {
+    align-items: center;
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .showcase__heading {
+    margin: 0;
+  }
+
+  .showcase__text {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-80, 0.8));
+
+    > * {
+      margin: 0;
+    }
+  }
+
+  .showcase__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    align-items: center;
+    padding-block-start: 0.5rem;
+  }
+
+  .showcase__intro--center .showcase__buttons {
+    justify-content: center;
+  }
+
+  .showcase__link {
+    padding-block: 0.25rem;
+    color: var(--color-foreground);
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.4em;
+    text-transform: uppercase;
+    transition: text-underline-offset 0.2s ease;
+
+    &:hover {
+      text-underline-offset: 0.6em;
+    }
+  }
+
+  /* ---------- Products (right) ---------- */
+  .showcase__products {
+    position: relative;
+    min-width: 0;
+  }
+
+  /* Carousel, two-column layout only (above 1024px): the left side stays in the
+     container, the product row runs on to the page edge. --showcase-bleed = space between
+     the container and the page edge (the container is min(100% - 2 x gutter, max
+     width), centred). Stacked (1024px and below) the carousel fits the container. */
+  @media screen and (min-width: 1025px) {
+    .showcase--carousel {
+      --showcase-bleed: calc(
+        (100cqw - min(100cqw - var(--container-gutter) * 2, var(--container-max-width))) / 2
+      );
+    }
+
+    .showcase--carousel .showcase__products {
+      margin-inline-end: calc(var(--showcase-bleed) * -1);
+    }
+  }
+
+  .showcase__item {
+    min-width: 0;
+  }
+
+  /* Grid */
+  .showcase--grid .showcase__track {
+    display: grid;
+    grid-template-columns: repeat(var(--showcase-columns), minmax(0, 1fr));
+    gap: var(--showcase-row-gap) var(--showcase-grid-gap);
+  }
+
+  @media screen and (max-width: 1024px) {
+    .showcase--grid .showcase__track {
+      grid-template-columns: repeat(var(--showcase-columns-tablet), minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .showcase--grid .showcase__track {
+      grid-template-columns: repeat(var(--showcase-columns-small), minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (max-width: 640px) {
+    .showcase--grid .showcase__track {
+      grid-template-columns: repeat(var(--showcase-columns-mobile), minmax(0, 1fr));
+    }
+  }
+
+  /* Carousel */
+  /* Carousel: fixed gap and a set number of cards per view (no merchant settings). */
+  .showcase__slider {
+    --showcase-gap: 1rem;
+    --showcase-visible: 3;
+
+    display: block;
+    position: relative;
+  }
+
+  /* Two columns get narrow here, so fewer cards. */
+  @media screen and (max-width: 1200px) {
+    .showcase__slider {
+      --showcase-visible: 2;
+    }
+  }
+
+  /* Stacked layout: the products get the full width again. */
+  @media screen and (max-width: 1024px) {
+    .showcase__slider {
+      --showcase-visible: 3;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    .showcase__slider {
+      --showcase-visible: 2;
+    }
+  }
+
+  @media screen and (max-width: 640px) {
+    .showcase__slider {
+      --showcase-visible: 1;
+    }
+  }
+
+  /* Square product images in this section, whatever the card block's ratio setting.
+     Doubled class to beat card-gallery's scoped block/product rule. */
+  .showcase .card-gallery.card-gallery {
+    --gallery-aspect-ratio: 1;
+  }
+
+  .showcase--carousel .showcase__track {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc(
+      (100% - var(--showcase-bleed, 0px) - var(--showcase-gap) * (var(--showcase-visible) - 1)) / var(--showcase-visible)
+    );
+    gap: var(--showcase-gap);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+
+  .showcase--carousel .showcase__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .showcase--carousel .showcase__item {
+    scroll-snap-align: start;
+  }
+
+  /* Square arrows: light at rest, dark on hover (palette colours). The previous arrow
+     straddles the gap between the two columns, as in the reference design. */
+
+  .showcase__arrow {
+    --showcase-arrow-size: 2.75rem;
+
+    position: absolute;
+    /* Roughly centred on the image area (cards have a short title/price below). */
+    top: calc(50% - var(--showcase-arrow-size) / 2 - 2.5rem);
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    width: var(--showcase-arrow-size);
+    height: var(--showcase-arrow-size);
+    padding: 0;
+    border: 0;
+    background: rgb(var(--palette-lightest-rgb) / var(--opacity-80, 0.8));
+    color: var(--palette-darkest);
+    cursor: pointer;
+    transition:
+      opacity 0.25s ease,
+      background-color 0.2s ease,
+      color 0.2s ease;
+
+    .svg-wrapper,
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    &:hover {
+      background: var(--palette-darkest);
+      color: var(--palette-lightest);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--palette-darkest);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  @media screen and (max-width: 1440px) {
+    .showcase__arrow {
+      --showcase-arrow-size: 2.5rem;
+    }
+  }
+
+  .showcase__arrow--prev {
+    inset-inline-start: 0;
+    background: var(--palette-darkest);
+    color: var(--palette-lightest);
+
+    &:hover {
+      background: rgb(var(--palette-darkest-rgb) / var(--opacity-80, 0.8));
+    }
+  }
+
+  /* At the page edge (the products column runs to it in the carousel). */
+  .showcase__arrow--next {
+    inset-inline-end: 0;
+  }
+
+  @media screen and (min-width: 1025px) {
+    .showcase__arrow--prev {
+      inset-inline-start: calc(var(--showcase-arrow-size) / -2);
+    }
+  }
+
+  [dir='rtl'] .showcase__arrow svg {
+    transform: scaleX(-1);
+  }
+
+  /* Stacked layout (1024px and below, phones too): both arrows side by side above the
+     product row at its top-right, instead of over the images. At the start/end the
+     unusable arrow is dimmed rather than hidden, so the pair stays in place. */
+  @media screen and (max-width: 1024px) {
+    .showcase__slider {
+      --showcase-arrow-size: 2.75rem;
+
+      padding-block-start: calc(var(--showcase-arrow-size) + 1rem);
+    }
+
+    .showcase__slider .showcase__arrow {
+      --showcase-arrow-size: 2.5rem;
+
+      top: 0;
+      width: var(--showcase-arrow-size);
+      height: var(--showcase-arrow-size);
+      border: 1px solid var(--palette-darkest);
+      background: var(--palette-lightest);
+      color: var(--palette-darkest);
+
+      &:hover {
+        background: var(--palette-darkest);
+        color: var(--palette-lightest);
+      }
+
+      &:disabled {
+        opacity: 0.35;
+      }
+    }
+
+    .showcase__slider .showcase__arrow--prev {
+      inset-inline-start: auto;
+      inset-inline-end: calc(var(--showcase-arrow-size) + 0.5rem);
+    }
+
+    .showcase__slider .showcase__arrow--next {
+      inset-inline-end: 0;
+    }
+  }
+
+  /* Pagination: a hairline track with a darker thumb that slides along it. */
+  .showcase__progress {
+    position: relative;
+    height: 2px;
+    margin-block-start: 2rem;
+    margin-inline-end: var(--showcase-bleed, 0px);
+    overflow: hidden;
+  }
+
+  .showcase__progress::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: 1px;
+    background: rgb(var(--palette-darkest-rgb) / var(--opacity-15, 0.15));
+  }
+
+  .showcase__progress-thumb {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: calc(var(--showcase-thumb-size, 0.25) * 100%);
+    background: var(--palette-darkest);
+    transform: translateX(calc(var(--showcase-thumb-offset, 0) * 100% / var(--showcase-thumb-size, 0.25)));
+    transition: transform 0.15s linear;
+  }
+
+  [dir='rtl'] .showcase__progress-thumb {
+    transform: translateX(calc(var(--showcase-thumb-offset, 0) * -100% / var(--showcase-thumb-size, 0.25)));
+  }
+
+  /* Nothing to scroll: no arrows or pagination. */
+  .showcase__slider[data-static] :is(.showcase__arrow, .showcase__progress) {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .showcase--carousel .showcase__track {
+      scroll-behavior: auto;
+    }
+
+    .showcase__progress-thumb,
+    .showcase__link,
+    .showcase__image {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product showcase",
+  "tag": "section",
+  "class": "section-product-showcase",
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Left side"
+    },
+    {
+      "type": "select",
+      "id": "content_type",
+      "label": "t:settings.type",
+      "options": [
+        {
+          "value": "text",
+          "label": "t:settings.text"
+        },
+        {
+          "value": "image",
+          "label": "t:settings.image"
+        }
+      ],
+      "default": "text"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:settings.image",
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
+    },
+    {
+      "type": "url",
+      "id": "image_link",
+      "label": "t:settings.link",
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.text",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Most-loved jewels",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:settings.text",
+      "default": "<p>While jewellery is a personal choice, we're confident you'll love these as much as we do.</p>",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        }
+      ],
+      "default": "left",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.buttons",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "text",
+      "id": "button_1_label",
+      "label": "t:settings.label",
+      "default": "Shop now",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "url",
+      "id": "button_1_link",
+      "label": "t:settings.link",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "select",
+      "id": "button_1_style",
+      "label": "t:settings.button_style",
+      "options": [
+        {
+          "value": "link",
+          "label": "Text link"
+        },
+        {
+          "value": "primary",
+          "label": "t:options.primary"
+        },
+        {
+          "value": "secondary",
+          "label": "t:options.secondary"
+        }
+      ],
+      "default": "link",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "text",
+      "id": "button_2_label",
+      "label": "t:settings.label",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "url",
+      "id": "button_2_link",
+      "label": "t:settings.link",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "select",
+      "id": "button_2_style",
+      "label": "t:settings.button_style",
+      "options": [
+        {
+          "value": "link",
+          "label": "Text link"
+        },
+        {
+          "value": "primary",
+          "label": "t:options.primary"
+        },
+        {
+          "value": "secondary",
+          "label": "t:options.secondary"
+        }
+      ],
+      "default": "link",
+      "visible_if": "{{ section.settings.content_type == 'text' }}"
+    },
+    {
+      "type": "header",
+      "content": "Products"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "t:settings.collection"
+    },
+    {
+      "type": "range",
+      "id": "max_products",
+      "label": "t:settings.product_count",
+      "min": 2,
+      "max": 16,
+      "step": 1,
+      "default": 8
+    },
+    {
+      "type": "select",
+      "id": "layout_type",
+      "label": "t:settings.layout_type",
+      "options": [
+        {
+          "value": "carousel",
+          "label": "t:options.carousel"
+        },
+        {
+          "value": "grid",
+          "label": "t:options.grid"
+        }
+      ],
+      "default": "carousel"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:settings.columns",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 3,
+      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "t:settings.mobile_columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:options.one_number"
+        },
+        {
+          "value": "2",
+          "label": "t:options.two_number"
+        }
+      ],
+      "default": "1",
+      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+    },
+    {
+      "type": "range",
+      "id": "columns_gap",
+      "label": "t:settings.horizontal_gap",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 16,
+      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+    },
+    {
+      "type": "range",
+      "id": "rows_gap",
+      "label": "t:settings.vertical_gap",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 32,
+      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.section_layout"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product showcase",
+      "category": "t:categories.products",
+      "blocks": {
+        "static-product-card": {
+          "type": "_product-card",
+          "name": "t:names.product_card",
+          "static": true,
+          "settings": {
+            "product_card_gap": 4,
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "product-card-gallery": {
+              "type": "_product-card-gallery",
+              "name": "t:names.product_card_media",
+              "settings": {
+                "image_ratio": "square",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "product_title": {
+              "type": "product-title",
+              "name": "t:names.product_title",
+              "settings": {
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "paragraph",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 4,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "price": {
+              "type": "price",
+              "name": "t:names.product_price",
+              "settings": {
+                "show_sale_price_first": true,
+                "show_installments": false,
+                "show_tax_info": false,
+                "type_preset": "h6",
+                "width": "100%",
+                "alignment": "left",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            }
+          },
+          "block_order": [
+            "product-card-gallery",
+            "product_title",
+            "price"
+          ]
+        }
+      }
+    }
+  ]
+}
+{% endschema %}

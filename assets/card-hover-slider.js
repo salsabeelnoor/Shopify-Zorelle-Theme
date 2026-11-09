@@ -56,9 +56,11 @@ document.addEventListener(
 document.addEventListener(
   'pointerout',
   (event) => {
-    if (!(event.target instanceof Element)) return;
+    // Mouse hover only: touchscreens fire pointerout after every tap/swipe, and the
+    // reset below then fought the swipe (image 2 -> jump -> fast slide back).
+    if (!(event.target instanceof Element) || event.pointerType !== 'mouse') return;
     const gallery = event.target.closest(GALLERY);
-    if (!gallery) return;
+    if (!gallery?.hasAttribute('data-hovered')) return;
     const next = event.relatedTarget;
     if (next instanceof Node && gallery.contains(next)) return;
     gallery.removeAttribute('data-hover-engaged');
