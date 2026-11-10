@@ -264,7 +264,13 @@
     form="cart-form"
   >
     <span class="button-text">
-      {{ 'content.checkout' | t }}
+      {%- comment -%} Zorelle: the drawer button carries its own label and the cart total. {%- endcomment -%}
+      {%- assign drawer_checkout_label = settings.cart_drawer_checkout_label | strip -%}
+      {%- if section_id == 'cart-drawer-section' and drawer_checkout_label != blank -%}
+        {{ drawer_checkout_label | escape }} • {{ total_price }}
+      {%- else -%}
+        {{ 'content.checkout' | t }}
+      {%- endif -%}
     </span>
   </button>
 

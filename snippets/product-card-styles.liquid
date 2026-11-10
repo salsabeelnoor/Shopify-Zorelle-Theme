@@ -19,20 +19,31 @@
     overflow: hidden;
   }
 
+  /* Zorelle: 20px between the card image and the title. The card's block gap and the
+     title block's 4px top padding already add up, so the image adds the rest. */
+  product-card .card-gallery {
+    margin-block-end: max(0px, calc(20px - var(--product-card-gap, 0px) - 4px));
+  }
+
   /* Zorelle: product card title (500 weight face loaded in theme-styles-variables). */
   product-card a.user-select-text .text-block > * {
+    font-size: 14px;
     font-weight: 500;
     letter-spacing: 1.3px;
+    .heading {
+      font-size: 15px;
+      font-weight: 600;
+    }
   }
 
   /* Zorelle: product card price (size from the price block setting: 14px).
      .custom-typography is repeated to outrank the block's own typography variables. */
-  /* Card price: 14px, weight 500, 1px letter spacing, whichever type preset the price
+  /* Card price: 17px, weight 500, 1px letter spacing, whichever type preset the price
      block uses (h6 and the other presets style the inner elements directly). */
   product-card product-price.text-block,
   product-card product-price.text-block > *,
   product-card product-price.text-block :is([ref='priceContainer'], .price, .price-item__group, bdi) {
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 500;
     letter-spacing: 1px;
   }

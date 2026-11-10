@@ -106,9 +106,9 @@ class CartDrawerComponent extends Component {
       event.target instanceof Element ? event.target.closest('dialog:modal') : null
     );
 
-    if (shouldAutoOpen && !sourceModal && !this.#isCartEmpty()) {
-      this.#themeDrawer?.open();
-    }
+    // Zorelle: the drawer no longer opens the moment Add is clicked. It opens once the
+    // cart response has been applied (below), so it slides in already showing the new
+    // line instead of opening first and filling in after the request finishes.
 
     event.promise
       ?.then(({ detail }) => {
@@ -119,10 +119,13 @@ class CartDrawerComponent extends Component {
           return;
         }
 
-        const openAndSettle = () => {
-          if (!this.#themeDrawer?.isOpen) this.#themeDrawer?.open();
-          settle();
-        };
+        // Open on the next task: cart-items-component morphs the new line into the drawer
+        // synchronously in its own handler for this same promise, so it is in place by then.
+        const openAndSettle = () =>
+          setTimeout(() => {
+            if (!this.#themeDrawer?.isOpen) this.#themeDrawer?.open();
+            settle();
+          }, 0);
 
         if (sourceModal?.open) {
           sourceModal.addEventListener('close', openAndSettle, { once: true });
@@ -134,10 +137,6 @@ class CartDrawerComponent extends Component {
         if (error?.name !== 'AbortError') console.warn('[cart-drawer] Event promise rejected:', error);
       });
   };
-
-  #isCartEmpty() {
-    return Boolean(this.querySelector('.cart-drawer--empty'));
-  }
 
   #updateStickyState() {
     const dialog = this.#dialog;

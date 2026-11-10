@@ -472,6 +472,9 @@ export class CartItemsComponent extends createViewEventElement(Component) {
         // where the page is interactive alongside the open drawer). This also
         // needs the response stylesheet because it adds the cart summary markup.
         const wasEmptyCartDrawer = this.isDrawer && this.querySelector('[data-cart-drawer-empty]') !== null;
+        // Zorelle: a closed drawer opens already showing the new line, so the "adding" grow
+        // animation only plays when the shopper is already looking at the drawer.
+        const isVisible = !this.isDrawer || Boolean(this.closest('dialog')?.open);
         /** @type {'hydration' | 'full'} */
         const mode = this.isDrawer ? 'hydration' : 'full';
         const morphOptions = {
@@ -492,7 +495,7 @@ export class CartItemsComponent extends createViewEventElement(Component) {
           }
 
           // Animate newly added rows (reverse of the remove animation).
-          if (!wasEmptyCartDrawer && !prefersReducedMotion()) {
+          if (!wasEmptyCartDrawer && isVisible && !prefersReducedMotion()) {
             for (const row of this.refs.cartItemRows ?? []) {
               if (!existingKeys.has(row.dataset.key)) {
                 row.classList.add('adding');

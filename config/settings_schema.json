@@ -1526,6 +1526,58 @@
         "visible_if": "{{ settings.cart_type == 'drawer' }}"
       },
       {
+        "type": "text",
+        "id": "cart_drawer_heading",
+        "label": "Cart drawer heading",
+        "default": "Shopping cart",
+        "visible_if": "{{ settings.cart_type == 'drawer' }}"
+      },
+      {
+        "type": "text",
+        "id": "cart_drawer_checkout_label",
+        "label": "Checkout button label",
+        "info": "The cart total is added after the label.",
+        "default": "Proceed to checkout",
+        "visible_if": "{{ settings.cart_type == 'drawer' }}"
+      },
+      {
+        "type": "number",
+        "id": "cart_free_shipping_threshold",
+        "label": "Free shipping from",
+        "info": "Order total in your store currency. Leave empty to hide the free shipping progress.",
+        "default": 39,
+        "visible_if": "{{ settings.cart_type == 'drawer' }}"
+      },
+      {
+        "type": "text",
+        "id": "cart_free_shipping_text",
+        "label": "Free shipping progress text",
+        "info": "[amount] is replaced with the amount still to spend.",
+        "default": "You're [amount] away from free shipping",
+        "visible_if": "{{ settings.cart_type == 'drawer' }}"
+      },
+      {
+        "type": "text",
+        "id": "cart_free_shipping_success",
+        "label": "Free shipping reached text",
+        "default": "You've unlocked free shipping",
+        "visible_if": "{{ settings.cart_type == 'drawer' }}"
+      },
+      {
+        "type": "text",
+        "id": "cart_drawer_footer_text",
+        "label": "Cart drawer footer text",
+        "default": "Free shipping on orders over €39",
+        "visible_if": "{{ settings.cart_type == 'drawer' }}"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_drawer_payment_icons",
+        "label": "Show payment icons in cart drawer",
+        "default": true,
+        "visible_if": "{{ settings.cart_type == 'drawer' }}"
+      },
+      {
         "type": "header",
         "content": "t:content.cart_features"
       },

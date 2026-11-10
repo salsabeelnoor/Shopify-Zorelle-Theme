@@ -35,7 +35,8 @@
     var dialogs = [];
     for (var i = 0; i < drawerIds.length; i++) {
       var drawer = document.getElementById(drawerIds[i]);
-      if (!drawer) continue;
+      // Always-modal drawers (e.g. the cart) start closed after navigation.
+      if (!drawer || drawer.hasAttribute('modal')) continue;
 
       drawer.setAttribute('open', '');
 
@@ -86,22 +87,25 @@
   const squeezeQuery = window.matchMedia('(min-width: 990px)');
 
   // ── Squeeze coordination ──
-  // Listens to all drawers. Only squeezes on wide viewports.
+  // Listens to all drawers. Only squeezes on wide viewports, and never for
+  // always-modal drawers ([modal]), which overlay the page instead.
+  const squeezingDrawer = 'theme-drawer[open]:not([modal])';
+
   document.addEventListener('theme-drawer:open', () => {
-    if (squeezeQuery.matches) {
+    if (squeezeQuery.matches && document.querySelector(squeezingDrawer)) {
       pageWrapper?.classList.add('page-wrapper--drawer-open');
     }
   });
 
   document.addEventListener('theme-drawer:close', () => {
-    const openDrawer = document.querySelector('theme-drawer[open]');
+    const openDrawer = document.querySelector(squeezingDrawer);
     if (!openDrawer) {
       pageWrapper?.classList.remove('page-wrapper--drawer-open');
     }
   });
 
   squeezeQuery.addEventListener('change', () => {
-    const openDrawer = document.querySelector('theme-drawer[open]');
+    const openDrawer = document.querySelector(squeezingDrawer);
     pageWrapper?.classList.toggle('page-wrapper--drawer-open', Boolean(openDrawer) && squeezeQuery.matches);
   });
 
@@ -109,7 +113,7 @@
   // Store open drawer IDs sorted by their visual stack order so
   // the restore script can recreate the same z-index layering.
   function persistDrawerState() {
-    const openDrawers = Array.from(document.querySelectorAll('theme-drawer[open]:not([no-persist])'));
+    const openDrawers = Array.from(document.querySelectorAll('theme-drawer[open]:not([no-persist], [modal])'));
     if (!openDrawers.length) {
       sessionStorage.removeItem('theme-drawer-open');
       return;

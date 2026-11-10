@@ -40,13 +40,15 @@
     </div>
   {% endcapture %}
 
+  {%- comment -%} Zorelle: [modal] makes the cart overlay the page (with a backdrop) at every width. {%- endcomment -%}
   <theme-drawer
     id="cart-drawer"
+    modal
     data-skip-node-update
   >
     <dialog
       ref="panel"
-      class="theme-drawer__dialog color-custom-drawer"
+      class="theme-drawer__dialog cart-drawer__dialog color-custom-drawer"
       aria-labelledby="cart-drawer-heading"
       cart-summary-sticky="true"
     >
@@ -77,29 +79,70 @@
               </button>
             </div>
           {%- else -%}
+            {%- comment -%} Zorelle: no visible count badge; the count stays available to screen readers. {%- endcomment -%}
             {% capture cart_badge_html %}
-              <span
-                class="theme-drawer__badge{% if cart.item_count == 0 %} visually-hidden{% endif %}"
-                aria-hidden="true"
-                {% if cart.item_count <= 99 %}
-                  data-maintain-ratio
-                {% endif %}
-              >
-                {{- cart.item_count -}}
+              <span class="visually-hidden">
+                {{ 'accessibility.cart_count' | t }}: {{ cart.item_count }}
               </span>
-              {% if cart.item_count > 0 %}
-                <span class="visually-hidden">
-                  {{ 'accessibility.cart_count' | t }}: {{ cart.item_count }}
-                </span>
-              {% endif %}
             {% endcapture %}
-            {% assign cart_drawer_title = 'content.cart_title' | t %}
+            {%- liquid
+              assign cart_drawer_title = settings.cart_drawer_heading | strip | escape
+              if cart_drawer_title == blank
+                assign cart_drawer_title = 'content.cart_title' | t
+              endif
+            -%}
             {% render 'theme-drawer-header',
               title: cart_drawer_title,
               drawer_id: 'cart-drawer',
               heading_id: 'cart-drawer-heading',
               title_append: cart_badge_html
             %}
+
+            {%- comment -%}
+              Zorelle: free shipping progress. The threshold is a theme setting in the store
+              currency; the ring is drawn with SVG dash attributes (no inline styles).
+            {%- endcomment -%}
+            {%- if settings.cart_free_shipping_threshold > 0 -%}
+              {%- liquid
+                assign free_shipping_cents = settings.cart_free_shipping_threshold | times: 100 | round
+                assign free_shipping_remaining = free_shipping_cents | minus: cart.total_price
+                assign free_shipping_percent = cart.total_price | times: 100 | divided_by: free_shipping_cents | at_most: 100
+                assign free_shipping_offset = 100 | minus: free_shipping_percent
+
+                if settings.currency_code_enabled_cart_total
+                  assign free_shipping_amount = free_shipping_remaining | money_with_currency
+                else
+                  assign free_shipping_amount = free_shipping_remaining | money
+                endif
+                assign free_shipping_amount_html = '<strong>' | append: free_shipping_amount | append: '</strong>'
+              -%}
+              <div class="cart-drawer__shipping{% if free_shipping_remaining <= 0 %} cart-drawer__shipping--reached{% endif %}">
+                <svg
+                  class="cart-drawer__shipping-ring"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <circle class="cart-drawer__shipping-track" cx="10" cy="10" r="8" pathLength="100" />
+                  <circle
+                    class="cart-drawer__shipping-progress"
+                    cx="10"
+                    cy="10"
+                    r="8"
+                    pathLength="100"
+                    stroke-dasharray="100"
+                    stroke-dashoffset="{{ free_shipping_offset }}"
+                  />
+                </svg>
+                <p class="cart-drawer__shipping-text">
+                  {%- if free_shipping_remaining > 0 -%}
+                    {{ settings.cart_free_shipping_text | escape | replace: '[amount]', free_shipping_amount_html }}
+                  {%- else -%}
+                    {{ settings.cart_free_shipping_success | escape }}
+                  {%- endif -%}
+                </p>
+              </div>
+            {%- endif -%}
           {%- endif -%}
 
           {% capture cart_items_children %}
@@ -125,6 +168,31 @@
             is_drawer: true,
             section_id: 'cart-drawer-section'
           %}
+
+          {%- liquid
+            assign cart_drawer_footer_text = settings.cart_drawer_footer_text | strip
+            assign show_payment_icons = false
+            if settings.cart_drawer_payment_icons and shop.enabled_payment_types.size > 0
+              assign show_payment_icons = true
+            endif
+          -%}
+          {%- if cart.empty? == false and cart_drawer_footer_text != blank or cart.empty? == false and show_payment_icons -%}
+            <div class="cart-drawer__footer">
+              {%- if cart_drawer_footer_text != blank -%}
+                <p class="cart-drawer__footer-text">{{ cart_drawer_footer_text | escape }}</p>
+              {%- endif -%}
+              {%- if show_payment_icons -%}
+                <ul
+                  class="cart-drawer__payment-icons list-unstyled"
+                  aria-label="{{ 'blocks.payment_methods' | t }}"
+                >
+                  {%- for type in shop.enabled_payment_types -%}
+                    <li>{{ type | payment_type_svg_tag: class: 'cart-drawer__payment-icon' }}</li>
+                  {%- endfor -%}
+                </ul>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
         </div>
       </cart-drawer-component>
     </dialog>
@@ -273,6 +341,279 @@
     .cart-drawer__header,
     .cart-drawer__content {
       background: transparent;
+    }
+  }
+
+  /* ---------------------------------------------------------------------------
+     Zorelle cart drawer: uppercase header, free shipping progress, compact line
+     items, full-width checkout button and a footer with payment icons.
+     --------------------------------------------------------------------------- */
+  .cart-drawer__inner {
+    --cart-drawer-divider: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+  }
+
+  .cart-drawer__inner .theme-drawer__header {
+    padding-block: 1.125rem;
+    border-block-end: var(--cart-drawer-divider);
+  }
+
+  .cart-drawer__inner .theme-drawer__title {
+    font-family: var(--font-body--family);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .cart-drawer__inner .theme-drawer__close-button {
+    --private-button-size: 2rem;
+
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--color-foreground);
+
+    &:hover:not(:active) {
+      background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+    }
+  }
+
+  /* Free shipping progress */
+  .cart-drawer__shipping {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem var(--cart-drawer-padding);
+    border-block-end: var(--cart-drawer-divider);
+    color: var(--color-foreground);
+  }
+
+  .cart-drawer__shipping-ring {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    rotate: -90deg;
+    fill: none;
+    stroke-width: 2.5;
+  }
+
+  .cart-drawer__shipping-track {
+    stroke: rgb(var(--color-foreground-rgb) / var(--opacity-15));
+  }
+
+  .cart-drawer__shipping-progress {
+    stroke: currentColor;
+    stroke-linecap: round;
+    transition: stroke-dashoffset var(--animation-speed-slow) var(--animation-easing);
+  }
+
+  .cart-drawer__shipping-text {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+
+    strong {
+      font-weight: 600;
+    }
+  }
+
+  /* Line items: image | title, variant, price | bin (top) and quantity (bottom). */
+  .cart-drawer__inner .cart-drawer__items {
+    padding-block: 1.25rem;
+    border-block-end: var(--cart-drawer-divider);
+  }
+
+  .cart-drawer__items .cart-items__table-row.cart-items__table-row--full-width-variants {
+    grid-template-columns: 5.625rem minmax(0, 1fr) auto;
+    grid-template-rows: auto auto 1fr auto auto;
+    grid-template-areas:
+      'media details remove'
+      'media variants variants'
+      'media . .'
+      'media unit_price quantity'
+      'media error error';
+    column-gap: 0.75rem;
+    row-gap: 0.25rem;
+  }
+
+  /* Let the quantity selector and the bin take their own grid cells. */
+  .cart-drawer__items .cart-items__table-row--full-width-variants :is(.cart-items__quantity, .cart-items__quantity-controls) {
+    display: contents;
+  }
+
+  .cart-drawer__items .cart-items__table-row--full-width-variants {
+    .cart-items__title-row,
+    .cart-items__title {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .cart-items__variants-wrapper,
+    .cart-items__variants-wrapper * {
+      font-size: 0.8125rem;
+    }
+
+    /* Show the line total (price × quantity, after line discounts) instead of the unit price. */
+    .cart-items__unit-price-wrapper {
+      display: none;
+    }
+
+    .cart-items__price,
+    .cart-items__price * {
+      font-weight: 500;
+    }
+
+    .cart-items__price {
+      grid-area: unit_price;
+      align-self: center;
+      min-width: 0;
+      color: var(--color-foreground);
+      font-size: 0.875rem;
+      text-align: start;
+    }
+
+    .quantity-selector-wrapper {
+      grid-area: quantity;
+      align-self: end;
+      justify-self: end;
+    }
+
+    .quantity-selector {
+      /* The number, minus and plus all read this variable (the global input text is the accent). */
+      --color-input-text: var(--color-foreground);
+
+      border-radius: 0;
+    }
+
+    .volume-pricing-info {
+      grid-area: unit_price;
+      justify-self: end;
+      margin: 0;
+    }
+
+    .cart-items__remove {
+      grid-area: remove;
+      align-self: start;
+      justify-self: end;
+      width: 2rem;
+      height: 2rem;
+      margin-block-start: -0.375rem;
+      margin-inline-end: -0.375rem;
+      opacity: 0.7;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  /* Summary: follows the items and sticks to the bottom only when the list is long. */
+  .cart-drawer__inner .cart-drawer__summary {
+    gap: var(--gap-lg);
+    margin-block-start: 0;
+    padding-block: 2rem 0;
+    padding-inline: var(--cart-drawer-padding);
+  }
+
+  .cart-drawer__summary .cart-totals__total {
+    display: none;
+  }
+
+  .cart-drawer__summary .cart-totals:has(.cart-totals__original-container:empty) {
+    border-block-start: none;
+    padding-block-start: 0;
+  }
+
+  .cart-drawer__summary .cart__ctas {
+    width: calc(100% + var(--cart-drawer-padding) * 2);
+    margin-inline: calc(-1 * var(--cart-drawer-padding));
+  }
+
+  .cart-drawer__summary .cart__ctas .cart__checkout-button {
+    --button-border-radius: 0;
+
+    height: 3.75rem;
+    border-radius: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .cart-drawer__summary .additional-checkout-buttons {
+    padding-inline: var(--cart-drawer-padding);
+  }
+
+  /* Footer */
+  .cart-drawer__footer {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem var(--cart-drawer-padding) calc(1rem + var(--safe-area-inset-bottom, 0px));
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    text-align: center;
+  }
+
+  .cart-drawer__footer .cart-drawer__footer-text {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .cart-drawer__payment-icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.375rem;
+    margin: 0;
+  }
+
+  .cart-drawer__payment-icon {
+    display: block;
+    width: 2.375rem;
+    height: auto;
+  }
+
+  /* Overlay behind the cart: dims and softly blurs the page, fading with the drawer. */
+  .cart-drawer__dialog::backdrop {
+    background: rgb(var(--backdrop-color-rgb) / var(--opacity-30));
+    backdrop-filter: blur(6px);
+    animation: cart-drawer-backdrop-in var(--animation-speed) var(--animation-timing-fade-in);
+  }
+
+  .cart-drawer__dialog.theme-drawer__dialog--closing::backdrop {
+    animation: cart-drawer-backdrop-out var(--animation-speed) var(--animation-timing-fade-out) forwards;
+  }
+
+  @keyframes cart-drawer-backdrop-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes cart-drawer-backdrop-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cart-drawer__shipping-progress {
+      transition: none;
+    }
+
+    .cart-drawer__dialog::backdrop,
+    .cart-drawer__dialog.theme-drawer__dialog--closing::backdrop {
+      animation: none;
     }
   }
 {% endstylesheet %}
