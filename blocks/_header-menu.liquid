@@ -441,9 +441,10 @@
     transition: background-size var(--animation-speed, 0.2s) var(--ease-out-quad, ease-out);
   }
 
+  /* The active selector repeats the list-item part so it is as specific as the 0-width rule above. */
   .menu-list__list-item:not([slot='overflow']):hover .menu-list__link-title,
   .menu-list__list-item:not([slot='overflow']):focus-within .menu-list__link-title,
-  .menu-list__link--active .menu-list__link-title {
+  .menu-list__list-item:not([slot='overflow']) .menu-list__link--active .menu-list__link-title {
     background-size: 100% 1px;
   }
 

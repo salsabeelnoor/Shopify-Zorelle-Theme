@@ -1,0 +1,48 @@
+{% doc %}
+  One boxed link in the Quick links row. The link is marked as current when it points to
+  the page being viewed: its exact URL, or (for a plain collection link) the collection
+  being viewed with no tag filter applied.
+
+  @param {object} link - The menu link (linklist link) to render.
+  @param {boolean} [only_collections] - When true, links that do not point to a collection are skipped.
+  @param {string} [title] - Text to show instead of the link's own title (blank uses the link title).
+
+  @example
+  {% render 'quick-links-item', link: link, only_collections: true %}
+{% enddoc %}
+
+{%- liquid
+  assign link_url = link.url | default: ''
+  assign link_text = title | strip
+  if link_text == blank
+    assign link_text = link.title
+  endif
+
+  assign show_link = true
+  if only_collections
+    unless link_url contains '/collections'
+      assign show_link = false
+    endunless
+  endif
+
+  assign is_current = false
+  if link.current
+    assign is_current = true
+  elsif collection != blank and current_tags == blank and link_url == collection.url
+    assign is_current = true
+  endif
+-%}
+
+{%- if show_link -%}
+  <li class="quick-links__item">
+    <a
+      class="quick-links__link"
+      href="{{ link.url }}"
+      {% if is_current %}
+        aria-current="page"
+      {% endif %}
+    >
+      {{- link_text | escape -}}
+    </a>
+  </li>
+{%- endif -%}

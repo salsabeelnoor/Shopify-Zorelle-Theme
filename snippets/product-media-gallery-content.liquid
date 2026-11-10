@@ -1167,12 +1167,14 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     transition: background-color var(--animation-speed) var(--animation-easing),
-      border-color var(--animation-speed) var(--animation-easing);
+      border-color var(--animation-speed) var(--animation-easing),
+      color var(--animation-speed) var(--animation-easing);
 
+    /* On the dark viewer, hover inverts to a solid light fill with a dark icon (no tint). */
     &:hover {
-      border-color: rgb(var(--palette-lightest-rgb) / var(--opacity-40));
-      background-color: rgb(var(--palette-lightest-rgb) / var(--opacity-20));
-      color: var(--palette-lightest);
+      border-color: var(--palette-lightest);
+      background-color: var(--palette-lightest);
+      color: var(--palette-darkest);
     }
 
     &:focus-visible {

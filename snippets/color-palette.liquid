@@ -94,6 +94,17 @@
       render 'util-palette-hover-shift', color: settings.palette_secondary_button_border
     endcapture
   endif
+
+  # Zorelle: outlined (secondary) buttons never hover to a shifted grey tint. They fill with
+  # their own text colour (the dark palette colour) and switch to the contrasting light text.
+  assign effective_secondary_button_hover_background = settings.palette_secondary_button_text
+  assign effective_secondary_button_hover_border = settings.palette_secondary_button_text
+  assign secondary_fill_brightness = settings.palette_secondary_button_text | color_brightness
+  if secondary_fill_brightness > 128
+    assign effective_secondary_button_hover_text = palette_darkest
+  else
+    assign effective_secondary_button_hover_text = palette_lightest
+  endif
 %}
 
 {% comment %} Variant hover effective values (smart contrast for fallback text/border) {% endcomment %}

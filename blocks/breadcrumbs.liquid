@@ -1,0 +1,59 @@
+{% doc %}
+  Breadcrumbs block: the Home / collection / current page trail placed inside a section,
+  for example at the top of a collection heading band. Same trail and styling as the
+  Breadcrumbs section (snippets/breadcrumbs-trail.liquid).
+
+  @example
+  {% content_for 'block', type: 'breadcrumbs', id: 'breadcrumbs' %}
+{% enddoc %}
+
+<nav
+  class="breadcrumbs-block"
+  aria-label="{{ block.settings.nav_label | escape }}"
+  {{ block.shopify_attributes }}
+>
+  {%- render 'breadcrumbs-trail',
+    home_label: block.settings.home_label,
+    show_collection: block.settings.show_collection
+  -%}
+</nav>
+
+{% stylesheet %}
+  .breadcrumbs-block {
+    width: 100%;
+    min-width: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Breadcrumbs",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "home_label",
+      "label": "Home link text",
+      "default": "Home"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection",
+      "label": "Show collection",
+      "info": "On product pages, shows the product's collection between Home and the product.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "nav_label",
+      "label": "Screen reader label",
+      "default": "Breadcrumb"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Breadcrumbs"
+    }
+  ]
+}
+{% endschema %}

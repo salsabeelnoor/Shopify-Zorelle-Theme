@@ -1,0 +1,316 @@
+{% comment %}
+  Section contract.
+  A row of boxed links (for example All rings, Signet rings, Stacking rings) inside the site
+  container. On a collection page the row is chosen in this order:
+  1. a menu whose handle matches the collection's handle (a menu named "Rings" for
+     /collections/rings), when "Use the collection's own menu" is on;
+  2. the sub-links of the collection's item in the chosen menu (Rings → All rings, Signet
+     rings, …), when "Show the collection's sub-links" is on;
+  3. otherwise the top-level links of the chosen menu.
+  The link for the page being viewed is marked as current. The row scrolls sideways when it
+  does not fit.
+  @example
+  <!-- Add "Quick links" below the collection heading on the collection template. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+  assign source_menu = s.menu
+  assign row_menu = source_menu
+  assign has_parent = false
+
+  if collection != blank
+    assign has_collection_menu = false
+    if s.match_collection
+      assign collection_menu = linklists[collection.handle]
+      if collection_menu.links.size > 0
+        assign row_menu = collection_menu
+        assign has_collection_menu = true
+      endif
+    endif
+
+    # Find the collection's item in the menu (top level first, then one level down).
+    if has_collection_menu == false and s.use_menu_children
+      for link in source_menu.links
+        if link.links.size > 0 and link.url == collection.url
+          assign parent_link = link
+          assign has_parent = true
+          break
+        endif
+      endfor
+
+      if has_parent == false
+        for link in source_menu.links
+          for child in link.links
+            if child.links.size > 0 and child.url == collection.url
+              assign parent_link = child
+              assign has_parent = true
+              break
+            endif
+          endfor
+          if has_parent
+            break
+          endif
+        endfor
+      endif
+    endif
+  endif
+
+  # A "Shop all" box for the collection itself, unless the sub-links already have one.
+  assign add_all_link = false
+  if has_parent and s.show_all_link
+    assign add_all_link = true
+    # Sub-links may be grouped under headings, so check both levels.
+    for child in parent_link.links
+      if child.url == parent_link.url
+        assign add_all_link = false
+      endif
+      for grandchild in child.links
+        if grandchild.url == parent_link.url
+          assign add_all_link = false
+        endif
+      endfor
+    endfor
+  endif
+
+  assign nav_label = s.nav_label | strip
+  if nav_label == blank
+    if has_parent
+      assign nav_label = parent_link.title
+    else
+      assign nav_label = row_menu.title
+    endif
+  endif
+
+  assign has_links = has_parent
+  if row_menu.links.size > 0
+    assign has_links = true
+  endif
+-%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .quick-links {
+    --quick-links-padding-top: {{ s.padding_top }}px;
+    --quick-links-padding-bottom: {{ s.padding_bottom }}px;
+  }
+{% endstyle %}
+
+{%- if has_links -%}
+  <nav
+    class="quick-links container"
+    aria-label="{{ nav_label | escape }}"
+  >
+    <ul class="quick-links__list list-unstyled">
+      {%- if has_parent -%}
+        {%- if add_all_link -%}
+          {%- render 'quick-links-item', link: parent_link, title: s.all_link_label -%}
+        {%- endif -%}
+        {%- for child in parent_link.links -%}
+          {%- if child.links.size > 0 -%}
+            {%- for grandchild in child.links -%}
+              {%- render 'quick-links-item', link: grandchild, only_collections: s.only_collections -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- render 'quick-links-item', link: child, only_collections: s.only_collections -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- else -%}
+        {%- for link in row_menu.links -%}
+          {%- render 'quick-links-item', link: link, only_collections: s.only_collections -%}
+        {%- endfor -%}
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- elsif request.design_mode -%}
+  <p class="quick-links quick-links__placeholder container">Choose a menu for the quick links.</p>
+{%- endif -%}
+
+{% stylesheet %}
+  .section-quick-links {
+    position: sticky;
+    top: 65px;
+    z-index: 1;
+    background-color: var(--color-background);
+  }
+  .quick-links {
+    padding-block: var(--quick-links-padding-top) var(--quick-links-padding-bottom);
+  }
+
+  .quick-links__list {
+    display: flex;
+    gap: 0.75rem;
+    min-width: 0;
+    margin: 0;
+
+    /* Room for the focus ring, and a sideways scroll when the row is full. */
+    padding-block: 0.25rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .quick-links__item {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+
+  .quick-links__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 7rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1.25rem;
+    border: 1px solid var(--color-foreground);
+    color: var(--color-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--animation-speed) var(--animation-easing);
+
+    &:hover {
+      border-color: var(--palette-darkest);
+      background-color: var(--palette-darkest);
+      color: var(--palette-lightest);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-foreground);
+      outline-offset: 2px;
+    }
+
+    /* Current link: filled with the dark palette colour. */
+    &[aria-current='page'] {
+      border-color: var(--palette-darkest);
+      background-color: var(--palette-darkest);
+      color: var(--palette-lightest);
+    }
+
+    &[aria-current='page']:focus-visible {
+      outline-color: var(--palette-darkest);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .quick-links__list {
+      gap: 0.5rem;
+    }
+
+    .quick-links__link {
+      min-width: 5.5rem;
+      min-height: 2.5rem;
+      padding-inline: 1rem;
+      font-size: 0.875rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .quick-links__link {
+      transition: none;
+    }
+  }
+
+  .quick-links__placeholder {
+    margin: 0;
+    font-size: 0.875rem;
+    opacity: 0.7;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Quick links",
+  "tag": "section",
+  "class": "section-quick-links",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "t:settings.menu",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "match_collection",
+      "label": "Use the collection's own menu",
+      "info": "On a collection page, a menu with the same handle as the collection replaces this menu. Example: a menu named \"New arrivals\" for /collections/new-arrivals.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "use_menu_children",
+      "label": "Show the collection's sub-links",
+      "info": "On a collection page, shows the links under that collection's item in the menu. Example: Rings → All rings, Signet rings, Stacking rings.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_all_link",
+      "label": "Add a link to the whole collection",
+      "info": "Added first, only when the sub-links don't already link to the collection.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "all_link_label",
+      "label": "Whole collection link text",
+      "info": "Leave empty to use the menu item's name.",
+      "default": "Shop all"
+    },
+    {
+      "type": "checkbox",
+      "id": "only_collections",
+      "label": "Only show collection links",
+      "info": "Hides links to blog posts, pages and other non-collection pages.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "nav_label",
+      "label": "Label for screen readers",
+      "info": "Leave empty to use the menu's name.",
+      "default": "Shop by category"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "presets": [
+    {
+      "name": "Quick links"
+    }
+  ]
+}
+{% endschema %}

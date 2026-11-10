@@ -8,23 +8,7 @@
   <!-- Add "Breadcrumbs" above the product information section on the product template. -->
 {% endcomment %}
 
-{%- liquid
-  assign s = section.settings
-  assign crumb_collection = collection
-  if template.name == 'product' and crumb_collection == blank and s.show_collection
-    assign crumb_collection = product.collections.first
-  endif
-
-  case template.name
-    when 'product'
-      assign current_title = product.title
-    when 'collection'
-      assign current_title = collection.title
-      assign crumb_collection = blank
-    else
-      assign current_title = page_title
-  endcase
--%}
+{%- assign s = section.settings -%}
 
 {% style %}
   #shopify-section-{{ section.id }} .breadcrumbs {
@@ -34,72 +18,12 @@
 {% endstyle %}
 
 <nav class="breadcrumbs container" aria-label="{{ s.nav_label | escape }}">
-  <ol class="breadcrumbs__list list-unstyled">
-    <li class="breadcrumbs__item">
-      <a class="breadcrumbs__link" href="{{ routes.root_url }}">{{ s.home_label | escape }}</a>
-    </li>
-    {%- if s.show_collection and crumb_collection != blank -%}
-      <li class="breadcrumbs__item">
-        <a class="breadcrumbs__link" href="{{ crumb_collection.url }}">{{ crumb_collection.title | escape }}</a>
-      </li>
-    {%- endif -%}
-    {%- if current_title != blank -%}
-      <li class="breadcrumbs__item">
-        <span class="breadcrumbs__current" aria-current="page">{{ current_title | escape }}</span>
-      </li>
-    {%- endif -%}
-  </ol>
+  {%- render 'breadcrumbs-trail', home_label: s.home_label, show_collection: s.show_collection -%}
 </nav>
 
 {% stylesheet %}
   .breadcrumbs {
     padding-block: var(--breadcrumbs-padding-top) var(--breadcrumbs-padding-bottom);
-  }
-
-  .breadcrumbs__list {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.25rem 0;
-    margin: 0;
-    font-size: 0.6875rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-
-  .breadcrumbs__item {
-    display: inline-flex;
-    align-items: center;
-    min-width: 0;
-  }
-
-  /* Separator between items. */
-  .breadcrumbs__item + .breadcrumbs__item::before {
-    content: '/';
-    margin-inline: 0.75rem;
-    color: rgb(var(--color-foreground-rgb) / var(--opacity-40, 0.4));
-  }
-
-  .breadcrumbs__link {
-    color: rgb(var(--color-foreground-rgb) / var(--opacity-60, 0.6));
-    text-decoration: none;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: var(--color-foreground);
-    }
-  }
-
-  .breadcrumbs__current {
-    color: var(--color-foreground);
-    font-weight: 500;
-    overflow-wrap: anywhere;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .breadcrumbs__link {
-      transition: none;
-    }
   }
 {% endstylesheet %}
 

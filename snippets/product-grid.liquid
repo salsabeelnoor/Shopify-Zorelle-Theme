@@ -107,13 +107,58 @@
       {% render 'text-block-styles' %}
       {% render 'price-styles' %}
       {% render 'product-card-gallery-zoom-details-styles' %}
+      {%- liquid
+        # Zorelle: the hint and "Clear all" only make sense when filters or a tag narrowed the list.
+        assign empty_filters = collection.filters
+        if collection == blank
+          assign empty_filters = search.filters
+        endif
+
+        assign is_filtered = false
+        if current_tags.size > 0
+          assign is_filtered = true
+        endif
+        for filter in empty_filters
+          if filter.active_values.size > 0 or filter.min_value.value != blank or filter.max_value.value != blank
+            assign is_filtered = true
+            break
+          endif
+        endfor
+
+        assign clear_url = collection.url
+        if collection == blank
+          assign search_query = search.terms | url_encode
+          assign clear_url = routes.search_url | append: '?q=' | append: search_query
+        endif
+      -%}
       <div class="main-collection-grid__empty">
-        <h2 class="main-collection-grid__empty-title h2">
+        <span class="main-collection-grid__empty-icon" aria-hidden="true">
+          {{- 'icon-search.svg' | inline_asset_content -}}
+        </span>
+        <h2 class="main-collection-grid__empty-title">
           {{ 'content.no_products_found' | t }}
         </h2>
-        <p>
-          {{ 'content.use_fewer_filters_html' | t: link: collection.url, class: 'main-collection-grid__empty-link' }}
-        </p>
+        {%- if is_filtered -%}
+          <p class="main-collection-grid__empty-text">
+            {{ 'content.use_fewer_filters_html' | t: link: clear_url, class: 'main-collection-grid__empty-link' }}
+          </p>
+        {%- endif -%}
+        <div class="main-collection-grid__empty-actions">
+          {%- if is_filtered -%}
+            <a
+              class="button button-secondary main-collection-grid__empty-button"
+              href="{{ clear_url }}"
+            >
+              {{- 'actions.clear_all' | t -}}
+            </a>
+          {%- endif -%}
+          <a
+            class="button main-collection-grid__empty-button"
+            href="{{ routes.all_products_collection_url }}"
+          >
+            {{- 'actions.continue_shopping' | t -}}
+          </a>
+        </div>
       </div>
     {% else %}
       {% if enable_infinite_scroll %}
@@ -369,7 +414,57 @@
     gap: var(--padding-sm);
   }
 
+  /* Zorelle: calmer empty state — icon, modest heading, hint and two actions. */
+  .main-collection-grid__empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    margin-block-end: 0.75rem;
+    border-radius: 50%;
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+    color: var(--color-foreground);
+
+    svg {
+      width: 1.75rem;
+      height: 1.75rem;
+    }
+  }
+
   .main-collection-grid__empty-title {
     margin: 0;
+    font-family: var(--font-body--family);
+    font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+  }
+
+  .main-collection-grid__empty-text {
+    max-width: 28rem;
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-70));
+  }
+
+  .main-collection-grid__empty-link {
+    color: var(--color-foreground);
+    text-underline-offset: 0.2em;
+  }
+
+  .main-collection-grid__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-block-start: 1.25rem;
+  }
+
+  .main-collection-grid__empty-button {
+    min-width: 11rem;
   }
 {% endstylesheet %}
