@@ -1083,11 +1083,6 @@ summary:hover {
   }
 }
 
-.dialog--closed .close-button {
-  animation: elementSlideOutBottom calc(var(--animation-speed) * 0.5)
-    var(--animation-easing) forwards;
-}
-
 .close-button:hover {
   background-color: transparent;
   opacity: 0.8;
@@ -1586,66 +1581,6 @@ input[type="radio"] {
 
   to {
     transform: translateY(var(--padding-sm));
-    opacity: 0;
-  }
-}
-
-@keyframes elementSlideOutBottom {
-  from {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  to {
-    transform: translateY(calc(-1 * var(--padding-sm)));
-    opacity: 0;
-  }
-}
-
-@keyframes thumbnailsSlideInTop {
-  from {
-    transform: translateY(calc(-50% + var(--margin-lg)));
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(-50%);
-    opacity: 1;
-  }
-}
-
-@keyframes thumbnailsSlideOutTop {
-  from {
-    transform: translateY(-50%);
-    opacity: 1;
-  }
-
-  to {
-    transform: translateY(calc(-50% + var(--margin-lg)));
-    opacity: 0;
-  }
-}
-
-@keyframes thumbnailsSlideInBottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes thumbnailsSlideOutBottom {
-  from {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  to {
-    transform: translateY(100%);
     opacity: 0;
   }
 }

@@ -51,25 +51,16 @@
     }
   }
 
+  /* Size, colours and layout live with the viewer in product-media-gallery-content. */
   zoom-dialog dialog {
-    width: 100vw;
-    height: 100vh;
     border: none;
     margin: 0;
     padding: 0;
-    max-width: 100%;
-    max-height: 100%;
-    background: #fff;
     opacity: 0;
     transition: opacity var(--animation-speed) var(--animation-easing);
-    scrollbar-width: none;
 
     &[open] {
       opacity: 1;
-    }
-
-    @media (prefers-reduced-motion: no-preference) {
-      scroll-behavior: smooth;
     }
 
     &::backdrop {
@@ -92,14 +83,6 @@
 
   slideshow-slide.product-media-container--tallest {
     content-visibility: visible;
-  }
-
-  .product-media__drag-zoom-wrapper {
-    aspect-ratio: inherit;
-    min-height: inherit;
-    min-width: inherit;
-    display: inherit;
-    flex: inherit;
   }
 
   .media-gallery__mobile-controls {

@@ -265,6 +265,20 @@
       "default": true
     },
     {
+      "type": "text",
+      "id": "zoom_hint",
+      "label": "Zoom hint (mouse)",
+      "default": "Click image to zoom • Move mouse to inspect",
+      "visible_if": "{{ block.settings.zoom }}"
+    },
+    {
+      "type": "text",
+      "id": "zoom_hint_touch",
+      "label": "Zoom hint (touch)",
+      "default": "Tap image to zoom • Drag to inspect",
+      "visible_if": "{{ block.settings.zoom }}"
+    },
+    {
       "type": "checkbox",
       "id": "video_loop",
       "label": "t:settings.enable_video_looping",
