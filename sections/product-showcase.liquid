@@ -1,19 +1,25 @@
 {% comment %}
   Section contract.
-  Left side: either an image (fills the column, optional link) or text (heading, text,
-  up to two buttons, vertically centred). Right side: a collection's products as a
-  carousel (arrows + progress pagination below) or a grid. Cards are the site-wide
-  product card (static _product-card block), so they match every other product list.
-  Stacks the left side above the products at 1024px and below.
+  Left side: either text (heading, text, up to two buttons, vertically centred) with the
+  collection's products as a carousel (arrows + progress pagination below), or an image
+  (left or right, optional link, sticky) with the products as a grid. Cards are the
+  site-wide product card (static _product-card block), so they match every other list.
+  Stacks at 1024px and below (text) or 768px and below (image).
   @example
-  <!-- Add "Product showcase", pick a collection, choose Carousel or Grid. -->
+  <!-- Add "Product showcase", pick a collection, choose Text (carousel) or Image (grid). -->
 {% endcomment %}
 
 {% liquid
   assign s = section.settings
   assign max_items = s.max_products
+  # Layout follows the left side: text = carousel, image = grid (no setting).
+  assign layout_type = 'carousel'
+  if s.content_type == 'image'
+    assign layout_type = 'grid'
+  endif
+
   assign is_carousel = false
-  if s.layout_type == 'carousel'
+  if layout_type == 'carousel'
     assign is_carousel = true
   endif
 
@@ -58,7 +64,7 @@
   }
 {% endstyle %}
 
-<div class="showcase showcase--{{ s.layout_type }} showcase--{{ s.content_type }}">
+<div class="showcase showcase--{{ layout_type }} showcase--{{ s.content_type }}{% if s.content_type == 'image' %} showcase--media-{{ s.image_position | default: 'left' }}{% endif %}">
   <div class="showcase__inner container">
     {%- if s.content_type == 'image' -%}
       <div class="showcase__media">
@@ -68,10 +74,10 @@
         {%- if s.image != blank -%}
           {{
             s.image
-            | image_url: width: 1200
+            | image_url: width: 1600
             | image_tag:
-              widths: '300, 450, 600, 800, 1000, 1200',
-              sizes: '(min-width: 1025px) calc(min(1800px, 96vw) / 4), 96vw',
+              widths: '300, 450, 600, 800, 1000, 1200, 1400, 1600',
+              sizes: '(min-width: 1201px) calc(min(1800px, 96vw) * 0.4), (min-width: 769px) 48vw, 96vw',
               loading: image_loading,
               alt: s.image.alt,
               class: 'showcase__image'
@@ -81,6 +87,20 @@
         {%- endif -%}
         {%- if s.image_link != blank -%}
           </a>
+        {%- endif -%}
+        {%- comment -%}
+          Optional heading/subtitle at the bottom of the image (clear of the subject), on a
+          dark gradient so it stays readable. Clicks pass through to the image link.
+        {%- endcomment -%}
+        {%- if s.image_heading != blank or s.image_subtitle != blank -%}
+          <div class="showcase__caption">
+            {%- if s.image_heading != blank -%}
+              <h2 class="showcase__caption-heading">{{ s.image_heading | escape }}</h2>
+            {%- endif -%}
+            {%- if s.image_subtitle != blank -%}
+              <p class="showcase__caption-text">{{ s.image_subtitle | escape }}</p>
+            {%- endif -%}
+          </div>
         {%- endif -%}
       </div>
     {%- else -%}
@@ -153,29 +173,29 @@
       </ul>
 
       {%- if is_carousel -%}
-          <button
-            type="button"
-            class="showcase__arrow showcase__arrow--prev"
-            aria-label="{{ 'accessibility.slideshow_previous' | t }}"
-            aria-controls="{{ track_id }}"
-            data-showcase-prev
-            disabled
-          >
-            <span class="svg-wrapper" aria-hidden="true">{{ 'icon-chevron-left.svg' | inline_asset_content }}</span>
-          </button>
-          <button
-            type="button"
-            class="showcase__arrow showcase__arrow--next"
-            aria-label="{{ 'accessibility.slideshow_next' | t }}"
-            aria-controls="{{ track_id }}"
-            data-showcase-next
-          >
-            <span class="svg-wrapper" aria-hidden="true">{{ 'icon-chevron-right.svg' | inline_asset_content }}</span>
-          </button>
-          {%- comment -%} Progress pagination: thumb size/position set by product-showcase.js. {%- endcomment -%}
-          <div class="showcase__progress" aria-hidden="true">
-            <span class="showcase__progress-thumb"></span>
-          </div>
+        <button
+          type="button"
+          class="showcase__arrow showcase__arrow--prev"
+          aria-label="{{ 'accessibility.slideshow_previous' | t }}"
+          aria-controls="{{ track_id }}"
+          data-showcase-prev
+          disabled
+        >
+          <span class="svg-wrapper" aria-hidden="true">{{ 'icon-chevron-left.svg' | inline_asset_content }}</span>
+        </button>
+        <button
+          type="button"
+          class="showcase__arrow showcase__arrow--next"
+          aria-label="{{ 'accessibility.slideshow_next' | t }}"
+          aria-controls="{{ track_id }}"
+          data-showcase-next
+        >
+          <span class="svg-wrapper" aria-hidden="true">{{ 'icon-chevron-right.svg' | inline_asset_content }}</span>
+        </button>
+        {%- comment -%} Progress pagination: thumb size/position set by product-showcase.js. {%- endcomment -%}
+        <div class="showcase__progress" aria-hidden="true">
+          <span class="showcase__progress-thumb"></span>
+        </div>
         </product-showcase-slider>
       {%- endif -%}
     </div>
@@ -200,7 +220,49 @@
   @media screen and (min-width: 1025px) {
     .showcase__inner {
       grid-template-columns: minmax(14rem, 1fr) minmax(0, 3fr);
-      gap: clamp(2rem, 4vw, 5rem);
+      gap: 40px;
+    }
+
+    /* Image on the left: a wider column (about 40%). */
+    .showcase--image .showcase__inner {
+      grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    }
+
+    /* Image on the right: products first, image second (columns mirrored). */
+    .showcase--media-right .showcase__inner {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+
+    .showcase--media-right .showcase__media {
+      order: 2;
+    }
+  }
+
+  /* Image mode, 769–1200px: image and products split 50/50, products in one column. Image mode only
+     stacks at 768px and below (text mode stacks at 1024px), so below 1025px it also
+     needs the desktop image behaviour: capped height, sticky, right-side order. */
+  @media screen and (min-width: 769px) and (max-width: 1200px) {
+    .showcase--image .showcase__inner,
+    .showcase--media-right .showcase__inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 28px;
+    }
+
+    .showcase--image .showcase__media {
+      position: sticky;
+      top: 66px;
+      align-self: start;
+      height: min(100%, calc(100svh - 66px));
+      min-height: 0;
+      aspect-ratio: auto;
+    }
+
+    .showcase--media-right .showcase__media {
+      order: 2;
+    }
+
+    .showcase--image.showcase--grid .showcase__track {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 
@@ -216,17 +278,28 @@
     min-height: 100%;
     overflow: hidden;
     /* Stacked above the products: wide on tablets, portrait on phones. */
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 2/3;
+    width: 100%;
   }
 
-  @media screen and (max-width: 640px) {
+  @media only screen and (max-width: 768px) {
     .showcase__media {
-      aspect-ratio: 4 / 5;
+      max-height: 800px;
     }
+    
   }
 
+  /* Desktop: the image matches the product row's height but never gets taller than the
+     screen below the header (66px), and stays in view (sticky under the header) while a
+     taller grid scrolls past. Sticky needs a top-aligned grid item, so the height is set
+     explicitly instead of stretching (grid-area percentages resolve here). */
   @media screen and (min-width: 1025px) {
     .showcase__media {
+      position: sticky;
+      top: 66px;
+      align-self: start;
+      height: min(100%, calc(100svh - 66px));
+      min-height: 0;
       aspect-ratio: auto;
     }
   }
@@ -242,11 +315,76 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s var(--ease-out-quad, ease-out);
+    transition: transform 0.4s ease-in-out;
   }
 
   .showcase__media-link:hover .showcase__image {
     transform: scale(1.03);
+  }
+
+  /* Caption at the bottom of the image: light text on a dark gradient. */
+  .showcase__caption {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    z-index: 1;
+    display: grid;
+    gap: 16px;
+    padding: 4rem clamp(1.25rem, 3vw, 2.25rem) 36px;
+    background: linear-gradient( to top, rgb(54 38 43 / 82%), rgb(54 38 43 / 0%) );
+    color: var(--palette-lightest);
+    pointer-events: none;
+    overflow-wrap: anywhere;
+  }
+
+  .showcase__caption-heading {
+    margin: 0;
+    color: inherit;
+    font-family: var(--font-heading--family);
+    font-size: clamp(30px, calc(30px + 22px * (100vw - 320px) / 1600px), 52px);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.15;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 2px 3px 3px rgba(0, 0, 0, 0.15);
+    transform: translateY(0);
+    transition: transform 0.4s ease-in-out;
+  }
+  @media only screen and (max-width: 768px) {
+    .showcase__caption {
+      padding-bottom: clamp(30px, calc(30px + 40px * (100vw - 320px) / 448px), 70px);
+    }
+  }
+  @media only screen and (max-width: 450px) {
+    .showcase__caption-heading {
+      letter-spacing: 0;
+    }
+  }
+
+  /* Subtitle as an underlined call to action ("Shop the edit"): the line is only as wide
+     as the text. The whole image is the link, so hovering it nudges the underline. */
+  .showcase__caption-text {
+    justify-self: start;
+    margin: 0;
+    padding-block-end: 0.2rem;
+    border-block-end: 1px solid currentColor;
+    color: var(--palette-lightest);
+    font-size: 16px;
+    letter-spacing: 1px;
+    line-height: 1.4;
+    transform: translateY(0);
+    transition: transform 0.4s ease-in-out;
+  }
+
+  .showcase__media-link:hover ~ .showcase__caption .showcase__caption-heading,
+  .showcase__media-link:hover ~ .showcase__caption .showcase__caption-text {
+    transform: translateY(-10px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .showcase__caption-text {
+      transition: none;
+    }
   }
 
   .showcase__placeholder {
@@ -321,9 +459,7 @@
      width), centred). Stacked (1024px and below) the carousel fits the container. */
   @media screen and (min-width: 1025px) {
     .showcase--carousel {
-      --showcase-bleed: calc(
-        (100cqw - min(100cqw - var(--container-gutter) * 2, var(--container-max-width))) / 2
-      );
+      --showcase-bleed: calc((100cqw - min(100cqw - var(--container-gutter) * 2, var(--container-max-width))) / 2);
     }
 
     .showcase--carousel .showcase__products {
@@ -406,7 +542,8 @@
     display: grid;
     grid-auto-flow: column;
     grid-auto-columns: calc(
-      (100% - var(--showcase-bleed, 0px) - var(--showcase-gap) * (var(--showcase-visible) - 1)) / var(--showcase-visible)
+      (100% - var(--showcase-bleed, 0px) - var(--showcase-gap) * (var(--showcase-visible) - 1)) /
+        var(--showcase-visible)
     );
     gap: var(--showcase-gap);
     overflow-x: auto;
@@ -443,10 +580,7 @@
     background: rgb(var(--palette-lightest-rgb) / var(--opacity-80, 0.8));
     color: var(--palette-darkest);
     cursor: pointer;
-    transition:
-      opacity 0.25s ease,
-      background-color 0.2s ease,
-      color 0.2s ease;
+    transition: opacity 0.25s ease, background-color 0.2s ease, color 0.2s ease;
 
     .svg-wrapper,
     svg {
@@ -627,12 +761,42 @@
       "type": "image_picker",
       "id": "image",
       "label": "t:settings.image",
-      "visible_if": "{{ section.settings.content_type == 'image' }}"
+      "visible_if": "{{ section.settings.content_type == 'image' }}",
+      "info": "Best size: 1600 × 2400 px (portrait). For the best crop: start the top of the hair about 15% down from the top, keep the face, jewellery and hands above the bottom 30% (the heading sits there), and leave about 8% space on each side."
     },
     {
       "type": "url",
       "id": "image_link",
       "label": "t:settings.link",
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "t:settings.position",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left",
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
+    },
+    {
+      "type": "text",
+      "id": "image_heading",
+      "label": "t:settings.heading",
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
+    },
+    {
+      "type": "text",
+      "id": "image_subtitle",
+      "label": "Subtitle",
       "visible_if": "{{ section.settings.content_type == 'image' }}"
     },
     {
@@ -762,22 +926,6 @@
       "default": 8
     },
     {
-      "type": "select",
-      "id": "layout_type",
-      "label": "t:settings.layout_type",
-      "options": [
-        {
-          "value": "carousel",
-          "label": "t:options.carousel"
-        },
-        {
-          "value": "grid",
-          "label": "t:options.grid"
-        }
-      ],
-      "default": "carousel"
-    },
-    {
       "type": "range",
       "id": "columns",
       "label": "t:settings.columns",
@@ -785,7 +933,7 @@
       "max": 5,
       "step": 1,
       "default": 3,
-      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
     },
     {
       "type": "select",
@@ -802,7 +950,7 @@
         }
       ],
       "default": "1",
-      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
     },
     {
       "type": "range",
@@ -813,7 +961,7 @@
       "step": 2,
       "unit": "px",
       "default": 16,
-      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
     },
     {
       "type": "range",
@@ -824,7 +972,7 @@
       "step": 2,
       "unit": "px",
       "default": 32,
-      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
     },
     {
       "type": "header",

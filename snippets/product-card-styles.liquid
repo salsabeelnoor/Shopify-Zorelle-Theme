@@ -27,10 +27,14 @@
 
   /* Zorelle: product card price (size from the price block setting: 14px).
      .custom-typography is repeated to outrank the block's own typography variables. */
-  product-card product-price.custom-typography,
-  product-card product-price.custom-typography :is([ref='priceContainer'], .price, .price-item__group, bdi) {
+  /* Card price: 14px, weight 500, 1px letter spacing, whichever type preset the price
+     block uses (h6 and the other presets style the inner elements directly). */
+  product-card product-price.text-block,
+  product-card product-price.text-block > *,
+  product-card product-price.text-block :is([ref='priceContainer'], .price, .price-item__group, bdi) {
+    font-size: 14px;
     font-weight: 500;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
   }
 
   /* 4px between the sale price and the compare-at price. inline-flex sizes to its

@@ -352,8 +352,28 @@
     {{ 'product-apparel-1' | placeholder_svg_tag: 'product-media-gallery__placeholder-image' }}
   </div>
 {% else %}
+  {%- comment -%} Zorelle: setting-driven vars in a scoped style block, not inline. {%- endcomment -%}
+  {% style %}
+    media-gallery.media-gallery--block-{{ block.id }} {
+      {% render 'spacing-style', settings: block_settings %}
+      --thumbnail-width: {{ block_settings.thumbnail_width }}px;
+      --media-radius: {{ block_settings.media_radius }}px;
+      {%- if block_settings.icons_style contains 'large' %}
+        --slideshow-icon-padding: 0px;
+      {%- endif %}
+      --image-gap: {{ block_settings.image_gap }}px;
+      {%- unless block_settings.aspect_ratio == 'adapt' %}
+        --gallery-aspect-ratio: {{ block_settings.aspect_ratio }};
+      {%- endunless %}
+    }
+
+    media-gallery.media-gallery--block-{{ block.id }} slideshow-controls {
+      --thumbnail-radius: {{ block_settings.thumbnail_radius }}px;
+    }
+  {% endstyle %}
   <media-gallery
     class="
+      media-gallery--block-{{ block.id }}
       spacing-style
       sticky-content
       {% if media_presentation == 'grid' %}
@@ -368,7 +388,6 @@
         media-gallery--extend
       {% endif %}
     "
-    style="{% render 'spacing-style', settings: block_settings %} --thumbnail-width: {{ block_settings.thumbnail_width }}px; --media-radius: {{ block_settings.media_radius }}px;{% if block_settings.icons_style contains 'large' %} --slideshow-icon-padding: 0px;{% endif %}--image-gap: {{ block_settings.image_gap }}px;{% unless block_settings.aspect_ratio == 'adapt' %} --gallery-aspect-ratio: {{ block_settings.aspect_ratio }};{% endunless %}"
     data-presentation="{{ media_presentation }}"
     {{ block_shopify_attributes }}
   >
@@ -426,8 +445,7 @@
             thumbnails: sorted_media,
             controls_on_media: controls_on_media,
             pagination_position: pagination_position,
-            aspect_ratio: block_settings.aspect_ratio,
-            thumbnail_radius: block_settings.thumbnail_radius
+            aspect_ratio: block_settings.aspect_ratio
           -%}
         {% endif %}
 
@@ -439,8 +457,7 @@
             thumbnails: sorted_media,
             controls_on_media: mobile_controls_on_media,
             pagination_position: 'center',
-            aspect_ratio: block_settings.aspect_ratio,
-            thumbnail_radius: block_settings.thumbnail_radius
+            aspect_ratio: block_settings.aspect_ratio
           -%}
         {% endif %}
       {% endcapture %}

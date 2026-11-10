@@ -51,6 +51,20 @@
     endif
   %}
 
+  {%- comment -%} Zorelle: setting-driven vars in a scoped style block, not inline. {%- endcomment -%}
+  {% style %}
+    #product-recommendations-{{ section.id }} .section-resource-list.section-resource-list {
+      {% render 'spacing-style', settings: section.settings %}
+      {% render 'gap-style', value: section.settings.gap %}
+      {{ styles }}
+    }
+
+    #product-recommendations-{{ section.id }} .resource-list.product-recommendations__mobile-carousel {
+      --resource-list-gap: {{ section.settings.columns_gap }}px;
+      --column-count: {{ section.settings.columns }};
+    }
+  {% endstyle %}
+
   <div
     class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
   ></div>
@@ -62,11 +76,6 @@
       section-resource-list
       spacing-style
       gap-style
-    "
-    style="
-      {%  render 'spacing-style', settings: section.settings %}
-      {%  render 'gap-style', value: section.settings.gap %}
-      {{ styles }}
     "
   >
     <div class="section-resource-list__content">
@@ -153,18 +162,12 @@
       </div>
 
       {% if section.settings.carousel_on_mobile and section.settings.layout_type != 'carousel' %}
-        {% liquid
-          assign mobile_carousel_gap = section.settings.columns_gap
-        %}
         <div
           class="
             resource-list
+            product-recommendations__mobile-carousel
             hidden--desktop
             force-full-width
-          "
-          style="
-            --resource-list-gap: {{ mobile_carousel_gap }}px;
-            --column-count: {{ section.settings.columns }};
           "
         >
           {% render 'resource-list-carousel',

@@ -171,10 +171,10 @@
           ]
         }
       },
-      "name": "Featured products slider",
       "settings": {
         "content_type": "text",
         "image_link": "",
+        "image_position": "left",
         "heading": "Most-loved jewels",
         "text": "<p>While jewellery is a personal choice, we're confident you'll love these as much as we do.</p>",
         "text_alignment": "left",
@@ -186,10 +186,131 @@
         "button_2_style": "link",
         "collection": "best-sellers",
         "max_products": 16,
-        "layout_type": "carousel",
         "columns": 4,
         "mobile_columns": "1",
         "columns_gap": 12,
+        "rows_gap": 32,
+        "background_color": "",
+        "padding_top": 64,
+        "padding_bottom": 64
+      }
+    },
+    "product_showcase_yTgh7m": {
+      "type": "product-showcase",
+      "blocks": {
+        "static-product-card": {
+          "type": "_product-card",
+          "name": "t:names.product_card",
+          "static": true,
+          "settings": {
+            "product_card_gap": 4,
+            "background_color": "",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "product_card_gallery_emYTm9": {
+              "type": "_product-card-gallery",
+              "name": "t:names.product_card_media",
+              "settings": {
+                "personalize_label": "Personalise",
+                "size_heading": "Select size / option",
+                "image_ratio": "square",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "product_title_HzEt4R": {
+              "type": "product-title",
+              "name": "t:names.product_title",
+              "settings": {
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "paragraph",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "text_color": "",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 4,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "price_Nm97nR": {
+              "type": "price",
+              "name": "t:names.product_price",
+              "settings": {
+                "show_sale_price_first": true,
+                "show_installments": false,
+                "show_tax_info": false,
+                "type_preset": "h6",
+                "width": "100%",
+                "alignment": "left",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "text_color": "",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "product_card_gallery_emYTm9",
+            "product_title_HzEt4R",
+            "price_Nm97nR"
+          ]
+        }
+      },
+      "name": "Product showcase",
+      "settings": {
+        "content_type": "image",
+        "image": "shopify://shop_images/exec-16167312-e06c-4b48-ab90-735b33e56196.png",
+        "image_link": "shopify://collections/necklaces",
+        "image_position": "right",
+        "heading": "Most-loved jewels",
+        "text": "<p>While jewellery is a personal choice, we're confident you'll love these as much as we do.</p>",
+        "text_alignment": "left",
+        "button_1_label": "Shop now",
+        "button_1_link": "",
+        "button_1_style": "link",
+        "button_2_label": "",
+        "button_2_link": "",
+        "button_2_style": "link",
+        "collection": "necklaces",
+        "max_products": 16,
+        "columns": 2,
+        "mobile_columns": "1",
+        "columns_gap": 16,
         "rows_gap": 32,
         "background_color": "",
         "padding_top": 64,
@@ -200,6 +321,7 @@
   "order": [
     "hero_banner_main",
     "collection_tiles_main",
-    "featured_products_slider_4mHTPQ"
+    "featured_products_slider_4mHTPQ",
+    "product_showcase_yTgh7m"
   ]
 }

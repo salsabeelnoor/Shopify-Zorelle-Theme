@@ -362,6 +362,13 @@
     margin-block-start: 0.75rem;
   }
 
+  /* Hover sweeps to the dark palette colour with light text (buttons.css sweep). */
+  .site-footer .site-footer__submit.button-secondary {
+    --btn-fill: var(--palette-darkest);
+    --btn-hover-text: var(--palette-lightest);
+    --btn-hover-border: var(--palette-darkest);
+  }
+
   .site-footer__message {
     margin: 0.25rem 0 0;
     font-size: 0.875rem;

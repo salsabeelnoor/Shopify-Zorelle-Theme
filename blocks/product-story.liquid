@@ -95,9 +95,10 @@
   }
 
   /* Product details table. Inside an accordion row (after the text and badges) it gets
-     its own breathing room. */
-  .details-content .product-story + .product-story--details {
-    margin-block-start: 1.75rem;
+     its own breathing room. "~" not "+": each block outputs its own <style> tag, which
+     sits between the two blocks. */
+  .details-content .product-story ~ .product-story--details {
+    margin-block-start: 2rem;
   }
 
   .product-story__heading {

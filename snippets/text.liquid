@@ -53,29 +53,31 @@
   endcapture
 %}
 
-{% capture attributes %}
-  class="{{ class }} spacing-style text-block text-block--{{ block.id }} {{ block_settings.type_preset }}
-    {{ text_block_classes }}
-  "
-
-  style="
+{%- comment -%} Zorelle: setting-driven vars in a scoped style block, not inline. {%- endcomment -%}
+{% style %}
+  .text-block.text-block--{{ block.id }} {
     {% render 'spacing-padding', settings: block_settings %}
     {% render 'typography-style', settings: block_settings %}
-    {% if block_settings.text_color != blank %}
+    {%- if block_settings.text_color != blank %}
       --color: {{ block_settings.text_color }};
       --color-rgb: {{ block_settings.text_color.rgb }};
-    {% endif %}
-
+    {%- endif %}
     --width: {{ text_width }};
     --max-width: var(--max-width--{{ type }}-{{ block_settings.max_width }});
-    {% if text_width == "100%" %}
+    {%- if text_width == "100%" %}
       --text-align: {{ block_settings.alignment | replace: 'left', 'start' | replace: 'right', 'end' }};
-    {% endif %}
-    {% if block_settings.background %}
+    {%- endif %}
+    {%- if block_settings.background %}
       --text-background-color: {{ block_settings.background_color | default: 'rgb(255 255 255 / 1.0)' }};
       --text-corner-radius: {{ block_settings.corner_radius }}px;
       --text-padding: max(var(--padding-2xs), calc((var(--text-corner-radius) + var(--padding-xs)) * (1 - cos(45deg))));
-    {% endif %}
+    {%- endif %}
+  }
+{% endstyle %}
+
+{% capture attributes %}
+  class="{{ class }} spacing-style text-block text-block--{{ block.id }} {{ block_settings.type_preset }}
+    {{ text_block_classes }}
   "
 
   {{ block.shopify_attributes }}

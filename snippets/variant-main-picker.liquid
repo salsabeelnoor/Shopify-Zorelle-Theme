@@ -28,15 +28,18 @@
   {% if has_custom_variant_buttons %}
     {% render 'variant-button-custom-styles', block_settings: block_settings, block_id: block.id %}
   {% endif %}
-  <variant-picker
-    class="variant-picker spacing-style variant-picker--{{ block_settings.alignment }}{% if has_custom_variant_buttons %} variant-picker--custom-{{ block.id }}{% endif %}"
-    style="
+  {%- comment -%} Zorelle: setting-driven vars in a scoped style block, not inline. {%- endcomment -%}
+  {% style %}
+    .variant-picker.variant-picker--block-{{ block.id }} {
       {% render 'spacing-style', settings: block_settings %}
-       {% if block_settings.option_label_text_color != blank %}
+      {%- if block_settings.option_label_text_color != blank %}
         --variant-option-label-color: rgba({{ block_settings.option_label_text_color.rgba }});
         --variant-option-label-color-subdued: rgba({{ block_settings.option_label_text_color.rgb }} / var(--opacity-subdued-text));
-      {% endif %}
-    "
+      {%- endif %}
+    }
+  {% endstyle %}
+  <variant-picker
+    class="variant-picker variant-picker--block-{{ block.id }} spacing-style variant-picker--{{ block_settings.alignment }}{% if has_custom_variant_buttons %} variant-picker--custom-{{ block.id }}{% endif %}"
     data-section-id="{{ section.id }}"
     data-product-id="{{ product_resource.id }}"
     data-product-handle="{{ product_resource.handle }}"

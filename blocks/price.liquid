@@ -38,19 +38,22 @@
   endcapture
 %}
 
-<product-price
-  class="text-block {{ text_block_classes }} text-{{ block_settings.alignment }} {{ block_settings.type_preset | default: 'paragraph' }} spacing-style"
-  data-block-id="{{ block.id }}"
-  data-product-id="{{ product_resource.id }}"
-  style="
+{%- comment -%} Zorelle: setting-driven vars in a scoped style block, not inline. {%- endcomment -%}
+{% style %}
+  .text-block.product-price--{{ block.id }} {
     {% render 'typography-style', settings: block_settings %}
     {% render 'spacing-style', settings: block_settings %}
-    {% if block_settings.text_color != blank %}
+    {%- if block_settings.text_color != blank %}
       --color: {{ block_settings.text_color }};
       --color-rgb: {{ block_settings.text_color.rgb }};
-    {% endif %}
+    {%- endif %}
     --width: {{ block_settings.width }};
-  "
+  }
+{% endstyle %}
+<product-price
+  class="text-block product-price--{{ block.id }} {{ text_block_classes }} text-{{ block_settings.alignment }} {{ block_settings.type_preset | default: 'paragraph' }} spacing-style"
+  data-block-id="{{ block.id }}"
+  data-product-id="{{ product_resource.id }}"
   {{ block.shopify_attributes }}
 >
   {% render 'price',

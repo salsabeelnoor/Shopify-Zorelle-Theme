@@ -5,6 +5,11 @@
   {% # `.full-height--desktop` consumes `--header-group-height` at first paint (stylesheet below) %}
   {% render 'measure-header-heights', only_on_desktop: true %}
 {%- endif -%}
+{% style %}
+  #ProductInformation-{{ section.id }} {
+    --details-position: {{ block_settings.details_position }};
+  }
+{% endstyle %}
 <div
   id="ProductInformation-{{ section.id }}"
   class="
@@ -12,7 +17,6 @@
     {% if block_settings.sticky_details_desktop %} sticky-content--desktop{% endif %}
     {% if block_settings.height == 'fill' -%} full-height--desktop{% endif -%}
   "
-  style="--details-position: {{ block_settings.details_position }};"
   data-testid="product-information-details"
   {% if settings.transition_to_main_product %}
     data-view-transition-type="product-details"

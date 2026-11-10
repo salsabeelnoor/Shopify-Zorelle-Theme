@@ -36,11 +36,22 @@
   endif
 %}
 
+{%- comment -%} Zorelle: setting-driven vars in a scoped style block, not inline. {%- endcomment -%}
+{% style %}
+  {%- if block_settings.text_color != blank %}
+    .buy-buttons-block.buy-buttons-block--{{ block.id }},
+    .product__pickup-availabilities.product__pickup-availabilities--{{ block.id }} {
+      --color: {{ block_settings.text_color }};
+      --color-rgb: {{ block_settings.text_color.rgb }};
+    }
+  {%- endif %}
+  .buy-buttons-block--{{ block.id }} .product-form-buttons.spacing-style,
+  .product__pickup-availabilities.product__pickup-availabilities--{{ block.id }} {
+    {% render 'spacing-style', settings: block_settings %}
+  }
+{% endstyle %}
 <span
   class="buy-buttons-block buy-buttons-block--{{ block.id }}"
-  {% if block_settings.text_color != blank %}
-    style="--color: {{ block_settings.text_color }}; --color-rgb: {{ block_settings.text_color.rgb  }}"
-  {% endif %}
   {{ block.shopify_attributes }}
 >
   {%- if product != blank -%}
@@ -73,7 +84,6 @@
         {%- endif -%}
         <div
           class="product-form-buttons spacing-style{% if block_settings.stacking %} product-form-buttons--stacked{% endif %}"
-          style="{% render 'spacing-style', settings: block_settings %}"
           ref="productFormButtons"
         >
           {%- unless block_settings.gift_card_form and product.gift_card? -%}
@@ -269,20 +279,13 @@
   {%- assign closest_available_pick_up = pick_up_availabilities | where: 'available', true | first -%}
 
   <local-pickup
-    class="spacing-style product__pickup-availabilities"
+    class="spacing-style product__pickup-availabilities product__pickup-availabilities--{{ block.id }}"
     {% if pick_up_availabilities.size == 0 %}
       hidden
     {% endif %}
     data-section-id="{{ section.id }}"
     data-product-url="{{ closest.product.url }}"
     data-variant-id="{{ closest.product.selected_or_first_available_variant.id }}"
-    style="
-      {% render 'spacing-style', settings: block_settings %}
-      {% if block_settings.text_color != blank %}
-        --color: {{ block_settings.text_color }};
-        --color-rgb: {{ block_settings.text_color.rgb }}
-      {% endif %}
-    "
     ref="localPickupButton"
   >
     {% if can_add_to_cart %}

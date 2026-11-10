@@ -85,9 +85,15 @@
 <div
   class="section-background{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %}"
 ></div>
+{%- comment -%} Zorelle: setting-driven vars in a scoped style block, not inline. {%- endcomment -%}
+{% style %}
+  .product-information.product-information--{{ section_id }} {
+    {% render 'spacing-style', settings: settings %}
+    --gap: {{ settings.gap }}px;
+  }
+{% endstyle %}
 <div
-  class="product-information section section--{{ content_width }} spacing-style{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
-  style="{% render 'spacing-style', settings: settings %} --gap: {{ settings.gap }}px;"
+  class="product-information product-information--{{ section_id }} section section--{{ content_width }} spacing-style{% if settings.background_color != blank %} color-custom-{{ section_id }}{% endif %} relative"
   data-testid="product-information"
 >
   {% if settings.desktop_media_position == 'left' and product_has_media and request.page_type == 'product' %}

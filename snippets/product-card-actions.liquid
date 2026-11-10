@@ -261,15 +261,12 @@
 
   .card-actions__size {
     flex: 0 0 auto;
-    min-width: 2.5rem;
-    height: 2rem;
-    padding: 0 0.625rem;
+    padding: 5px 8px;
     border: 1px solid rgb(var(--palette-darkest-rgb) / var(--opacity-20, 0.2));
     background: transparent;
     color: var(--card-actions-ink);
     font-family: var(--font-body--family);
     font-size: 0.75rem;
-    white-space: nowrap;
     cursor: pointer;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 
@@ -339,6 +336,17 @@
     .card-actions--sizes[open] .card-actions__toggle,
     .card-actions--sizes:has(.card-actions__sizes :focus-visible) .card-actions__toggle {
       visibility: hidden;
+    }
+
+    /* Few sizes: centred in the bar. Auto margins on the first and last size centre the
+       row when there is spare room and collapse to 0 when it overflows, so a scrolling
+       bar still starts at the first size. */
+    .card-actions__size:first-child {
+      margin-inline-start: auto;
+    }
+
+    .card-actions__size:last-child {
+      margin-inline-end: auto;
     }
   }
 
