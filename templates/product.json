@@ -251,7 +251,7 @@
             "engraving": {
               "type": "engraving",
               "settings": {
-                "option_name": "Engraving",
+                "option_name": "Engraving, Gravering",
                 "heading": "Personalise",
                 "label": "Engraving",
                 "hint_text": "Required · max. [count] characters",

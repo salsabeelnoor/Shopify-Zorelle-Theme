@@ -16,13 +16,24 @@
 {%- liquid
   assign s = block.settings
   assign option_name = s.option_name | strip | default: 'Engraving'
-  assign option_handle = option_name | handleize
 
-  # Find the product's engraving option (name matched case-insensitively).
+  # Option names are translated per language ("Engraving" / "Gravering"), so the setting
+  # takes a comma-separated list and any of them matches (case-insensitively).
+  assign option_handles = ''
+  assign option_names = option_name | split: ','
+  for name in option_names
+    assign name_handle = name | handleize
+    if name_handle != blank
+      assign option_handles = option_handles | append: ',' | append: name_handle
+    endif
+  endfor
+  assign option_handles = option_handles | append: ','
+
+  # Find the product's engraving option.
   assign has_engraving = false
   for product_option in product.options_with_values
-    assign product_option_handle = product_option.name | handleize
-    if product_option_handle == option_handle
+    assign product_option_key = product_option.name | handleize | prepend: ',' | append: ','
+    if option_handles contains product_option_key
       assign engraving_option = product_option
       assign has_engraving = true
       break
@@ -395,8 +406,8 @@
       "type": "text",
       "id": "option_name",
       "label": "Engraving option name",
-      "info": "The product option that holds the engraving sizes, e.g. \"Engraving\" with values \"3 Characters\", \"5 Characters\". The number at the start of each value is the character limit. The box only shows on products with this option.",
-      "default": "Engraving"
+      "info": "The product option that holds the engraving sizes, e.g. \"Engraving\" with values \"3 Characters\", \"5 Characters\". Add the translated names too, separated by commas (\"Engraving, Gravering\"). The number at the start of each value is the character limit. The box only shows on products with this option.",
+      "default": "Engraving, Gravering"
     },
     {
       "type": "header",
