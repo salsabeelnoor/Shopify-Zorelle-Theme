@@ -9,7 +9,9 @@
   {% render 'menu-drawer-group-heading', link: childlink, parent_handle: link.handle %}
 {%- enddoc -%}
 
-{%- if link.url == '#' -%}
+{%- comment -%} Ends with "#": translated menus prefix the URL ("/nl#"). {%- endcomment -%}
+{%- assign link_url_end = link.url | slice: -1 -%}
+{%- if link_url_end == '#' -%}
   <span
     id="HeaderDrawer-{{ parent_handle }}-{{ link.handle }}"
     class="menu-drawer__menu-item menu-drawer__menu-item--parent menu-drawer__menu-item--label"

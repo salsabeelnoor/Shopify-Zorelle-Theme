@@ -343,7 +343,8 @@
                         >
                           {% assign first_accordion_open = false -%}
                           {%- for childlink in link.links -%}
-                            {%- if childlink.url == '#' and childlink.links == blank -%}{%- continue -%}{%- endif -%}
+                            {%- assign childlink_url_end = childlink.url | slice: -1 -%}
+                            {%- if childlink_url_end == '#' and childlink.links == blank -%}{%- continue -%}{%- endif -%}
                             <li
                               class="
                                 menu-drawer__list-item
@@ -607,14 +608,9 @@
             assign form_style = localization_font | append: color_shadow
           %}
           {% if show_language and show_country == false %}
+            {%- comment -%} Zorelle: EN | NL buttons instead of the small native select. {%- endcomment -%}
             <div class="menu-drawer__localization color-custom-popover">
-              {% render 'localization-form',
-                show_country: show_country,
-                show_language: show_language,
-                localization_style: 'drawer',
-                form_style: form_style,
-                form_id: block.id
-              %}
+              {% render 'language-dropdown', form_id: block.id, layout: 'inline' %}
             </div>
           {% else %}
             <drawer-localization-component class="menu-drawer__localization">

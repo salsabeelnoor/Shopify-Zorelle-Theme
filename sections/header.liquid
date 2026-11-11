@@ -238,14 +238,9 @@
     assign form_style = localization_font | append: localization_font_size | append: color_shadow
   %}
   {% if show_language and show_country == false %}
+    {%- comment -%} Zorelle: styled language menu (EN / NL) instead of the native select. On mobile the switcher is in the menu drawer. {%- endcomment -%}
     <div class="dropdown-localization mobile:hidden">
-      {% render 'localization-form',
-        show_country: show_country,
-        show_language: show_language,
-        localization_style: 'dropdown',
-        form_style: form_style,
-        form_id: section.id
-      %}
+      {% render 'language-dropdown', form_id: section.id, style: form_style %}
     </div>
   {% elsif show_country %}
     <dropdown-localization-component

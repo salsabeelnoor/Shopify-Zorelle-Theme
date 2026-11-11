@@ -20,9 +20,11 @@
 {% liquid
   assign primary_count = 0
   assign group_count = 0
-  # A "#" item with no children is an empty heading placeholder: skip it.
+  # A "#" item with no children is an empty heading placeholder: skip it. In other
+  # languages Shopify prefixes the URL ("/nl#"), so check that it ends with "#".
   for link in parent_link.links
-    if link.links == blank and link.url == '#'
+    assign link_url_end = link.url | slice: -1
+    if link.links == blank and link_url_end == '#'
       continue
     elsif link.links == blank
       assign primary_count = primary_count | plus: 1
@@ -32,12 +34,20 @@
   endfor
 
   assign parent_title = parent_link.title | strip | downcase
+  # The link handle stays in the default language ("rings" for "Ringen"), so promos keep
+  # matching when the menu is translated.
+  assign parent_handle = parent_link.handle
 
   assign promo_count = 0
   capture promos
     for promo in shop.metaobjects.mega_menu_promo.values
       assign promo_target = promo.menu_item.value | strip | downcase
-      if promo_target == parent_title and promo_count < 2
+      assign promo_target_handle = promo.menu_item.value | handleize
+      assign promo_matches = false
+      if promo_target == parent_title or promo_target_handle == parent_handle
+        assign promo_matches = true
+      endif
+      if promo_matches and promo_count < 2
         assign promo_count = promo_count | plus: 1
         render 'mega-menu-editorial-promo', promo: promo
       endif
@@ -66,7 +76,8 @@
   {%- if primary_count > 0 -%}
     <ul class="mega-menu-editorial__column mega-menu-editorial__primary list-unstyled">
       {%- for link in parent_link.links -%}
-        {%- if link.links != blank or link.url == '#' -%}{%- continue -%}{%- endif -%}
+        {%- assign link_url_end = link.url | slice: -1 -%}
+        {%- if link.links != blank or link_url_end == '#' -%}{%- continue -%}{%- endif -%}
         <li>
           <a
             href="{{ link.url }}"
@@ -86,7 +97,8 @@
     {%- if group.links == blank -%}{%- continue -%}{%- endif -%}
     <div class="mega-menu-editorial__column">
       {%- comment -%} Headings linked to "#" in Navigation render as plain text. {%- endcomment -%}
-      {%- if group.url == '#' or group.url == blank -%}
+      {%- assign group_url_end = group.url | slice: -1 -%}
+      {%- if group_url_end == '#' or group.url == blank -%}
         <p class="mega-menu-editorial__heading">{{- group.title -}}</p>
       {%- else -%}
         <a href="{{ group.url }}" class="mega-menu-editorial__heading">
