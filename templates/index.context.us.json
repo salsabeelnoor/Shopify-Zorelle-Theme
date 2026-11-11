@@ -1,0 +1,74 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "context": {
+    "market": "us"
+  },
+  "parent": "index.json",
+  "sections": {
+    "hero_banner_main": {
+      "settings": {
+        "heading": "Alledaagse luxe",
+        "text": "Prachtige stukken om van generatie op generatie door te geven",
+        "button_1_label": "Bekijk alle producten",
+        "button_2_label": "Bekijk de nieuwste aanwinsten"
+      },
+      "blocks": {}
+    },
+    "collection_tiles_main": {
+      "settings": {},
+      "blocks": {
+        "tile_necklaces": {
+          "settings": {
+            "label": "Halskettingen"
+          }
+        },
+        "tile_bracelets": {
+          "settings": {
+            "label": "Armbanden"
+          }
+        },
+        "tile_rings": {
+          "settings": {
+            "label": "Ringen"
+          }
+        },
+        "tile_earrings": {
+          "settings": {
+            "label": "Oorbellen"
+          }
+        }
+      }
+    },
+    "featured_products_slider_4mHTPQ": {
+      "settings": {
+        "heading": "De meest geliefde juwelen",
+        "text": "<p>Hoewel sieraden een persoonlijke keuze zijn, zijn we ervan overtuigd dat je deze net zo mooi zult vinden als wij.</p>",
+        "button_1_label": "Nu winkelen"
+      },
+      "blocks": {}
+    },
+    "product_showcase_yTgh7m": {
+      "settings": {
+        "columns_gap": 24,
+        "image_heading": "Dicht bij het hart",
+        "image_subtitle": "Bekijk de kettingen"
+      },
+      "blocks": {}
+    },
+    "product_showcase_EC7EEz": {
+      "settings": {
+        "image_heading": "Creëer je eigen stijl",
+        "image_subtitle": "Nu kopen!"
+      },
+      "blocks": {}
+    }
+  }
+}

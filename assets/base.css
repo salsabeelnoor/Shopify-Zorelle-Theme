@@ -498,10 +498,9 @@ p:empty {
   .grid {
     display: grid;
     gap: 0;
-    grid-template-columns: var(--margin-4xl) repeat(
-        var(--centered-column-number),
-        minmax(0, 1fr)
-      ) var(--margin-4xl);
+    grid-template-columns:
+      var(--margin-4xl) repeat(var(--centered-column-number), minmax(0, 1fr))
+      var(--margin-4xl);
     grid-template-areas: "column-0 column-1 column-2 column-3 column-4 column-5 column-6 column-7 column-8 column-9 column-10 column-11 column-12 column-13";
   }
 }
@@ -667,6 +666,8 @@ h1,
   letter-spacing: var(--font-h1--letter-spacing);
   text-transform: var(--font-h1--case);
   color: var(--color);
+  hyphens: auto;
+  -webkit-hyhens: auto;
 }
 
 @media screen and (max-width: 1200px) {
@@ -689,6 +690,8 @@ h2,
   letter-spacing: var(--font-h2--letter-spacing);
   text-transform: var(--font-h2--case);
   color: var(--color);
+  hyphens: auto;
+  -webkit-hyhens: auto;
 }
 
 @media screen and (max-width: 1200px) {
@@ -712,6 +715,8 @@ h3,
   letter-spacing: var(--font-h3--letter-spacing);
   text-transform: var(--font-h3--case);
   color: var(--color);
+  hyphens: auto;
+  -webkit-hyhens: auto;
 }
 
 @media screen and (max-width: 1200px) {
@@ -734,6 +739,8 @@ h4,
   letter-spacing: var(--font-h4--letter-spacing);
   text-transform: var(--font-h4--case);
   color: var(--color);
+  hyphens: auto;
+  -webkit-hyhens: auto;
 }
 
 @media screen and (max-width: 1200px) {
