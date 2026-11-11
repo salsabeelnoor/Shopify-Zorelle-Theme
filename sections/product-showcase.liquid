@@ -68,6 +68,53 @@
   <div class="showcase__inner container">
     {%- if s.content_type == 'image' -%}
       <div class="showcase__media">
+        {%- if s.media_type == 'video' and s.video != blank -%}
+          {%- comment -%}
+            Zorelle: muted looping background video. hero-banner-video (assets/hero-banner.js)
+            adds the pause/play control and starts paused for reduced motion.
+          {%- endcomment -%}
+          <script
+            src="{{ 'hero-banner.js' | asset_url }}"
+            type="module"
+            fetchpriority="low"
+          ></script>
+          <hero-banner-video class="showcase__video">
+            {%- if s.image_link != blank -%}
+              <a href="{{ s.image_link }}" class="showcase__media-link">
+            {%- endif -%}
+            {{
+              s.video
+              | video_tag:
+                autoplay: true,
+                loop: true,
+                muted: true,
+                playsinline: true,
+                controls: false,
+                preload: 'metadata',
+                image_size: '1600x',
+                class: 'showcase__image showcase__video-media'
+            }}
+            {%- if s.image_link != blank -%}
+              </a>
+            {%- endif -%}
+            <button
+              type="button"
+              class="button-unstyled showcase__video-toggle"
+              data-hero-video-toggle
+              data-label-pause="{{ 'accessibility.pause_video' | t | escape }}"
+              data-label-play="{{ 'accessibility.play_video' | t | escape }}"
+              aria-label="{{ 'accessibility.pause_video' | t | escape }}"
+              aria-pressed="false"
+            >
+              <svg class="showcase__icon-pause" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                <path d="M8 5v14M16 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+              </svg>
+              <svg class="showcase__icon-play" aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                <path d="M8 5.5v13l10-6.5z" fill="currentColor"/>
+              </svg>
+            </button>
+          </hero-banner-video>
+        {%- else -%}
         {%- if s.image_link != blank -%}
           <a href="{{ s.image_link }}" class="showcase__media-link">
         {%- endif -%}
@@ -87,6 +134,7 @@
         {%- endif -%}
         {%- if s.image_link != blank -%}
           </a>
+        {%- endif -%}
         {%- endif -%}
         {%- comment -%}
           Optional heading/subtitle at the bottom of the image (clear of the subject), on a
@@ -377,8 +425,57 @@
   }
 
   .showcase__media-link:hover ~ .showcase__caption .showcase__caption-heading,
-  .showcase__media-link:hover ~ .showcase__caption .showcase__caption-text {
+  .showcase__media-link:hover ~ .showcase__caption .showcase__caption-text,
+  .showcase__media:has(.showcase__video .showcase__media-link:hover) .showcase__caption :is(.showcase__caption-heading, .showcase__caption-text) {
     transform: translateY(-10px);
+  }
+
+  /* Video in the media column: fills it like the image (shared .showcase__image cover styles). */
+  .showcase__video {
+    display: block;
+    height: 100%;
+  }
+
+  /* Pause / play for the looping video (top corner, clear of the caption). */
+  .showcase__video-toggle {
+    position: absolute;
+    inset-block-start: 1rem;
+    inset-inline-end: 1rem;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: var(--palette-darkest);
+    color: var(--palette-lightest);
+    cursor: pointer;
+    transition: background-color var(--animation-speed) var(--animation-easing),
+      color var(--animation-speed) var(--animation-easing);
+
+    &:hover {
+      background-color: var(--palette-lightest);
+      color: var(--palette-darkest);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--palette-lightest);
+      outline-offset: 2px;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+
+  .showcase__icon-play,
+  hero-banner-video[paused] .showcase__icon-pause {
+    display: none;
+  }
+
+  hero-banner-video[paused] .showcase__icon-play {
+    display: block;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -758,11 +855,35 @@
       "default": "text"
     },
     {
+      "type": "select",
+      "id": "media_type",
+      "label": "t:settings.media_type",
+      "options": [
+        {
+          "value": "image",
+          "label": "t:options.image"
+        },
+        {
+          "value": "video",
+          "label": "t:options.video"
+        }
+      ],
+      "default": "image",
+      "visible_if": "{{ section.settings.content_type == 'image' }}"
+    },
+    {
       "type": "image_picker",
       "id": "image",
       "label": "t:settings.image",
-      "visible_if": "{{ section.settings.content_type == 'image' }}",
+      "visible_if": "{{ section.settings.content_type == 'image' and section.settings.media_type != 'video' }}",
       "info": "Best size: 1600 × 2400 px (portrait). For the best crop: start the top of the hair about 15% down from the top, keep the face, jewellery and hands above the bottom 30% (the heading sits there), and leave about 8% space on each side."
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "t:settings.video",
+      "info": "Upload a Shopify-hosted video. It plays muted and on a loop, with a pause button. Portrait (2:3 or 9:16) fits the column best; keep the subject above the bottom 30% if you use a heading.",
+      "visible_if": "{{ section.settings.content_type == 'image' and section.settings.media_type == 'video' }}"
     },
     {
       "type": "url",
