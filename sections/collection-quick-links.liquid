@@ -96,11 +96,22 @@
 {% endstyle %}
 
 {%- if has_links -%}
+  <script
+    src="{{ 'quick-links-scroller.js' | asset_url }}"
+    type="module"
+    fetchpriority="low"
+  ></script>
+
   <nav
     class="quick-links container"
     aria-label="{{ nav_label | escape }}"
   >
-    <ul class="quick-links__list list-unstyled">
+    {%- comment -%} Zorelle: arrows below the row slide it when the links don't fit. {%- endcomment -%}
+    <quick-links-scroller class="quick-links__scroller">
+    <ul
+      class="quick-links__list list-unstyled"
+      ref="track"
+    >
       {%- if has_parent -%}
         {%- if add_all_link -%}
           {%- render 'quick-links-item', link: parent_link, title: s.all_link_label -%}
@@ -120,6 +131,32 @@
         {%- endfor -%}
       {%- endif -%}
     </ul>
+
+    <div
+      class="quick-links__arrows"
+      ref="arrows"
+      hidden
+    >
+      <button
+        type="button"
+        class="button-unstyled quick-links__arrow quick-links__arrow--previous"
+        aria-label="{{ 'content.pagination.previous' | t }}"
+        ref="previous"
+        on:click="/previous"
+      >
+        {{- 'icon-arrow.svg' | inline_asset_content -}}
+      </button>
+      <button
+        type="button"
+        class="button-unstyled quick-links__arrow quick-links__arrow--next"
+        aria-label="{{ 'content.pagination.next' | t }}"
+        ref="next"
+        on:click="/next"
+      >
+        {{- 'icon-arrow.svg' | inline_asset_content -}}
+      </button>
+    </div>
+    </quick-links-scroller>
   </nav>
 {%- elsif request.design_mode -%}
   <p class="quick-links quick-links__placeholder container">Choose a menu for the quick links.</p>
@@ -222,6 +259,75 @@
     margin: 0;
     font-size: 0.875rem;
     opacity: 0.7;
+  }
+
+  /* Arrows under the row (only when the links overflow). */
+  .quick-links__scroller {
+    display: block;
+  }
+
+  .quick-links__arrows {
+    display: flex;
+    justify-content: space-between;
+    margin-block-start: 0.5rem;
+  }
+
+  .quick-links__arrows[hidden] {
+    display: none;
+  }
+
+  .quick-links__arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.25rem;
+    padding: 0;
+    background: transparent;
+    color: var(--color-foreground);
+    cursor: pointer;
+    transition: opacity var(--animation-speed) var(--animation-easing);
+
+    svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-foreground);
+      outline-offset: 2px;
+    }
+  }
+
+  .quick-links__arrow--previous {
+    justify-content: flex-start;
+
+    svg {
+      scale: -1 1;
+    }
+  }
+
+  .quick-links__arrow--next {
+    justify-content: flex-end;
+  }
+
+  [dir='rtl'] .quick-links__arrow--previous svg {
+    scale: 1;
+  }
+
+  [dir='rtl'] .quick-links__arrow--next svg {
+    scale: -1 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .quick-links__arrow {
+      transition: none;
+    }
   }
 {% endstylesheet %}
 
