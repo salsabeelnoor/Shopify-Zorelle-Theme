@@ -36,7 +36,7 @@
     {% endif %}
   >
     {% if show_arrows %}
-      {% render 'slideshow-arrows', icon_style: 'chevron', arrows_position: 'left' %}
+      {% render 'slideshow-arrows', icon_style: 'chevron', arrows_position: 'center' %}
     {% endif %}
 
     <div class="announcement-bar__slides">
@@ -61,41 +61,29 @@
     }
   }
 
+  /* Zorelle: in page width, the section's grid column already applies the page margin, so the
+     slider fills it (no second .container inset) and the arrows line up with the header and page. */
+  @media screen and (min-width: 750px) {
+    .section--page-width > .announcement-bar__slider {
+      width: 100%;
+      max-width: none;
+    }
+  }
+
   .announcement-bar__slides {
     display: grid;
     grid: [stack] auto / [stack] auto;
-    /* Both arrows sit at the start edge; reserve room on each side so text stays centered. */
-    width: calc(100% - 20px * 4);
+    /* Zorelle: the arrows sit on the container's start and end edges; keep the text clear of them. */
+    width: calc(100% - (20px + var(--gap-sm, 12px)) * 2);
     max-width: 680px;
     margin-inline: auto;
   }
 
-  .announcement-bar__slider slideshow-arrows[position='left'] {
+  /* Previous on the container's start edge, next on its end edge. */
+  .announcement-bar__slider slideshow-arrows[position='center'] {
+    justify-content: space-between;
     align-items: center;
-  }
-
-  /* Grouped arrows: narrower buttons so the pair sits close together (height keeps the tap target). */
-  @media screen and (min-width: 768px) {
-    .announcement-bar__slider slideshow-arrows[position='left'] {
-      gap: var(--gap-2xs, 4px);
-    }
-
-    .announcement-bar__slider slideshow-arrows[position='left'] .slideshow-control {
-      width: calc(var(--icon-size-xs) + 8px);
-      transform: none;
-    }
-  }
-
-  /* Below 768px, split the arrows back to both sides. */
-  @media screen and (max-width: 767px) {
-    .announcement-bar__slides {
-      width: calc(100% - 20px * 2);
-    }
-
-    .announcement-bar__slider slideshow-arrows[position='left'] {
-      justify-content: space-between;
-      padding-inline: 0;
-    }
+    padding-inline: 0;
   }
 
   .announcement-bar__slides > * {
@@ -132,17 +120,15 @@
     justify-content: center;
     opacity: 1;
     animation: none;
+  }
 
-    @media screen and (min-width: 768px) {
-      --slideshow-control-offset: calc(20px - var(--icon-size-xs) / 2);
+  /* Align the chevron itself with the container edge (not the centre of its 20px button). */
+  .announcement-bar__slider .slideshow-control--previous {
+    justify-content: flex-start;
+  }
 
-      .section--page-width &.slideshow-control--previous {
-        transform: translateX(var(--slideshow-control-offset));
-      }
-      .section--page-width &.slideshow-control--next {
-        transform: translateX(-22px);
-      }
-    }
+  .announcement-bar__slider .slideshow-control--next {
+    justify-content: flex-end;
   }
 
   .announcement-bar__slider .slideshow-control .svg-wrapper {
