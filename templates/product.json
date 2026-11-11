@@ -248,6 +248,20 @@
               },
               "blocks": {}
             },
+            "engraving": {
+              "type": "engraving",
+              "settings": {
+                "option_name": "Engraving",
+                "heading": "Personalise",
+                "label": "Engraving",
+                "hint_text": "Required · max. [count] characters",
+                "placeholder": "e.g. Sarah, 14.02 or initials",
+                "property_name": "Engraving",
+                "required": true,
+                "fallback_max": 12
+              },
+              "blocks": {}
+            },
             "buy_buttons_eYQEYi": {
               "type": "buy-buttons",
               "settings": {
@@ -409,6 +423,7 @@
             "group_icgrde",
             "product_highlights",
             "variant_picker_R3rGDr",
+            "engraving",
             "buy_buttons_eYQEYi",
             "description_accordion"
           ]
