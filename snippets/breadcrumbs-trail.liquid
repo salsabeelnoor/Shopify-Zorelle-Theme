@@ -71,18 +71,19 @@
   }
 
   .breadcrumbs__link {
-    color: rgb(var(--color-foreground-rgb) / var(--opacity-60, 0.6));
+    color: rgb(var(--color-foreground-rgb));
     text-decoration: none;
+    font-weight: 500;
     transition: color 0.2s ease;
 
     &:hover {
-      color: var(--color-foreground);
+      text-decoration: underline;
     }
   }
 
   .breadcrumbs__current {
     color: var(--color-foreground);
-    font-weight: 500;
+    font-weight: 600;
     overflow-wrap: anywhere;
   }
 

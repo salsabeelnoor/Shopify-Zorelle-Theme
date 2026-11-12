@@ -32,7 +32,7 @@
             "font": "var(--font-heading--family)",
             "font_size": "2.5rem",
             "line_height": "tight",
-            "letter_spacing": "normal",
+            "letter_spacing": "loose",
             "case": "uppercase",
             "wrap": "pretty",
             "text_color": "",
