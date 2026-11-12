@@ -64,6 +64,7 @@ class LocalizationFormComponent extends Component {
 
         if (focusedItem) {
           countryInput.value = focusedItem.dataset.value ?? '';
+          this.#sanitizeReturnTo(form);
           form.submit();
         }
         break;
@@ -85,6 +86,21 @@ class LocalizationFormComponent extends Component {
     });
   };
 
+  #sanitizeReturnTo(form) {
+    const returnTo = form?.elements?.namedItem('return_to');
+    if (returnTo instanceof HTMLInputElement) {
+      try {
+        const targetUrl = new URL(returnTo.value || window.location.href, window.location.origin);
+        if (targetUrl.searchParams.has('section_id')) {
+          targetUrl.searchParams.delete('section_id');
+          returnTo.value = targetUrl.pathname + (targetUrl.search || '') + (targetUrl.hash || '');
+        }
+      } catch {
+        returnTo.value = window.location.pathname;
+      }
+    }
+  }
+
   /**
    * Selects a country.
    *
@@ -96,6 +112,7 @@ class LocalizationFormComponent extends Component {
     const { countryInput, form } = this.refs;
 
     countryInput.value = countryName;
+    this.#sanitizeReturnTo(form);
     form?.submit();
   };
 
@@ -111,6 +128,7 @@ class LocalizationFormComponent extends Component {
     if (value) {
       languageInput.value = value;
       this.resizeLanguageInput();
+      this.#sanitizeReturnTo(form);
       form.submit();
     }
   }
@@ -554,4 +572,31 @@ if (!customElements.get('dropdown-localization-component')) {
 
 if (!customElements.get('drawer-localization-component')) {
   customElements.define('drawer-localization-component', DrawerLocalizationComponent);
+}
+
+// Ensure any localization form submission never redirects to a raw Section Rendering API URL
+if (typeof document !== 'undefined') {
+  document.addEventListener(
+    'submit',
+    (event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      const formType = form.elements.namedItem('form_type');
+      if (formType instanceof HTMLInputElement && formType.value === 'localization') {
+        const returnTo = form.elements.namedItem('return_to');
+        if (returnTo instanceof HTMLInputElement) {
+          try {
+            const targetUrl = new URL(returnTo.value || window.location.href, window.location.origin);
+            if (targetUrl.searchParams.has('section_id')) {
+              targetUrl.searchParams.delete('section_id');
+              returnTo.value = targetUrl.pathname + (targetUrl.search || '') + (targetUrl.hash || '');
+            }
+          } catch {
+            returnTo.value = window.location.pathname;
+          }
+        }
+      }
+    },
+    true
+  );
 }

@@ -47,12 +47,13 @@
   style="{{ form_style }}"
 >
   {% assign localization_label = 'content.localization_region_and_language' | t %}
+  {% assign return_to_url = back | default: request.path %}
 
   {%- form 'localization',
     id: 'LocalizationForm',
     class: 'localization-form',
     ref: 'form',
-    return_to: back,
+    return_to: return_to_url,
     aria-label: localization_label
   -%}
     {% if show_country %}

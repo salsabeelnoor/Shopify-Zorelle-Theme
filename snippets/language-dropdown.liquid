@@ -21,7 +21,11 @@
     >
       {{- 'content.language' | t -}}
     </span>
-    {%- form 'localization', id: 'LanguageSwitchForm', class: 'language-switch__form' -%}
+    {%- form 'localization',
+      id: 'LanguageSwitchForm',
+      class: 'language-switch__form',
+      return_to: request.path
+    -%}
       <div
         class="language-switch__options"
         role="group"
@@ -35,6 +39,7 @@
             value="{{ language.iso_code }}"
             lang="{{ language.iso_code }}"
             aria-label="{{ language.endonym_name | capitalize | escape }}"
+            onclick="const r = this.form && this.form.elements.return_to; if (r) { try { const u = new URL(r.value || window.location.href, window.location.origin); u.searchParams.delete('section_id'); r.value = u.pathname + (u.search || ''); } catch { r.value = window.location.pathname; } }"
             {% if language.iso_code == localization.language.iso_code %}
               aria-current="true"
             {% endif %}
@@ -77,7 +82,11 @@
     ref="panel"
     hidden
   >
-    {%- form 'localization', id: 'LanguageDropdownForm', class: 'language-dropdown__form' -%}
+    {%- form 'localization',
+      id: 'LanguageDropdownForm',
+      class: 'language-dropdown__form',
+      return_to: request.path
+    -%}
       <ul
         class="language-dropdown__list list-unstyled"
         aria-label="{{ 'content.language' | t }}"
@@ -94,6 +103,7 @@
               name="language_code"
               value="{{ language.iso_code }}"
               lang="{{ language.iso_code }}"
+              onclick="const r = this.form && this.form.elements.return_to; if (r) { try { const u = new URL(r.value || window.location.href, window.location.origin); u.searchParams.delete('section_id'); r.value = u.pathname + (u.search || ''); } catch { r.value = window.location.pathname; } }"
               {% if is_current %}
                 aria-current="true"
               {% endif %}

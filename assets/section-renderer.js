@@ -190,10 +190,11 @@ const SECTION_ID_PREFIX = 'shopify-section-';
  * @returns {string} The section rendering URL
  */
 function buildSectionRenderingURL(sectionId, url = new URL(window.location.href)) {
-  url.searchParams.set('section_id', normalizeSectionId(sectionId));
-  url.searchParams.sort();
+  const renderUrl = new URL(url.href);
+  renderUrl.searchParams.set('section_id', normalizeSectionId(sectionId));
+  renderUrl.searchParams.sort();
 
-  return url.toString();
+  return renderUrl.toString();
 }
 
 /**
@@ -249,6 +250,19 @@ export async function morphSection(sectionId, html, options = {}) {
 
   if (!newElement) {
     throw new Error(`Section ${sectionId} not found in the section rendering response`);
+  }
+
+  // Strip section_id from any return_to inputs rendered by Shopify during section rendering
+  for (const input of newElement.querySelectorAll('input[name="return_to"]')) {
+    try {
+      const parsedUrl = new URL(input.value, window.location.origin);
+      if (parsedUrl.searchParams.has('section_id')) {
+        parsedUrl.searchParams.delete('section_id');
+        input.value = parsedUrl.pathname + (parsedUrl.search || '') + (parsedUrl.hash || '');
+      }
+    } catch {
+      input.value = window.location.pathname;
+    }
   }
 
   morph(existingElement, newElement, {

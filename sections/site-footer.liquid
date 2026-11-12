@@ -166,7 +166,11 @@
     <div class="site-footer__bottom">
       <div class="site-footer__bottom-start">
         {%- if show_language -%}
-          {%- form 'localization', id: 'SiteFooterLanguage', class: 'site-footer__language' -%}
+          {%- form 'localization',
+            id: 'SiteFooterLanguage',
+            class: 'site-footer__language',
+            return_to: request.path
+          -%}
             <label for="SiteFooterLanguageSelect" class="visually-hidden">{{ 'content.language' | t }}</label>
             <select
               id="SiteFooterLanguageSelect"
