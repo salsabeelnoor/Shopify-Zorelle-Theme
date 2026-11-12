@@ -80,6 +80,10 @@
         "text_twGGkJ"
       ],
       "name": "t:names.heading",
+      "custom_css": [
+        ".text-block.text-block:has(h1) { --font-size: clamp(1.75rem, 1.5rem + 1.15vw, 2.5rem); }",
+        ".text-block.text-block:not(:has(h1)) { --font-size: clamp(0.875rem, 0.8rem + 0.25vw, 1rem); }"
+      ],
       "settings": {
         "content_direction": "column",
         "vertical_on_mobile": true,

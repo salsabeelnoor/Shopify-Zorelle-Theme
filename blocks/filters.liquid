@@ -673,7 +673,7 @@
     --facets-see-results-min-width: 55%;
     --facets-mobile-gap: 22px;
     --facets-low-opacity: 10%;
-    --facets-hover-opacity: 75%;
+    --facets-hover-opacity: 100%;
 
     @media screen and (min-width: 750px) {
       padding-inline: var(--padding-inline-start) var(--padding-inline-end);
@@ -1004,7 +1004,7 @@
   }
 
   .facets-mobile-wrapper .facets__panel-content {
-    border-radius: var(--style-border-radius-popover);
+    border-radius: 0;
   }
 
   .facets-mobile-wrapper {
@@ -1015,7 +1015,7 @@
 
   .facets--horizontal .facets__panel-content {
     @media screen and (min-width: 750px) {
-      border-radius: var(--style-border-radius-popover);
+      border-radius: 0;
       position: absolute;
       top: 100%;
       width: max-content;
@@ -1300,6 +1300,207 @@
     border-inline-start: var(--style-border-width) solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
     height: var(--font-paragraph--size);
     position: absolute;
+  }
+  /* Outlined controls in the desktop collection toolbar. */
+  @media screen and (min-width: 750px) {
+    .facets--horizontal {
+      --facets-control-border: rgb(var(--color-foreground-rgb) / var(--opacity-40));
+    }
+
+    .facets--horizontal .facets__form {
+      align-items: center;
+    }
+
+    .facets--horizontal .facets__overflow-list::part(list) {
+      column-gap: var(--gap-xs);
+    }
+
+    .facets--horizontal .facets__summary {
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--gap-sm);
+      min-height: var(--minimum-touch-target);
+      padding-inline: var(--padding-md);
+      border: 1px solid var(--facets-control-border);
+      border-radius: 0;
+      color: var(--color-foreground);
+      background-color: var(--color-background);
+    }
+
+    .facets--horizontal .facets__summary:hover,
+    .facets--horizontal .facets__panel[open] > .facets__summary {
+      border-color: var(--color-foreground);
+    }
+
+    .facets--horizontal .column-options-wrapper {
+      margin-inline-end: 0;
+      height: auto;
+      flex-shrink: 0;
+    }
+
+    .facets--horizontal .column-options {
+      flex-wrap: nowrap;
+      gap: 0;
+      border: 1px solid var(--facets-control-border);
+    }
+
+    .facets--horizontal .column-options__option + .column-options__option {
+      border-inline-start: 1px solid var(--facets-control-border);
+    }
+
+    .facets--horizontal .column-picker {
+      display: grid;
+      place-items: center;
+      width: var(--minimum-touch-target);
+      height: calc(var(--minimum-touch-target) - 2px);
+      padding: var(--padding-xs);
+      border-radius: 0;
+      color: var(--color-foreground);
+    }
+
+    .facets--horizontal .column-options__option-input:checked ~ .column-picker {
+      color: var(--color-primary-button-text);
+      background-color: var(--color-primary-button-background);
+    }
+
+    .facets--horizontal .column-options__option-input:focus-visible ~ .column-picker {
+      outline: var(--focus-outline-width) solid var(--color-foreground);
+      outline-offset: var(--focus-outline-offset);
+    }
+  }
+  /* Dropdown contrast and spacing follow the active theme palette. */
+  .facets .facets__panel-content,
+  .facets .sorting-filter__options {
+    color: var(--color-foreground);
+  }
+
+  .facets .facets__panel-content .checkbox:not(.checkbox--disabled) .checkbox__label-text {
+    color: var(--color-foreground);
+  }
+
+  .facets .checkbox .icon-checkmark {
+    border-radius: 0;
+  }
+
+  .facets .clear-filter {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-80));
+    font-weight: 600;
+  }
+
+  .facets .clear-filter:hover,
+  .facets .clear-filter:focus-visible {
+    color: var(--color-foreground);
+    text-decoration: underline;
+  }
+
+  .facets .price-facet__input {
+    border-radius: 0;
+    color: var(--color-foreground);
+    box-shadow: inset 0 0 0 1px rgb(var(--color-foreground-rgb) / var(--opacity-60));
+  }
+
+  .facets .price-facet__input:focus {
+    box-shadow: inset 0 0 0 2px var(--color-foreground);
+  }
+
+  .facets .price-facet__input::placeholder,
+  .facets .price-facet__label,
+  .facets .price-facet__separator,
+  .facets .price-facet__highest-price {
+    color: var(--color-foreground);
+    opacity: 1;
+  }
+
+  @media screen and (min-width: 750px) {
+    .facets--horizontal .facets__panel-content,
+    .facets--horizontal .sorting-filter__options {
+      /* Override floating-panel's inline 40px offset to follow the button height. */
+      /* stylelint-disable-next-line declaration-no-important */
+      top: calc(100% + 4px) !important;
+    }
+
+    .facets--horizontal .facets__inputs-wrapper .facets__inputs-list {
+      gap: var(--gap-md);
+    }
+
+    .facets--horizontal .sorting-filter__options-inner {
+      gap: var(--gap-xs);
+    }
+  }
+  @media screen and (min-width: 750px) {
+    .facets--horizontal .facets__panel-content,
+    .facets--horizontal .sorting-filter__options-inner {
+      padding: var(--padding-lg);
+    }
+
+    .facets--horizontal .facets__panel-content .facets__inputs-wrapper {
+      padding: 0;
+    }
+
+    .facets--horizontal .price-facet__highest-price--horizontal {
+      padding: var(--padding-md) 0 0;
+    }
+
+    .facets--horizontal .facets__panel-content .facets__clear {
+      padding: var(--padding-md) 0 0;
+    }
+  }
+  @media screen and (max-width: 749px) {
+    .facets--drawer .facets__label,
+    .facets--drawer .sorting-filter__container .facets__label {
+      font-size: 20px;
+      line-height: 1.25;
+      white-space: normal;
+    }
+  }
+  @media screen and (max-width: 749px) {
+    .facets--drawer .facets__panel[id$='-filter-p-tag'][open] > .facets__summary {
+      margin-block-end: var(--padding-sm);
+    }
+  }
+  @media screen and (max-width: 749px) {
+    .facets--drawer .facets__inputs-wrapper .facets__inputs-list,
+    .facets--drawer .sorting-filter__options-inner {
+      gap: 16px;
+    }
+  }
+  @media screen and (max-width: 749px) {
+    .facets-toggle__wrapper {
+      margin-inline-start: 0;
+    }
+
+    .facets-toggle .facets-toggle__button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--gap-xs);
+      min-height: var(--minimum-touch-target);
+      padding: var(--padding-xs) var(--padding-md);
+      border: 1px solid var(--color-foreground);
+      border-radius: 0;
+      color: var(--color-foreground);
+      background-color: var(--color-background);
+    }
+
+    .facets-toggle .facets-toggle__button:hover {
+      background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+    }
+  }
+  /* Frame the toolbar using the theme palette. */
+  @media screen and (min-width: 750px) {
+    .facets.facets--horizontal {
+      border-block: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-40));
+      padding-block-start: max(var(--padding-block-start, 0px), var(--padding-lg));
+      padding-block-end: max(var(--padding-block-end, 0px), var(--padding-lg));
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .facets-toggle {
+      height: auto;
+      border-block: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-40));
+      padding-block: var(--padding-lg);
+    }
   }
 {% endstylesheet %}
 

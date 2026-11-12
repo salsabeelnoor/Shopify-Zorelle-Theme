@@ -174,7 +174,7 @@
   .sorting-filter__select-wrapper {
     display: flex;
     position: relative;
-    border-radius: var(--variant-picker-button-radius);
+    border-radius: 0;
     align-items: center;
     overflow: clip;
     padding: var(--padding-2xs) var(--padding-xs);
@@ -230,7 +230,7 @@
     box-shadow: var(--shadow-popover);
     border: var(--style-border-popover);
     background-color: var(--color-background);
-    border-radius: var(--style-border-radius-popover);
+    border-radius: 0;
     width: max-content;
     min-width: var(--facets-panel-min-width);
     min-height: 0;
@@ -275,12 +275,12 @@
     padding: var(--padding-2xs) calc(var(--drawer-padding) / 2) var(--padding-2xs) var(--padding-2xs);
 
     &:hover {
-      border-radius: calc(var(--style-border-radius-popover) / 2);
+      border-radius: 0;
       background-color: rgb(var(--color-foreground-rgb) / var(--opacity-8));
     }
 
     &:focus {
-      border-radius: calc(var(--style-border-radius-popover) / 2);
+      border-radius: 0;
     }
   }
 
