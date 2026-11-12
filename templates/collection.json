@@ -18,7 +18,8 @@
             "home_label": "Home",
             "show_collection": true,
             "nav_label": "Breadcrumb"
-          }
+          },
+          "blocks": {}
         },
         "text_tqQTNE": {
           "type": "text",
@@ -152,7 +153,7 @@
           "type": "_product-card",
           "static": true,
           "settings": {
-            "product_card_gap": 4,
+            "product_card_gap": 5,
             "background_color": "",
             "border": "none",
             "border_width": 1,
@@ -201,7 +202,7 @@
                 "background": false,
                 "background_color": "#00000026",
                 "corner_radius": 0,
-                "padding-block-start": 4,
+                "padding-block-start": 0,
                 "padding-block-end": 0,
                 "padding-inline-start": 0,
                 "padding-inline-end": 0
