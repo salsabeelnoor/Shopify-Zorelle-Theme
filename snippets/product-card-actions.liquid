@@ -15,8 +15,8 @@
   @param {string} [personalize_label] - Label for personalised products.
   @param {string} [size_heading] - Heading of the size popover on screens up to 1024px.
 
-  Up to 1024px the CTA collapses to a square cart icon at the bottom-right of the image;
-  in size mode it opens a popover with the size buttons above the icon.
+  Up to 1024px the CTA collapses to a square cart icon at the bottom-right of the image; in size mode it opens a popover
+  with the size buttons above the icon.
 
   @example
   {% render 'product-card-actions', product: product, section_id: section.id, personalize_label: 'Personalise', size_heading: 'Select size / option' %}
@@ -176,7 +176,7 @@
   */
   .card-actions {
     --card-actions-inset: 0.75rem;
-    --card-actions-icon-size: 2.75rem;
+    --card-actions-icon-size: clamp(40px, calc(40px + 4px * (100vw - 320px) / 1600px), 44px);
 
     /* Page-level palette colours: product cards can set --color-background to
        transparent, which made the button see-through. */
@@ -188,9 +188,7 @@
     z-index: 3;
     opacity: 0;
     transform: translateY(0.75rem);
-    transition:
-      opacity 0.35s var(--ease-out-quad, ease-out),
-      transform 0.35s var(--ease-out-quad, ease-out);
+    transition: opacity 0.35s var(--ease-out-quad, ease-out), transform 0.35s var(--ease-out-quad, ease-out);
     pointer-events: none;
   }
 
@@ -204,16 +202,13 @@
     --button-background-color: var(--card-actions-surface);
     --btn-rest-background: var(--card-actions-surface);
     --button-border-color: rgb(var(--palette-darkest-rgb) / var(--opacity-20, 0.2));
-    --btn-min-height: 2.75rem;
+    --btn-min-height: clamp(40px, calc(40px + 4px * (100vw - 320px) / 1600px), 44px);
     --btn-padding-block: 0.75rem;
 
     width: 100%;
     font-size: 0.75rem;
     background-image: none;
-    transition:
-      background-color 0.25s ease,
-      color 0.25s ease,
-      box-shadow 0.25s ease;
+    transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
   }
 
   .card-actions__button.button-secondary:is(:hover, :focus-visible):not(:disabled) {
@@ -464,9 +459,7 @@
       transform: translateY(0.375rem);
       box-shadow: 0 0.5rem 1.5rem rgb(var(--palette-darkest-rgb) / var(--opacity-20, 0.2));
       /* Closing: a slower fade so the chosen size stays readable as it leaves. */
-      transition:
-        opacity 0.5s var(--ease-out-quad, ease-out),
-        transform 0.5s var(--ease-out-quad, ease-out),
+      transition: opacity 0.5s var(--ease-out-quad, ease-out), transform 0.5s var(--ease-out-quad, ease-out),
         visibility 0s linear 0.5s;
     }
 
@@ -475,9 +468,7 @@
       opacity: 1;
       transform: none;
       pointer-events: auto;
-      transition:
-        opacity 0.25s var(--ease-out-quad, ease-out),
-        transform 0.25s var(--ease-out-quad, ease-out);
+      transition: opacity 0.25s var(--ease-out-quad, ease-out), transform 0.25s var(--ease-out-quad, ease-out);
     }
 
     .card-actions__heading {

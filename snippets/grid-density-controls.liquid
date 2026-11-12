@@ -12,7 +12,7 @@
     <legend class="column-options__legend visually-hidden">
       {{ 'content.grid_view.grid_fieldset' | t }}
     </legend>
-
+    {% comment %} 
     {% if viewport == 'mobile' %}
       <label class="column-options__option">
         <input
@@ -43,8 +43,8 @@
           {{- 'icon-grid-default.svg' | inline_asset_content -}}
         </span>
       </label>
-
-    {% elsif viewport == 'desktop' %}
+ {% endcomment %}
+    {% if viewport == 'desktop' %}
       <label class="column-options__option">
         <input
           type="radio"

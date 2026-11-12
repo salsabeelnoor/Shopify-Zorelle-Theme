@@ -11,15 +11,15 @@
 {%- enddoc -%}
 
 {%- liquid
-  assign icon_name = 'arrow'
-  assign style = icon_style | default: 'arrow'
+  assign style = icon_style | default: 'chevron'
   assign shape = icon_shape | default: 'none'
-
-  if icon_style contains 'chevron'
+  assign icon_name = 'arrow'
+  
+  if style contains 'chevron'
     assign icon_name = 'caret'
   endif
 
-  if icon_style contains 'large'
+  if style contains 'large'
     assign icon_size = 'large'
   endif
 -%}

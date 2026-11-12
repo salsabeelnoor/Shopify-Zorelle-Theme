@@ -396,9 +396,11 @@
           </form>
         </facets-form-component>
       {% endif %}
-      {% if block_settings.enable_grid_density %}
-        {% render 'grid-density-controls', viewport: 'mobile' %}
-      {% endif %}
+      {% comment %} 
+        {% if block_settings.enable_grid_density %}
+          {% render 'grid-density-controls', viewport: 'mobile' %}
+        {% endif %}
+      {% endcomment %}
     </div>
   </div>
 {% else %}

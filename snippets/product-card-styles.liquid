@@ -27,9 +27,10 @@
 
   /* Zorelle: product card title (600 weight face loaded in theme-styles-variables). */
   product-card a.user-select-text .text-block > * {
-    font-size: 15px;
+    font-size: clamp(13px, calc(13px + 2px * (100vw - 320px) / 1600px), 15px);
     font-weight: 600;
     letter-spacing: 1.3px;
+    text-transform: uppercase;
   }
 
   /* Zorelle: product card price (size from the price block setting: 14px).
@@ -39,7 +40,7 @@
   product-card product-price.text-block,
   product-card product-price.text-block > *,
   product-card product-price.text-block :is([ref='priceContainer'], .price, .price-item__group, bdi) {
-    font-size: 17px;
+    font-size: clamp(14px, calc(14px + 3px * (100vw - 320px) / 1600px), 17px);
     font-weight: 500;
     letter-spacing: 1px;
   }

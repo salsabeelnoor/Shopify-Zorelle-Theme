@@ -575,8 +575,8 @@ p:empty {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  width: var(--icon-size-sm);
-  height: var(--icon-size-sm);
+  width: clamp(20px, calc(20px + 4px * (100vw - 320px) / 1600px), 24px);
+  height: clamp(20px, calc(20px + 4px * (100vw - 320px) / 1600px), 24px);
   pointer-events: none;
 }
 
@@ -591,8 +591,8 @@ p:empty {
 }
 
 .svg-wrapper > svg {
-  width: var(--icon-size-sm);
-  height: var(--icon-size-sm);
+  width: 100%;
+  height: 100%;
 }
 
 .relative {
