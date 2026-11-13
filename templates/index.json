@@ -72,7 +72,31 @@
         "gap": 20,
         "aspect_ratio": "square",
         "padding_top": 40,
-        "padding_bottom": 40
+        "padding_bottom": 52
+      }
+    },
+    "discount_banner_main": {
+      "type": "discount-banner",
+      "settings": {
+        "image": "shopify://shop_images/Gold_Jewelry_Editorial_Portrait_de8108da-97d1-429b-9184-b1180d10d4c7.png",
+        "image_mobile": "shopify://shop_images/Elegant_Gold_Jewelry_Portrait.png",
+        "position_x": 50,
+        "position_y": 18,
+        "position_x_mobile": 50,
+        "position_y_mobile": 50,
+        "link": "/collections/sale",
+        "eyebrow": "Black Friday Sale",
+        "heading": "Enjoy 10% off!",
+        "text": "Selected rings, necklaces and earrings while stock lasts.",
+        "button_label": "Shop the sale",
+        "content_position": "start",
+        "content_vertical": "middle",
+        "text_color": "{{ settings.color_palette.background }}",
+        "overlay_opacity": 25,
+        "height": "medium",
+        "section_width": "full-width",
+        "padding-block-start": 52,
+        "padding-block-end": 0
       }
     },
     "featured_products_slider_4mHTPQ": {
@@ -195,7 +219,7 @@
         "rows_gap": 32,
         "background_color": "",
         "padding_top": 64,
-        "padding_bottom": 64
+        "padding_bottom": 52
       }
     },
     "product_showcase_yTgh7m": {
@@ -319,8 +343,8 @@
         "columns_gap": 16,
         "rows_gap": 32,
         "background_color": "",
-        "padding_top": 64,
-        "padding_bottom": 64
+        "padding_top": 52,
+        "padding_bottom": 52
       }
     },
     "product_showcase_EC7EEz": {
@@ -444,27 +468,8 @@
         "columns_gap": 24,
         "rows_gap": 32,
         "background_color": "",
-        "padding_top": 64,
-        "padding_bottom": 64
-      }
-    },
-    "discount_banner_main": {
-      "type": "discount-banner",
-      "settings": {
-        "image": "shopify://shop_images/exec-e02dd149-43cc-44ec-a101-2c63b882c198.png",
-        "link": "/collections/sale",
-        "eyebrow": "Limited time",
-        "heading": "Up to 30% off",
-        "text": "Selected rings, necklaces and earrings while stock lasts.",
-        "button_label": "Shop the sale",
-        "content_position": "start",
-        "content_vertical": "middle",
-        "text_color": "{{ settings.color_palette.background }}",
-        "overlay_opacity": 25,
-        "height": "medium",
-        "section_width": "full-width",
-        "padding-block-start": 0,
-        "padding-block-end": 0
+        "padding_top": 52,
+        "padding_bottom": 104
       }
     },
     "trust_badges_main": {
@@ -510,10 +515,10 @@
   "order": [
     "hero_banner_main",
     "collection_tiles_main",
+    "discount_banner_main",
     "featured_products_slider_4mHTPQ",
     "product_showcase_yTgh7m",
     "product_showcase_EC7EEz",
-    "discount_banner_main",
     "trust_badges_main"
   ]
 }
