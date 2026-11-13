@@ -1,0 +1,252 @@
+{% comment %}
+  Section contract.
+  A full-width band of store promises (for example 2 year warranty, free delivery,
+  90-day returns): each badge is an icon above a short line of text, optionally linked.
+  Badges sit in equal columns inside the page container; four or more wrap to two
+  columns on small screens.
+  @example
+  <!-- Add "Trust badges" to the home page and add one Badge block per promise. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+  assign badge_count = section.blocks.size
+  if s.background_color != blank
+    render 'contrast-override', background_color: s.background_color, section_id: section.id
+  endif
+-%}
+
+<div
+  class="section-background{% if s.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
+
+<div
+  class="section section--page-width spacing-style trust-badges{% if s.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  style="{% render 'spacing-style', settings: s %}"
+>
+  {%- if badge_count > 0 -%}
+    <ul
+      class="trust-badges__list list-unstyled{% if badge_count > 3 %} trust-badges__list--wrap{% endif %}"
+      role="list"
+    >
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign b = block.settings
+          if b.link != blank
+            assign item_tag = 'a'
+          else
+            assign item_tag = 'div'
+          endif
+        -%}
+        <li class="trust-badges__item" {{ block.shopify_attributes }}>
+          <{{ item_tag }}
+            class="trust-badges__badge"
+            {% if b.link != blank %}
+              href="{{ b.link }}"
+            {% endif %}
+          >
+            {%- if b.image != blank -%}
+              {{
+                b.image
+                | image_url: width: 120
+                | image_tag:
+                  class: 'trust-badges__icon trust-badges__icon--image',
+                  widths: '60, 120',
+                  sizes: '60px',
+                  loading: 'lazy',
+                  alt: ''
+              }}
+            {%- elsif b.icon != 'none' -%}
+              {%- render 'trust-badge-icon', icon: b.icon, class: 'trust-badges__icon' -%}
+            {%- endif -%}
+            {%- if b.text != blank -%}
+              <span class="trust-badges__text">{{ b.text | escape }}</span>
+            {%- endif -%}
+          </{{ item_tag }}>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .trust-badges__list {
+    --trust-badges-icon-size: 2.75rem;
+    --trust-badges-gap: var(--gap-md, 16px);
+    --trust-badges-item-width: calc(30% - var(--trust-badges-gap));
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--gap-lg, 24px) var(--trust-badges-gap);
+    margin: 0;
+    padding: 0;
+  }
+
+  @media screen and (max-width: 749px) {
+    .trust-badges__list {
+      --trust-badges-icon-size: 2.25rem;
+      --trust-badges-item-width: 48%;
+    }
+  }
+
+  .trust-badges__item {
+    display: flex;
+    flex: 0 0 var(--trust-badges-item-width);
+    justify-content: center;
+    align-items: center;
+    min-width: 0;
+    text-align: center;
+  }
+
+  .trust-badges__badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gap-md, 16px);
+    min-width: 0;
+    color: var(--color-foreground);
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .trust-badges__icon {
+    display: block;
+    flex-shrink: 0;
+    width: var(--trust-badges-icon-size);
+    height: var(--trust-badges-icon-size);
+    color: currentColor;
+    stroke-width: 0.8;
+  }
+
+  .trust-badges__icon--image {
+    object-fit: contain;
+  }
+
+  .trust-badges__text {
+    font-family: var(--font-body--family);
+    font-weight: 500;
+    font-size: clamp(0.9375rem, 0.85rem + 0.35vw, 1.125rem);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  a.trust-badges__badge .trust-badges__text {
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.25em;
+    transition: text-decoration-color var(--animation-speed, 0.2s) var(--animation-easing, ease);
+  }
+
+  a.trust-badges__badge:hover .trust-badges__text {
+    text-decoration-color: currentColor;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a.trust-badges__badge .trust-badges__text {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Trust badges",
+  "tag": "section",
+  "class": "section-trust-badges",
+  "disabled_on": {
+    "groups": ["header"]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "info": "Text and icons switch to a light or dark palette colour automatically for contrast.",
+      "default": "#36262b"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    }
+  ],
+  "blocks": [
+    {
+      "type": "badge",
+      "name": "Badge",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "t:settings.icon",
+          "options": [
+            { "value": "none", "label": "t:options.none" },
+            { "value": "award", "label": "Award ribbon" },
+            { "value": "truck", "label": "Delivery truck" },
+            { "value": "return", "label": "Returns" },
+            { "value": "gem", "label": "Gem" },
+            { "value": "gift", "label": "Gift" },
+            { "value": "shield", "label": "Shield" },
+            { "value": "lock", "label": "Secure lock" },
+            { "value": "heart", "label": "Heart" },
+            { "value": "chat", "label": "Chat" },
+            { "value": "leaf", "label": "Leaf" },
+            { "value": "star", "label": "Star" }
+          ],
+          "default": "award"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Custom icon",
+          "info": "Replaces the icon. Use a simple line icon, ideally a transparent PNG or SVG."
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:settings.text",
+          "default": "2 Year Warranty"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "t:settings.link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust badges",
+      "category": "t:categories.layout",
+      "blocks": [
+        { "type": "badge", "settings": { "icon": "award", "text": "2 Year Warranty" } },
+        { "type": "badge", "settings": { "icon": "truck", "text": "Free Delivery €100+" } },
+        { "type": "badge", "settings": { "icon": "return", "text": "90-Day Returns" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -447,6 +447,45 @@
         "padding_top": 64,
         "padding_bottom": 64
       }
+    },
+    "trust_badges_main": {
+      "type": "trust-badges",
+      "blocks": {
+        "badge_warranty": {
+          "type": "badge",
+          "settings": {
+            "icon": "award",
+            "text": "2 Year Warranty",
+            "link": ""
+          }
+        },
+        "badge_delivery": {
+          "type": "badge",
+          "settings": {
+            "icon": "truck",
+            "text": "Free Delivery €100+",
+            "link": ""
+          }
+        },
+        "badge_returns": {
+          "type": "badge",
+          "settings": {
+            "icon": "return",
+            "text": "90-Day Returns",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "badge_warranty",
+        "badge_delivery",
+        "badge_returns"
+      ],
+      "settings": {
+        "background_color": "{{ settings.color_palette.foreground }}",
+        "padding-block-start": 28,
+        "padding-block-end": 28
+      }
     }
   },
   "order": [
@@ -454,6 +493,7 @@
     "collection_tiles_main",
     "featured_products_slider_4mHTPQ",
     "product_showcase_yTgh7m",
-    "product_showcase_EC7EEz"
+    "product_showcase_EC7EEz",
+    "trust_badges_main"
   ]
 }
