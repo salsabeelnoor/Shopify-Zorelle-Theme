@@ -165,6 +165,9 @@
     "taxes_included": "已含税费。",
     "product_badge_sold_out": "售罄",
     "product_badge_sale": "促销",
+    "product_badge_discount": "-{{ percent }}%",
+    "product_badge_discount_label": "On sale, up to {{ percent }}% off",
+    "discount_banner_link": "Shop the sale",
     "grid_view": {
       "default_view": "默认",
       "grid_fieldset": "列网格",

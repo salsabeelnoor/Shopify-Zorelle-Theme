@@ -1177,6 +1177,76 @@
     ]
   },
   {
+    "name": "Sale campaign",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Shows a sale on product cards and product pages (crossed-out price, red sale price, ribbon). It only changes what customers see: create a matching automatic discount in Shopify admin → Discounts with the same percentage, products and dates so the cart and checkout charge the sale price."
+      },
+      {
+        "type": "checkbox",
+        "id": "sale_campaign_enabled",
+        "label": "Show sale campaign",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "sale_campaign_percent",
+        "label": "Discount",
+        "min": 1,
+        "max": 90,
+        "step": 1,
+        "unit": "%",
+        "default": 10,
+        "visible_if": "{{ settings.sale_campaign_enabled }}"
+      },
+      {
+        "type": "select",
+        "id": "sale_campaign_scope",
+        "label": "Applies to",
+        "options": [
+          {
+            "value": "all",
+            "label": "All products"
+          },
+          {
+            "value": "collection",
+            "label": "One collection"
+          }
+        ],
+        "default": "all",
+        "visible_if": "{{ settings.sale_campaign_enabled }}"
+      },
+      {
+        "type": "collection",
+        "id": "sale_campaign_collection",
+        "label": "Collection",
+        "info": "Used when \"Applies to\" is One collection."
+      },
+      {
+        "type": "text",
+        "id": "sale_campaign_starts",
+        "label": "Starts",
+        "info": "Optional. Store time, format 2026-11-27 00:00. Leave empty to start now.",
+        "visible_if": "{{ settings.sale_campaign_enabled }}"
+      },
+      {
+        "type": "text",
+        "id": "sale_campaign_ends",
+        "label": "Ends",
+        "info": "Optional. Store time, format 2026-11-30 23:59. The sale hides itself after this time.",
+        "visible_if": "{{ settings.sale_campaign_enabled }}"
+      },
+      {
+        "type": "text",
+        "id": "sale_campaign_badge",
+        "label": "Ribbon text",
+        "info": "Optional, for example \"Black Friday\". Leave empty to show the percentage (-10%).",
+        "visible_if": "{{ settings.sale_campaign_enabled }}"
+      }
+    ]
+  },
+  {
     "name": "t:names.badges",
     "settings": [
       {
@@ -1210,8 +1280,31 @@
         "default": 40
       },
       {
+        "type": "select",
+        "id": "badge_sale_style",
+        "label": "Sale badge text",
+        "options": [
+          {
+            "value": "percent",
+            "label": "Discount percentage (-20%)"
+          },
+          {
+            "value": "text",
+            "label": "Sale"
+          }
+        ],
+        "default": "percent"
+      },
+      {
         "type": "header",
         "content": "t:settings.colors"
+      },
+      {
+        "type": "color",
+        "id": "sale_price_color",
+        "label": "Sale price colour",
+        "info": "Used for the discounted price next to the crossed-out original price.",
+        "default": "#c8102e"
       },
       {
         "type": "color",

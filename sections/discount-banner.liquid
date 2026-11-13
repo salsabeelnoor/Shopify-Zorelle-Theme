@@ -1,0 +1,536 @@
+{% comment %}
+  Section contract.
+  A promotional image banner (for example a sale) with optional text over the image:
+  a small eyebrow line, a heading, a short text and a button label. When a link is set
+  the whole banner is one link (usually to a Sale collection); without a link it is a
+  plain image with text. A separate mobile image is optional.
+  @example
+  <!-- Add "Discount banner" to the home page and link it to the Sale collection. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+  assign image = s.image
+  assign image_mobile = s.image_mobile | default: image
+  assign has_link = false
+  if s.link != blank
+    assign has_link = true
+  endif
+
+  assign has_text = false
+  if s.eyebrow != blank or s.heading != blank or s.text != blank
+    assign has_text = true
+  endif
+  assign show_button = false
+  if has_link and s.button_label != blank
+    assign show_button = true
+  endif
+
+  if section.index <= 2
+    assign loading = 'eager'
+  else
+    assign loading = 'lazy'
+  endif
+
+  if has_link
+    assign wrapper_tag = 'a'
+  else
+    assign wrapper_tag = 'div'
+  endif
+-%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .discount-banner {
+    --discount-banner-text: {{ s.text_color }};
+    --discount-banner-overlay: {{ s.overlay_opacity | divided_by: 100.0 }};
+    --discount-banner-position: {{ s.position_x }}% {{ s.position_y }}%;
+  }
+
+  @media screen and (max-width: 749px) {
+    #shopify-section-{{ section.id }} .discount-banner {
+      --discount-banner-position: {{ s.position_x_mobile }}% {{ s.position_y_mobile }}%;
+    }
+  }
+{% endstyle %}
+
+<div
+  class="section section--{{ s.section_width }} spacing-style discount-banner-section"
+  style="{% render 'spacing-style', settings: s %}"
+>
+  <{{ wrapper_tag }}
+    class="discount-banner discount-banner--{{ s.height }} discount-banner--x-{{ s.content_position }} discount-banner--y-{{ s.content_vertical }}{% if has_link %} discount-banner--link{% endif %}"
+    {% if has_link %}
+      href="{{ s.link }}"
+      {% unless has_text or show_button %}
+        {%- liquid
+          assign link_label = 'content.discount_banner_link' | t
+          if image.alt != blank
+            assign link_label = image.alt
+          endif
+        -%}
+        aria-label="{{ link_label | escape }}"
+      {% endunless %}
+    {% endif %}
+  >
+    <div class="discount-banner__media">
+      {%- if image != blank -%}
+        <picture>
+          <source
+            media="(max-width: 749px)"
+            srcset="{{ image_mobile | image_url: width: 750 }} 750w, {{ image_mobile | image_url: width: 1100 }} 1100w, {{ image_mobile | image_url: width: 1500 }} 1500w"
+            sizes="100vw"
+            width="{{ image_mobile.width }}"
+            height="{{ image_mobile.height }}"
+          >
+          {%- # The position sliders feed the image's own object-position (desktop and mobile values switch in the style block above). -%}
+          {{
+            image
+            | image_url: width: 3000
+            | image_tag:
+              widths: '750, 1100, 1500, 1920, 2400, 3000',
+              sizes: '100vw',
+              loading: loading,
+              class: 'discount-banner__image',
+              style: 'object-position: var(--discount-banner-position, 50% 50%);',
+              alt: image.alt
+          }}
+        </picture>
+      {%- else -%}
+        {{ 'hero-apparel-2' | placeholder_svg_tag: 'discount-banner__image discount-banner__placeholder' }}
+      {%- endif -%}
+      {%- if has_text or show_button -%}
+        <span class="discount-banner__overlay" aria-hidden="true"></span>
+      {%- endif -%}
+    </div>
+
+    {%- if has_text or show_button -%}
+      <div class="discount-banner__content">
+        {%- if s.eyebrow != blank -%}
+          <p class="discount-banner__eyebrow">{{ s.eyebrow | escape }}</p>
+        {%- endif -%}
+        {%- if s.heading != blank -%}
+          <h2 class="discount-banner__heading">{{ s.heading | escape }}</h2>
+        {%- endif -%}
+        {%- if s.text != blank -%}
+          <p class="discount-banner__text">{{ s.text }}</p>
+        {%- endif -%}
+        {%- if show_button -%}
+          {%- # A styled label, not a nested link: the whole banner is already the link. -%}
+          <span class="discount-banner__button">{{ s.button_label | escape }}</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </{{ wrapper_tag }}>
+</div>
+
+{% stylesheet %}
+  .discount-banner {
+    --discount-banner-padding: clamp(1.5rem, 4vw, 4rem);
+
+    position: relative;
+    display: block;
+    overflow: hidden;
+    color: var(--discount-banner-text);
+    text-decoration: none;
+    isolation: isolate;
+  }
+
+  .discount-banner__media {
+    position: relative;
+    aspect-ratio: 14 / 5;
+    min-height: 500px;
+    max-width: 100%;
+  }
+
+  .discount-banner--small {
+    --discount-banner-height: 18rem;
+  }
+
+  .discount-banner--medium {
+    --discount-banner-height: 26rem;
+  }
+
+  .discount-banner--large {
+    --discount-banner-height: 36rem;
+  }
+
+  @media screen and (max-width: 749px) {
+    .discount-banner--small {
+      --discount-banner-height: 14rem;
+    }
+
+    .discount-banner--medium {
+      --discount-banner-height: 20rem;
+    }
+
+    .discount-banner--large {
+      --discount-banner-height: 28rem;
+    }
+  }
+
+  .discount-banner__media picture {
+    display: contents;
+  }
+
+  .discount-banner__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.8s var(--ease-out-quad, ease-out);
+  }
+
+  .discount-banner:not(.discount-banner--adapt) .discount-banner__image {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    object-fit: cover;
+    background-color: #d3d3d3;
+  }
+
+  .discount-banner__placeholder {
+    aspect-ratio: 16 / 6;
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-10, 0.1));
+  }
+
+  .discount-banner__overlay {
+    position: absolute;
+    inset: 0;
+    background-color: var(--palette-darkest, #000);
+    opacity: var(--discount-banner-overlay, 0.25);
+  }
+
+  /* Text layer placed over the image: covers the banner, then aligns its lines inside. */
+  .discount-banner__content {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: var(--discount-banner-padding);
+    text-align: start;
+  }
+  .discount-banner--x-start .discount-banner__content {
+    width: 50%;
+    @media only screen and (max-width: 960px) {
+      width: 60%;
+    }
+    @media only screen and (max-width: 749px) {
+      width: 100%;
+      gap: 16px;
+    }
+  }
+
+  .discount-banner--x-center .discount-banner__content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .discount-banner--x-end .discount-banner__content {
+    align-items: flex-end;
+    text-align: end;
+  }
+
+  .discount-banner--y-top .discount-banner__content {
+    justify-content: flex-start;
+  }
+
+  .discount-banner--y-bottom .discount-banner__content {
+    justify-content: flex-end;
+  }
+
+  /* Mobile: 10:11 image, text centred over a slightly darker overlay. */
+  @media screen and (max-width: 749px) {
+    .discount-banner__media {
+      aspect-ratio: 13 / 12;
+    }
+
+    .discount-banner__overlay {
+      opacity: 0.75;
+    }
+
+    .discount-banner .discount-banner__content {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+  }
+
+  @media only screen and (max-width: 450px) {
+    .discount-banner__media {
+      aspect-ratio: 4 / 5;
+    }
+  }
+
+  .discount-banner__eyebrow,
+  .discount-banner__heading,
+  .discount-banner__text {
+    margin: 0;
+    color: inherit;
+    overflow-wrap: anywhere;
+  }
+
+  .discount-banner__eyebrow,
+  .discount-banner__heading {
+    text-shadow: 0px 3px 2px rgba(0, 0, 0, 0.15);
+  }
+
+  .discount-banner__eyebrow {
+    font-family: var(--font-body--family);
+    font-size: clamp(14px, calc(14px + 4px * (100vw - 320px) / (1920px - 320px)), 18px);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .discount-banner__heading {
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: clamp(32px, calc(32px + 38px * (100vw - 320px) / (1920px - 320px)), 70px);
+    line-height: 1.05;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .discount-banner__text {
+    font-size: clamp(15px, calc(15px + 5px * (100vw - 320px) / (1920px - 320px)), 20px);
+    line-height: 1.5;
+    letter-spacing: 0.7px;
+  }
+
+  .discount-banner__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    margin-block-start: 0.5rem;
+    padding-inline: 1.75rem;
+    font-family: var(--font-body--family);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background-color: #fff9f7;
+    color: var(--palette-darkest, #000);
+    transition: all 0.3s ease-in-out;
+  }
+
+  /* Hover fills the button solid with the text colour; the label takes the dark palette colour. */
+  .discount-banner--link:hover .discount-banner__button,
+  .discount-banner--link:focus-visible .discount-banner__button {
+    background-color: var(--color-foreground);
+    color: #fff9f7;
+  }
+
+  .discount-banner--link:focus-visible {
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .discount-banner__image,
+    .discount-banner__button {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Discount banner",
+  "tag": "section",
+  "class": "section-discount-banner",
+  "disabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:settings.image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile image",
+      "info": "Optional. Uses the main image when empty."
+    },
+    {
+      "type": "header",
+      "content": "Image position",
+      "info": "Moves the image inside the banner when part of it is cut off. 0% shows the left/top edge, 100% the right/bottom edge."
+    },
+    {
+      "type": "range",
+      "id": "position_x",
+      "label": "Desktop horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "position_y",
+      "label": "Desktop vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "position_x_mobile",
+      "label": "Mobile horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "position_y_mobile",
+      "label": "Mobile vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Banner link",
+      "info": "Makes the whole banner clickable. Link it to your Sale collection. Leave empty for an image without a link."
+    },
+    {
+      "type": "header",
+      "content": "t:content.text"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Small text above heading",
+      "default": "Limited time"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Up to 30% off"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "t:settings.text",
+      "default": "Selected rings, necklaces and earrings while stock lasts."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "info": "Shown only when the banner has a link.",
+      "default": "Shop the sale"
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Text position",
+      "options": [
+        { "value": "start", "label": "t:options.left" },
+        { "value": "center", "label": "t:options.center" },
+        { "value": "end", "label": "t:options.right" }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "select",
+      "id": "content_vertical",
+      "label": "Vertical position",
+      "options": [
+        { "value": "top", "label": "t:options.top" },
+        { "value": "middle", "label": "t:options.center" },
+        { "value": "bottom", "label": "t:options.bottom" }
+      ],
+      "default": "middle"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#fff9f7"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image darkening",
+      "info": "Darkens the image so the text stays readable.",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 25
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "t:settings.height",
+      "options": [
+        { "value": "adapt", "label": "Adapt to image" },
+        { "value": "small", "label": "t:options.small" },
+        { "value": "medium", "label": "t:options.medium" },
+        { "value": "large", "label": "t:options.large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        { "value": "page-width", "label": "t:options.page" },
+        { "value": "full-width", "label": "t:options.full" }
+      ],
+      "default": "full-width"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Discount banner",
+      "category": "t:categories.banners"
+    }
+  ]
+}
+{% endschema %}

@@ -167,6 +167,9 @@
     "taxes_included": "Impuestos incluidos.",
     "product_badge_sold_out": "Agotado",
     "product_badge_sale": "Oferta",
+    "product_badge_discount": "-{{ percent }}%",
+    "product_badge_discount_label": "On sale, up to {{ percent }}% off",
+    "discount_banner_link": "Shop the sale",
     "grid_view": {
       "default_view": "Predeterminado",
       "grid_fieldset": "Columna de cuadrícula",

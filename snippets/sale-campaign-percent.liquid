@@ -1,0 +1,51 @@
+{%- doc -%}
+  Outputs the Sale campaign discount (a whole number, for example 10) when the campaign in
+  Theme settings → Sale campaign applies to this product right now, and nothing otherwise.
+  Capture the output to use it. The campaign is display-only: the matching automatic
+  discount in Shopify admin charges the price in the cart and at checkout.
+
+  @param {product} product - The product to check.
+
+  @example
+  {%- capture campaign_percent -%}{% render 'sale-campaign-percent', product: product %}{%- endcapture -%}
+  {%- assign campaign_percent = campaign_percent | strip | plus: 0 -%}
+{%- enddoc -%}
+
+{%- liquid
+  assign applies = settings.sale_campaign_enabled
+  if product == blank or product.gift_card?
+    assign applies = false
+  endif
+
+  if applies
+    assign now = 'now' | date: '%s' | plus: 0
+    if settings.sale_campaign_starts != blank
+      assign starts = settings.sale_campaign_starts | date: '%s' | plus: 0
+      if starts > 0 and now < starts
+        assign applies = false
+      endif
+    endif
+    if settings.sale_campaign_ends != blank
+      assign ends = settings.sale_campaign_ends | date: '%s' | plus: 0
+      if ends > 0 and now > ends
+        assign applies = false
+      endif
+    endif
+  endif
+
+  if applies and settings.sale_campaign_scope == 'collection'
+    assign campaign_collection = settings.sale_campaign_collection
+    if campaign_collection == blank
+      assign applies = false
+    else
+      assign product_collections = product.collections | map: 'handle'
+      unless product_collections contains campaign_collection.handle
+        assign applies = false
+      endunless
+    endif
+  endif
+
+  if applies
+    echo settings.sale_campaign_percent
+  endif
+-%}

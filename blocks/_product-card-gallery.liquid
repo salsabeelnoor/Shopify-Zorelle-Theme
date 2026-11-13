@@ -4,18 +4,54 @@
 
 {% capture children %}
   {% unless product == blank %}
-    {%- if product.available == false or product.compare_at_price > product.price -%}
+    {%- liquid
+      # Sale campaign (Theme settings) wins over compare-at prices: its ribbon shows the
+      # campaign text, or its percentage.
+      capture campaign_percent
+        render 'sale-campaign-percent', product: product
+      endcapture
+      assign campaign_percent = campaign_percent | strip | plus: 0
+
+      # Discount shown on the sale badge: the biggest saving across the product's variants
+      # that are on sale, rounded to a whole percent.
+      assign discount_percent = 0
+      if campaign_percent > 0
+        assign discount_percent = campaign_percent
+      elsif settings.badge_sale_style == 'percent' and product.compare_at_price > product.price
+        for variant in product.variants
+          if variant.compare_at_price > variant.price
+            assign saving = variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price | round
+            if saving > discount_percent
+              assign discount_percent = saving
+            endif
+          endif
+        endfor
+      endif
+    -%}
+    {%- liquid
+      assign on_sale = false
+      if campaign_percent > 0 or product.compare_at_price > product.price
+        assign on_sale = true
+      endif
+    -%}
+    {%- if product.available == false or on_sale -%}
       <div
         class="product-badges product-badges--{{ settings.badge_position }}"
       >
         <div
           class="
             product-badges__badge product-badges__badge--rectangle
-            {% if product.available == false %} color-custom-badge-sold-out{% elsif product.compare_at_price > product.price %} color-custom-badge-sale{% endif %}
+            {% if product.available == false %} color-custom-badge-sold-out{% elsif on_sale %} color-custom-badge-sale{% endif %}
           "
         >
           {%- if product.available == false -%}
             {{ 'content.product_badge_sold_out' | t }}
+          {%- elsif campaign_percent > 0 and settings.sale_campaign_badge != blank -%}
+            <span aria-hidden="true">{{ settings.sale_campaign_badge | escape }}</span>
+            <span class="visually-hidden">{{ 'content.product_badge_discount_label' | t: percent: campaign_percent }}</span>
+          {%- elsif discount_percent > 0 -%}
+            <span aria-hidden="true">{{ 'content.product_badge_discount' | t: percent: discount_percent }}</span>
+            <span class="visually-hidden">{{ 'content.product_badge_discount_label' | t: percent: discount_percent }}</span>
           {%- elsif product.compare_at_price > product.price -%}
             {{ 'content.product_badge_sale' | t }}
           {%- endif -%}

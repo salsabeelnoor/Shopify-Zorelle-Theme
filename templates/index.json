@@ -448,6 +448,25 @@
         "padding_bottom": 64
       }
     },
+    "discount_banner_main": {
+      "type": "discount-banner",
+      "settings": {
+        "image": "shopify://shop_images/exec-e02dd149-43cc-44ec-a101-2c63b882c198.png",
+        "link": "/collections/sale",
+        "eyebrow": "Limited time",
+        "heading": "Up to 30% off",
+        "text": "Selected rings, necklaces and earrings while stock lasts.",
+        "button_label": "Shop the sale",
+        "content_position": "start",
+        "content_vertical": "middle",
+        "text_color": "{{ settings.color_palette.background }}",
+        "overlay_opacity": 25,
+        "height": "medium",
+        "section_width": "full-width",
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    },
     "trust_badges_main": {
       "type": "trust-badges",
       "blocks": {
@@ -494,6 +513,7 @@
     "featured_products_slider_4mHTPQ",
     "product_showcase_yTgh7m",
     "product_showcase_EC7EEz",
+    "discount_banner_main",
     "trust_badges_main"
   ]
 }

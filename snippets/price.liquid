@@ -25,6 +25,19 @@
     assign price = 1999
   endif
 
+  # Sale campaign (Theme settings): show the campaign price with the current price crossed
+  # out. The matching automatic discount charges it in the cart and at checkout.
+  capture campaign_percent
+    render 'sale-campaign-percent', product: product_resource
+  endcapture
+  assign campaign_percent = campaign_percent | strip | plus: 0
+  if campaign_percent > 0
+    assign campaign_saving = price | times: campaign_percent | divided_by: 100.0 | round
+    assign compare_at_price = price
+    assign price = price | minus: campaign_saving
+    assign show_compare_price = true
+  endif
+
   # Check if variant has volume pricing
   assign has_volume_pricing = null
   assign price_min = null
@@ -83,7 +96,7 @@
         <bdi>{{- compare_at_price -}}</bdi>
       </span>
     {% endif %}
-    <span class="price-item__group price">
+    <span class="price-item__group price{% if show_compare_price %} price--sale{% endif %}">
       <span class="visually-hidden">{{ 'content.price_range' | t }}&nbsp;</span>
       <bdi>{{ price_min }} - {{ price_max }}</bdi>
     </span>
@@ -91,7 +104,7 @@
     {% comment %} Standard pricing display: render only the active branch (regular or sale) {% endcomment %}
     {% if show_compare_price %}
       {% if show_sale_price_first %}
-        <span class="price-item__group price">
+        <span class="price-item__group price price--sale">
           <span class="visually-hidden">{{ 'content.price_sale' | t }}&nbsp;</span>
           <bdi>{{ price | default: '&nbsp;' }}</bdi>
         </span>
@@ -104,7 +117,7 @@
           <span class="visually-hidden">{{ 'content.price_regular' | t }}&nbsp;</span>
           <bdi>{{- compare_at_price -}}</bdi>
         </span>
-        <span class="price-item__group price">
+        <span class="price-item__group price price--sale">
           <span class="visually-hidden">{{ 'content.price_sale' | t }}&nbsp;</span>
           <bdi>{{ price | default: '&nbsp;' }}</bdi>
         </span>

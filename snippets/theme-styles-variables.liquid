@@ -219,6 +219,18 @@
     --max-width--display-narrow: 9.75em;
     --max-width--display-tight: 3.25em;
 
+    /* Zorelle: "max-60%" text width option. Full width up to 960px screens,
+       60% of the container on wider screens, for any text size. */
+    --max-width--body-max_60: 100%;
+    --max-width--heading-max_60: 100%;
+    --max-width--display-max_60: 100%;
+
+    @media screen and (min-width: 961px) {
+      --max-width--body-max_60: 60%;
+      --max-width--heading-max_60: 60%;
+      --max-width--display-max_60: 60%;
+    }
+
     /* Letter-spacing / Tracking */
     --letter-spacing--display-tight: -0.03em;
     --letter-spacing--display-normal: 0em;
@@ -672,6 +684,10 @@
     --badge-font-family: var(--font-{{ settings.badge_font_family }}--family);
     --badge-font-weight: var(--font-{{ settings.badge_font_family }}--weight);
     --badge-text-transform: {{ settings.badge_text_transform }};
+  }
+
+  :root {
+    --color-sale-price: {{ settings.sale_price_color | default: '#c8102e' }};
   }
 {% endstyle %}
 
