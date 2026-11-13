@@ -85,31 +85,40 @@
     <div
       class="account-button header-actions__action{% if display_style == 'text' %} account-button--text{% endif %} color-custom-popover"
     >
-      <shopify-account
-        menu="{{ customer_account_menu }}"
-        {% if account_actions_style != blank %}
-          style="{{ account_actions_style }}"
-        {% endif %}
-      >
-        {% if customer %}
+      {% if customer %}
+        <shopify-account
+          menu="{{ customer_account_menu }}"
+          {% if account_actions_style != blank %}
+            style="{{ account_actions_style }}"
+          {% endif %}
+        >
           <div class="account-button__fallback"></div>
-        {% else %}
+        </shopify-account>
+      {% else %}
+        {%- # Signed-out visitors go straight to the sign-in page instead of the account sheet. -%}
+        <a
+          href="{{ routes.account_login_url }}"
+          class="account-button__link"
+          aria-label="{{ 'accessibility.account' | t }}"
+          {% if account_actions_style != blank %}
+            style="{{ account_actions_style }}"
+          {% endif %}
+        >
           <span
-            slot="signed-out-avatar"
             class="account-button__text header-actions__text-style {% if display_style == 'icon' %}hidden{% else %}mobile:hidden{% endif %}"
+            aria-hidden="true"
           >
             {{ 'content.account_title' | t }}
           </span>
 
           <span
-            slot="signed-out-avatar"
             class="{% if display_style != 'icon' %}desktop:hidden{% endif %}"
             aria-hidden="true"
           >
             {{ account_icon }}
           </span>
-        {% endif %}
-      </shopify-account>
+        </a>
+      {% endif %}
     </div>
   {% endif %}
 
@@ -199,6 +208,17 @@
 
   .account-button--text shopify-account {
     color: inherit;
+  }
+
+  .account-button__link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--minimum-touch-target, 44px);
+    height: var(--minimum-touch-target, 44px);
+    color: inherit;
+    text-decoration: none;
+    line-height: normal;
   }
 
   .cart-actions summary {

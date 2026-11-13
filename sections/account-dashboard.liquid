@@ -1,0 +1,984 @@
+{% comment %}
+  Section contract.
+  Custom "My account" page for signed-in customers (new customer accounts), inside the
+  theme's header and footer. Side menu (Orders, Profile, Addresses, Sign out), order cards
+  with product images, status and total ("View order" opens the order in Shopify's
+  account; "Buy again" adds the items to the cart), profile details and saved addresses.
+  Editing the profile or addresses happens on Shopify's account pages (new customer
+  accounts don't allow theme forms for that). Signed-out visitors see a sign-in card.
+  @example
+  <!-- Create a page "My account" (handle: my-account) using the page.account template. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+
+  # Shopify account URLs: the base may carry query parameters, so split before appending.
+  assign account_url_parts = routes.account_url | split: '?'
+  assign account_base_url = account_url_parts | first
+  assign account_query = ''
+  if account_url_parts.size > 1
+    assign account_query = '?' | append: account_url_parts.last
+  endif
+  assign profile_url = account_base_url | append: '/profile' | append: account_query
+-%}
+
+{% style %}
+  #shopify-section-{{ section.id }} .account {
+    --account-padding-top: {{ s.padding_top }}px;
+    --account-padding-bottom: {{ s.padding_bottom }}px;
+    --account-tint: {{ settings.color_palette.color2 | default: settings.color_palette.background }};
+  }
+{% endstyle %}
+
+<div class="account container">
+  {%- if customer -%}
+    <aside class="account__aside">
+      <div class="account__greeting">
+        <span class="account__avatar" aria-hidden="true">
+          {{- customer.first_name | default: customer.email | slice: 0 | upcase -}}
+        </span>
+        <div class="account__greeting-text">
+          {%- liquid
+            assign greeting = s.hello_fallback
+            if customer.first_name != blank
+              assign greeting = s.hello | replace: '[name]', customer.first_name
+            endif
+          -%}
+          <p class="account__hello">{{ greeting | escape }}</p>
+          <p class="account__email">{{ customer.email | escape }}</p>
+        </div>
+      </div>
+
+      <script
+        src="{{ 'account-nav.js' | asset_url }}"
+        type="module"
+        fetchpriority="low"
+      ></script>
+      <nav
+        class="account__nav"
+        aria-label="{{ s.nav_label | escape }}"
+      >
+        <account-nav class="account__nav-list">
+        <a class="account__nav-link" href="#AccountOrders" aria-current="location">
+          <span>{{ s.orders_heading | escape }}</span>
+          <span class="account__nav-count">{{ customer.orders.size }}</span>
+        </a>
+        <a class="account__nav-link" href="#AccountProfile">{{ s.profile_heading | escape }}</a>
+        <a class="account__nav-link" href="#AccountAddresses">
+          <span>{{ s.addresses_heading | escape }}</span>
+          <span class="account__nav-count">{{ customer.addresses.size }}</span>
+        </a>
+        </account-nav>
+      </nav>
+
+      <a
+        class="button button-secondary account__signout"
+        href="{{ routes.account_logout_url }}"
+      >
+        {{- s.signout_label | escape -}}
+      </a>
+    </aside>
+
+    <div class="account__main">
+      {%- comment -%} Orders {%- endcomment -%}
+      <section
+        class="account__panel"
+        id="AccountOrders"
+        aria-labelledby="AccountOrdersHeading-{{ section.id }}"
+      >
+        <h1
+          class="account__heading"
+          id="AccountOrdersHeading-{{ section.id }}"
+        >
+          {{ s.orders_heading | escape }}
+        </h1>
+
+        {%- paginate customer.orders by 6 -%}
+          {%- if customer.orders.size == 0 -%}
+            <div class="account__empty">
+              <p>{{ s.no_orders_text | escape }}</p>
+              <a class="button" href="{{ routes.all_products_collection_url }}">{{ s.shop_label | escape }}</a>
+            </div>
+          {%- else -%}
+            <ul class="account__orders list-unstyled">
+              {%- for order in customer.orders -%}
+                <li class="account-order">
+                  <div class="account-order__top">
+                    <div class="account-order__title">
+                      <p class="account-order__name">{{ order.name }}</p>
+                      <p class="account-order__date">{{ order.created_at | date: format: 'date' }}</p>
+                    </div>
+                    <div class="account-order__statuses">
+                      {%- if order.cancelled -%}
+                        <span class="account-order__status account-order__status--muted">{{ s.cancelled_label | escape }}</span>
+                      {%- else -%}
+                        <span class="account-order__status">{{ order.financial_status_label }}</span>
+                        <span class="account-order__status account-order__status--outline">{{ order.fulfillment_status_label }}</span>
+                      {%- endif -%}
+                    </div>
+                  </div>
+
+                  <ul class="account-order__items list-unstyled">
+                    {%- for line_item in order.line_items limit: 4 -%}
+                      <li class="account-order__item">
+                        {%- if line_item.image -%}
+                          {{
+                            line_item.image
+                            | image_url: width: 240
+                            | image_tag:
+                              widths: '120, 180, 240',
+                              sizes: '(min-width: 750px) 96px, 72px',
+                              loading: 'lazy',
+                              alt: line_item.title,
+                              class: 'account-order__image'
+                          }}
+                        {%- else -%}
+                          {{ 'product-1' | placeholder_svg_tag: 'account-order__image account-order__placeholder' }}
+                        {%- endif -%}
+                        {%- if line_item.quantity > 1 -%}
+                          <span class="account-order__qty" aria-hidden="true">×{{ line_item.quantity }}</span>
+                        {%- endif -%}
+                      </li>
+                    {%- endfor -%}
+                    {%- if order.line_items.size > 4 -%}
+                      {%- assign more_items = order.line_items.size | minus: 4 -%}
+                      <li class="account-order__item account-order__more">+{{ more_items }}</li>
+                    {%- endif -%}
+                  </ul>
+
+                  <p class="account-order__summary">
+                    {{ order.line_items | map: 'title' | join: ', ' | strip_html | truncate: 140 }}
+                  </p>
+
+                  <div class="account-order__bottom">
+                    <p class="account-order__total">
+                      <span>{{ s.total_label | escape }}</span>
+                      <strong>{{ order.total_price | money_with_currency }}</strong>
+                    </p>
+                    <div class="account-order__actions">
+                      <a
+                        class="button button-secondary account-order__button"
+                        href="{{ order.customer_url | default: order.order_status_url }}"
+                      >
+                        {{- s.view_order_label | escape -}}
+                      </a>
+
+                      {%- liquid
+                        assign reorder_count = 0
+                        for line_item in order.line_items
+                          if line_item.variant.available and line_item.gift_card == false
+                            assign reorder_count = reorder_count | plus: 1
+                          endif
+                        endfor
+                      -%}
+                      {%- if reorder_count > 0 -%}
+                        <form
+                          class="account-order__reorder"
+                          action="{{ routes.cart_add_url }}"
+                          method="post"
+                        >
+                          {%- assign item_index = 0 -%}
+                          {%- for line_item in order.line_items -%}
+                            {%- if line_item.variant.available and line_item.gift_card == false -%}
+                              <input type="hidden" name="items[{{ item_index }}][id]" value="{{ line_item.variant.id }}">
+                              <input type="hidden" name="items[{{ item_index }}][quantity]" value="{{ line_item.quantity }}">
+                              {%- for property in line_item.properties -%}
+                                {%- assign property_first_char = property.first | slice: 0 -%}
+                                {%- if property.last != blank and property_first_char != '_' -%}
+                                  <input type="hidden" name="items[{{ item_index }}][properties][{{ property.first | escape }}]" value="{{ property.last | escape }}">
+                                {%- endif -%}
+                              {%- endfor -%}
+                              {%- assign item_index = item_index | plus: 1 -%}
+                            {%- endif -%}
+                          {%- endfor -%}
+                          <button type="submit" class="button account-order__button">
+                            {{- s.buy_again_label | escape -}}
+                          </button>
+                        </form>
+                      {%- endif -%}
+                    </div>
+                  </div>
+                </li>
+              {%- endfor -%}
+            </ul>
+
+            {%- if paginate.pages > 1 -%}
+              <nav class="account__pagination" aria-label="{{ 'content.pagination.nav_label' | t }}">
+                {%- if paginate.previous -%}
+                  <a class="account__page-link" href="{{ paginate.previous.url }}#AccountOrders">{{ 'content.pagination.previous' | t }}</a>
+                {%- endif -%}
+                <span class="account__page-current">{{ paginate.current_page }} / {{ paginate.pages }}</span>
+                {%- if paginate.next -%}
+                  <a class="account__page-link" href="{{ paginate.next.url }}#AccountOrders">{{ 'content.pagination.next' | t }}</a>
+                {%- endif -%}
+              </nav>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endpaginate -%}
+      </section>
+
+      {%- comment -%} Profile {%- endcomment -%}
+      <section
+        class="account__panel"
+        id="AccountProfile"
+        aria-labelledby="AccountProfileHeading-{{ section.id }}"
+      >
+        <div class="account__panel-head">
+          <h2
+            class="account__heading"
+            id="AccountProfileHeading-{{ section.id }}"
+          >
+            {{ s.profile_heading | escape }}
+          </h2>
+          <a class="account__edit-link" href="{{ profile_url }}">{{ s.edit_profile_label | escape }}</a>
+        </div>
+        <dl class="account__details">
+          <div class="account__detail">
+            <dt>{{ s.name_label | escape }}</dt>
+            <dd>{{ customer.name | default: '—' | escape }}</dd>
+          </div>
+          <div class="account__detail">
+            <dt>{{ s.email_label | escape }}</dt>
+            <dd>{{ customer.email | escape }}</dd>
+          </div>
+          {%- if customer.phone != blank -%}
+            <div class="account__detail">
+              <dt>{{ s.phone_label | escape }}</dt>
+              <dd>{{ customer.phone | escape }}</dd>
+            </div>
+          {%- endif -%}
+        </dl>
+      </section>
+
+      {%- comment -%} Addresses {%- endcomment -%}
+      <section
+        class="account__panel"
+        id="AccountAddresses"
+        aria-labelledby="AccountAddressesHeading-{{ section.id }}"
+      >
+        <div class="account__panel-head">
+          <h2
+            class="account__heading"
+            id="AccountAddressesHeading-{{ section.id }}"
+          >
+            {{ s.addresses_heading | escape }}
+          </h2>
+          <a class="account__edit-link" href="{{ profile_url }}">{{ s.manage_addresses_label | escape }}</a>
+        </div>
+        {%- if customer.addresses.size == 0 -%}
+          <p class="account__muted">{{ s.no_addresses_text | escape }}</p>
+        {%- else -%}
+          <ul class="account__addresses list-unstyled">
+            {%- for address in customer.addresses -%}
+              <li class="account-address">
+                {%- if address.id == customer.default_address.id -%}
+                  <span class="account-address__badge">{{ s.default_label | escape }}</span>
+                {%- endif -%}
+                <address class="account-address__text">{{ address | format_address }}</address>
+              </li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+      </section>
+    </div>
+  {%- else -%}
+    <div class="account__signed-out">
+      <h1 class="account__heading">{{ s.signed_out_heading | escape }}</h1>
+      {%- if s.signed_out_text != blank -%}
+        <div class="account__muted">{{ s.signed_out_text }}</div>
+      {%- endif -%}
+      <a class="button account__signin" href="{{ routes.account_login_url }}">{{ s.signin_label | escape }}</a>
+    </div>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .account {
+    display: grid;
+    gap: 2.5rem;
+    padding-block: var(--account-padding-top) var(--account-padding-bottom);
+    color: var(--color-foreground);
+  }
+
+  @media screen and (min-width: 990px) {
+    .account:has(.account__aside) {
+      grid-template-columns: 17rem minmax(0, 1fr);
+      align-items: start;
+      gap: clamp(2.5rem, 5vw, 5rem);
+    }
+
+    .account__aside {
+      position: sticky;
+      top: calc(var(--header-height, 66px) + 1.5rem);
+    }
+  }
+
+  /* ---------- Side menu ---------- */
+  .account__aside {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background-color: var(--account-tint);
+  }
+
+  .account__greeting {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    min-width: 0;
+  }
+
+  .account__avatar {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-color: var(--palette-darkest);
+    color: var(--palette-lightest);
+    font-family: var(--font-heading--family);
+    font-size: 1.25rem;
+  }
+
+  .account__greeting-text {
+    min-width: 0;
+  }
+
+  .account__hello {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: 1.125rem;
+    line-height: 1.2;
+  }
+
+  .account__email {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-70, 0.7));
+    overflow-wrap: anywhere;
+  }
+
+  .account__nav {
+    display: grid;
+    border-block: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+  }
+
+  .account__nav-list {
+    display: contents;
+  }
+
+  .account__nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.875rem;
+    color: var(--color-foreground);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-decoration: none;
+    text-transform: uppercase;
+
+    & + & {
+      border-block-start: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+    }
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 0.3em;
+    }
+
+    /* Section in view: dark fill, light text and a light count badge. */
+    &[aria-current='location'] {
+      margin-inline: -0.75rem;
+      padding-inline: 0.75rem;
+      background-color: var(--palette-darkest);
+      color: var(--palette-lightest);
+      text-decoration: none;
+
+      .account__nav-count {
+        background-color: var(--palette-lightest);
+        color: var(--palette-darkest);
+      }
+    }
+  }
+
+  .account__nav-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    height: 1.5rem;
+    padding-inline: 0.5rem;
+    background-color: var(--palette-darkest);
+    color: var(--palette-lightest);
+    font-size: 0.75rem;
+    letter-spacing: 0;
+  }
+
+  .account__signout {
+    width: 100%;
+  }
+
+  /* Mobile: the side menu becomes a compact bar with horizontal tabs. */
+  @media screen and (max-width: 989px) {
+    .account__aside {
+      gap: 1rem;
+      padding: 1.25rem;
+    }
+
+    .account__nav {
+      display: flex;
+      gap: 1.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      border-block-end: 0;
+    }
+
+    .account__nav-link + .account__nav-link {
+      border-block-start: 0;
+    }
+
+    .account__nav-link {
+      flex-shrink: 0;
+      gap: 0.5rem;
+      padding-inline: 0.75rem;
+    }
+
+    .account__nav-link[aria-current='location'] {
+      margin-inline: 0;
+    }
+  }
+
+  /* ---------- Panels ---------- */
+  .account__main {
+    display: grid;
+    gap: 3.5rem;
+    min-width: 0;
+  }
+
+  .account__panel {
+    scroll-margin-top: calc(var(--header-height, 66px) + 1.5rem);
+  }
+
+  .account__panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+  }
+
+  .account__heading {
+    margin: 0 0 1.5rem;
+    font-family: var(--font-heading--family);
+    font-size: clamp(1.5rem, 2.4vw, 2.25rem);
+    font-weight: var(--font-heading--weight);
+    line-height: 1.1;
+    text-transform: uppercase;
+  }
+
+  .account__panel-head .account__heading {
+    margin-block-end: 1.25rem;
+  }
+
+  .account__edit-link {
+    color: var(--color-foreground);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-underline-offset: 0.3em;
+  }
+
+  .account__muted {
+    margin: 0;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-70, 0.7));
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .account__empty {
+    display: grid;
+    justify-items: start;
+    gap: 1rem;
+    padding: 2rem;
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+
+    p {
+      margin: 0;
+    }
+  }
+
+  /* ---------- Order cards ---------- */
+  .account__orders {
+    display: grid;
+    gap: 1.25rem;
+    margin: 0;
+  }
+
+  .account-order {
+    display: grid;
+    gap: 1.25rem;
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+    background-color: var(--color-background);
+  }
+
+  .account-order__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .account-order__name {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .account-order__date {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-70, 0.7));
+  }
+
+  .account-order__statuses {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .account-order__status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3125rem 0.75rem;
+    background-color: var(--palette-darkest);
+    color: var(--palette-lightest);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .account-order__status--outline {
+    border: 1px solid var(--palette-darkest);
+    background-color: transparent;
+    color: var(--palette-darkest);
+  }
+
+  .account-order__status--muted {
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+    color: var(--color-foreground);
+  }
+
+  .account-order__items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    margin: 0;
+  }
+
+  .account-order__item {
+    position: relative;
+    width: 6rem;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background-color: var(--account-tint);
+  }
+
+  .account-order__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .account-order__qty {
+    position: absolute;
+    inset-block-end: 0.25rem;
+    inset-inline-end: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    background-color: var(--palette-darkest);
+    color: var(--palette-lightest);
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+
+  .account-order__more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .account-order__summary {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-70, 0.7));
+  }
+
+  .account-order__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block-start: 1.25rem;
+    border-block-start: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+  }
+
+  .account-order__total {
+    display: grid;
+    gap: 0.125rem;
+    margin: 0;
+
+    span {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgb(var(--color-foreground-rgb) / var(--opacity-70, 0.7));
+    }
+
+    strong {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+  }
+
+  .account-order__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+
+  .account-order__reorder {
+    margin: 0;
+  }
+
+  .account-order__button {
+    min-height: 2.75rem;
+    padding-inline: 1.25rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  @media screen and (max-width: 749px) {
+    .account-order__item {
+      width: 4.5rem;
+    }
+
+    .account-order__actions,
+    .account-order__reorder,
+    .account-order__actions .account-order__button {
+      width: 100%;
+    }
+  }
+
+  .account__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-block-start: 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  .account__page-link {
+    color: var(--color-foreground);
+    font-weight: 600;
+    text-underline-offset: 0.3em;
+  }
+
+  /* ---------- Profile ---------- */
+  .account__details {
+    display: grid;
+    margin: 0;
+    border-block-start: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+  }
+
+  .account__detail {
+    display: grid;
+    grid-template-columns: minmax(7rem, 12rem) minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 1rem;
+    border-block-end: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+
+    dt {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgb(var(--color-foreground-rgb) / var(--opacity-70, 0.7));
+    }
+
+    dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  /* ---------- Addresses ---------- */
+  .account__addresses {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 1rem;
+    margin: 0;
+  }
+
+  .account-address {
+    position: relative;
+    padding: 1.25rem;
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+  }
+
+  .account-address__badge {
+    display: inline-block;
+    margin-block-end: 0.75rem;
+    padding: 0.25rem 0.625rem;
+    background-color: var(--palette-darkest);
+    color: var(--palette-lightest);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .account-address__text {
+    font-size: 0.9375rem;
+    font-style: normal;
+    line-height: 1.6;
+  }
+
+  /* ---------- Signed out ---------- */
+  .account__signed-out {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    max-width: 30rem;
+    margin-inline: auto;
+    padding: clamp(1.75rem, 4vw, 3rem);
+    background-color: var(--account-tint);
+    text-align: center;
+  }
+
+  .account__signin {
+    min-width: 14rem;
+    margin-block-start: 0.5rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Account dashboard",
+  "tag": "section",
+  "class": "section-account-dashboard",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Menu"
+    },
+    {
+      "type": "text",
+      "id": "hello",
+      "label": "Greeting",
+      "info": "[name] is replaced with the customer's first name.",
+      "default": "Hello, [name]"
+    },
+    {
+      "type": "text",
+      "id": "hello_fallback",
+      "label": "Greeting without a name",
+      "default": "Welcome back"
+    },
+    {
+      "type": "text",
+      "id": "nav_label",
+      "label": "Menu label for screen readers",
+      "default": "Account"
+    },
+    {
+      "type": "text",
+      "id": "signout_label",
+      "label": "Sign out label",
+      "default": "Sign out"
+    },
+    {
+      "type": "header",
+      "content": "Orders"
+    },
+    {
+      "type": "text",
+      "id": "orders_heading",
+      "label": "t:settings.heading",
+      "default": "Orders"
+    },
+    {
+      "type": "text",
+      "id": "total_label",
+      "label": "Total label",
+      "default": "Total"
+    },
+    {
+      "type": "text",
+      "id": "view_order_label",
+      "label": "View order label",
+      "default": "View order"
+    },
+    {
+      "type": "text",
+      "id": "buy_again_label",
+      "label": "Buy again label",
+      "default": "Buy again"
+    },
+    {
+      "type": "text",
+      "id": "cancelled_label",
+      "label": "Cancelled label",
+      "default": "Cancelled"
+    },
+    {
+      "type": "text",
+      "id": "no_orders_text",
+      "label": "No orders text",
+      "default": "You haven't placed any orders yet."
+    },
+    {
+      "type": "text",
+      "id": "shop_label",
+      "label": "Shop button label",
+      "default": "Start shopping"
+    },
+    {
+      "type": "header",
+      "content": "Profile"
+    },
+    {
+      "type": "text",
+      "id": "profile_heading",
+      "label": "t:settings.heading",
+      "default": "Profile"
+    },
+    {
+      "type": "text",
+      "id": "edit_profile_label",
+      "label": "Edit link label",
+      "default": "Edit profile"
+    },
+    {
+      "type": "text",
+      "id": "name_label",
+      "label": "Name label",
+      "default": "Name"
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "Email label",
+      "default": "Email"
+    },
+    {
+      "type": "text",
+      "id": "phone_label",
+      "label": "Phone label",
+      "default": "Phone"
+    },
+    {
+      "type": "header",
+      "content": "Addresses"
+    },
+    {
+      "type": "text",
+      "id": "addresses_heading",
+      "label": "t:settings.heading",
+      "default": "Addresses"
+    },
+    {
+      "type": "text",
+      "id": "manage_addresses_label",
+      "label": "Manage link label",
+      "default": "Manage addresses"
+    },
+    {
+      "type": "text",
+      "id": "default_label",
+      "label": "Default address badge",
+      "default": "Default"
+    },
+    {
+      "type": "text",
+      "id": "no_addresses_text",
+      "label": "No addresses text",
+      "default": "You haven't saved an address yet."
+    },
+    {
+      "type": "header",
+      "content": "Signed out"
+    },
+    {
+      "type": "text",
+      "id": "signed_out_heading",
+      "label": "t:settings.heading",
+      "default": "Your account"
+    },
+    {
+      "type": "richtext",
+      "id": "signed_out_text",
+      "label": "t:settings.text",
+      "default": "<p>Sign in to see your orders, saved addresses and profile.</p>"
+    },
+    {
+      "type": "text",
+      "id": "signin_label",
+      "label": "Sign in label",
+      "default": "Sign in"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "Account dashboard"
+    }
+  ]
+}
+{% endschema %}
