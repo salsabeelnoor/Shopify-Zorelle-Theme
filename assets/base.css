@@ -666,8 +666,6 @@ h1,
   letter-spacing: var(--font-h1--letter-spacing);
   text-transform: var(--font-h1--case);
   color: var(--color);
-  hyphens: auto;
-  -webkit-hyhens: auto;
 }
 
 @media screen and (max-width: 1200px) {
@@ -715,8 +713,6 @@ h3,
   letter-spacing: var(--font-h3--letter-spacing);
   text-transform: var(--font-h3--case);
   color: var(--color);
-  hyphens: auto;
-  -webkit-hyhens: auto;
 }
 
 @media screen and (max-width: 1200px) {
@@ -739,8 +735,7 @@ h4,
   letter-spacing: var(--font-h4--letter-spacing);
   text-transform: var(--font-h4--case);
   color: var(--color);
-  hyphens: auto;
-  -webkit-hyhens: auto;
+
 }
 
 @media screen and (max-width: 1200px) {

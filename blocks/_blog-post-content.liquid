@@ -1,14 +1,20 @@
-
-
-<div
-  class="blog-post-content rte"
-  style="
-    {% if block.settings.text_color != blank %}
+{%- comment -%}
+  Zorelle: setting-driven values in a scoped style block (no inline styles). The blush tint
+  (palette colour 2) is used by the guide components below (size-guide__*), which articles
+  such as the ring size chart use in their HTML.
+{%- endcomment -%}
+{% style %}
+  .blog-post-content--{{ block.id }} {
+    --blog-tint: {{ settings.color_palette.color2 | default: settings.color_palette.background }};
+    --blog-accent: {{ settings.color_palette.color1 | default: settings.color_palette.foreground }};
+    {%- if block.settings.text_color != blank %}
       --color: {{ block.settings.text_color }};
       --color-rgb: {{ block.settings.text_color.rgb }};
-    {% endif %}
-  "
->
+    {%- endif %}
+  }
+{% endstyle %}
+
+<div class="blog-post-content blog-post-content--{{ block.id }} rte">
   <rte-formatter>
     {{ article.content }}
   </rte-formatter>
@@ -23,6 +29,206 @@
 
   .blog-post-content a {
     color: currentcolor;
+  }
+
+  /* ------------------------------------------------------------------
+     Guide components for article HTML (for example the ring size chart):
+     intro, tip box, two method cards, a striped size table, a checklist
+     and a help box with a button. Add the class names in the article's
+     HTML view; everything else uses the theme palette.
+     ------------------------------------------------------------------ */
+  .blog-post-content h2 {
+    margin-block: 3rem 1rem;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+    line-height: 1.15;
+    text-transform: uppercase;
+  }
+
+  .blog-post-content h3 {
+    margin-block: 0 0.75rem;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .size-guide__intro {
+    font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+    line-height: 1.6;
+  }
+
+  .size-guide__eyebrow {
+    margin: 0 0 0.75rem;
+    color: var(--blog-accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .size-guide__tips {
+    margin-block: 2rem;
+    padding: 1.5rem 1.75rem;
+    background-color: var(--blog-tint);
+  }
+
+  .size-guide__tips ul {
+    margin: 0;
+    padding-inline-start: 1.1rem;
+  }
+
+  .size-guide__tips li + li {
+    margin-block-start: 0.4rem;
+  }
+
+  .size-guide__methods {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin-block: 1.5rem 2rem;
+  }
+
+  @media screen and (max-width: 749px) {
+    .size-guide__methods {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .size-guide__method {
+    padding: 1.5rem;
+    border: 1px solid var(--color-foreground);
+  }
+
+  .size-guide__method ol {
+    margin: 0;
+    padding-inline-start: 1.1rem;
+  }
+
+  .size-guide__method li + li {
+    margin-block-start: 0.5rem;
+  }
+
+  .size-guide__step-number {
+    margin: 0 0 0.5rem;
+    color: var(--blog-accent);
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .size-guide__table {
+    width: 100%;
+    margin-block: 1.25rem 2rem;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+    text-align: center;
+  }
+
+  .size-guide__table th {
+    padding: 0.85rem 0.6rem;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .size-guide__table td {
+    padding: 0.7rem 0.6rem;
+    border-block-end: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+  }
+
+  .size-guide__table tbody tr:nth-child(even) {
+    background-color: var(--blog-tint);
+  }
+
+  .size-guide__table td:first-child {
+    font-weight: 600;
+  }
+
+  .blog-post-content .size-guide__table :is(th, td) {
+    text-align: center;
+  }
+
+  @media screen and (max-width: 749px) {
+    .size-guide__table {
+      font-size: 0.8125rem;
+    }
+
+    .size-guide__table th,
+    .size-guide__table td {
+      padding-inline: 0.35rem;
+    }
+
+    .size-guide__table th {
+      font-size: 0.625rem;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  .size-guide__checklist {
+    margin: 1rem 0 2rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .size-guide__checklist li {
+    position: relative;
+    padding-block: 0.85rem;
+    padding-inline-start: 2rem;
+    border-block-end: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+  }
+
+  .size-guide__checklist li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0.2rem;
+    top: 1.15rem;
+    width: 0.7rem;
+    height: 0.4rem;
+    border-inline-start: 2px solid var(--blog-accent);
+    border-block-end: 2px solid var(--blog-accent);
+    transform: rotate(-45deg);
+  }
+
+  .size-guide__help {
+    margin-block-start: 2.5rem;
+    padding: 2rem;
+    background-color: var(--blog-tint);
+    text-align: center;
+  }
+
+  .size-guide__help p {
+    margin: 0 0 1.25rem;
+  }
+
+  .blog-post-content .size-guide__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.875rem;
+    padding-inline: 1.75rem;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease;
+  }
+
+  .blog-post-content .size-guide__button:hover {
+    background-color: var(--blog-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blog-post-content .size-guide__button {
+      transition: none;
+    }
   }
 {% endstylesheet %}
 

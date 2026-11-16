@@ -1,0 +1,251 @@
+{% comment %}
+  Section contract.
+  A call-to-action box: heading, short text and up to two buttons inside a tinted or
+  outlined box. Good for "Still not sure? Contact us", newsletter prompts or links to a
+  collection at the end of a page.
+  @example
+  <!-- Add "CTA box" at the end of a page and set the button link. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+-%}
+
+{%- capture body -%}
+  <div class="cta-box cta-box--{{ s.box_style }} cta-box--{{ s.box_alignment }}">
+    {%- if s.box_heading != blank -%}
+      <h3 class="cta-box__heading">{{ s.box_heading | escape }}</h3>
+    {%- endif -%}
+    {%- if s.box_text != blank -%}
+      <div class="cta-box__text content-section__rich">{{ s.box_text }}</div>
+    {%- endif -%}
+    {%- if s.button_label != blank or s.button_2_label != blank -%}
+      <div class="cta-box__buttons">
+        {%- if s.button_label != blank -%}
+          <a class="content-section__button" href="{{ s.button_link | default: routes.root_url }}">
+            {{- s.button_label | escape -}}
+          </a>
+        {%- endif -%}
+        {%- if s.button_2_label != blank -%}
+          <a class="content-section__button content-section__button--outline" href="{{ s.button_2_link | default: routes.root_url }}">
+            {{- s.button_2_label | escape -}}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+{%- endcapture -%}
+
+{% render 'content-section',
+  settings: s,
+  section_id: section.id,
+  children: body,
+  settings_tint: settings.color_palette.color2,
+  settings_accent: settings.color_palette.color1
+%}
+
+{% stylesheet %}
+  .cta-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: clamp(1.75rem, 1.25rem + 2vw, 3rem);
+  }
+
+  .cta-box--filled {
+    background-color: var(--content-section-tint);
+  }
+
+  .cta-box--outline {
+    border: 1px solid var(--color-foreground);
+  }
+
+  .cta-box--center {
+    align-items: center;
+    text-align: center;
+  }
+
+  .cta-box--left {
+    align-items: flex-start;
+    text-align: start;
+  }
+
+  .cta-box__heading {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.625rem);
+    text-transform: uppercase;
+  }
+
+  .cta-box__text {
+    max-width: 36rem;
+    line-height: 1.6;
+  }
+
+  .cta-box__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-start: 0.25rem;
+  }
+
+  .cta-box--center .cta-box__buttons {
+    justify-content: center;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "CTA box",
+  "tag": "section",
+  "class": "section-cta-box",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Box"
+    },
+    {
+      "type": "text",
+      "id": "box_heading",
+      "label": "t:settings.heading",
+      "default": "Still not sure?"
+    },
+    {
+      "type": "richtext",
+      "id": "box_text",
+      "label": "t:settings.text",
+      "default": "<p>Our team is happy to help you before you order.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Contact us"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "text",
+      "id": "button_2_label",
+      "label": "Second button label"
+    },
+    {
+      "type": "url",
+      "id": "button_2_link",
+      "label": "Second button link"
+    },
+    {
+      "type": "select",
+      "id": "box_style",
+      "label": "Box style",
+      "options": [
+        { "value": "filled", "label": "Tinted" },
+        { "value": "outline", "label": "Outline" }
+      ],
+      "default": "filled"
+    },
+    {
+      "type": "select",
+      "id": "box_alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "center", "label": "t:options.center" },
+        { "value": "left", "label": "t:options.left" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color",
+      "id": "box_color",
+      "label": "Box tint colour",
+      "info": "Leave empty to use palette colour 2."
+    },
+    {
+      "type": "header",
+      "content": "Section heading (optional)"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Small text above heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "Intro text"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "t:options.left" },
+        { "value": "center", "label": "t:options.center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "wide", "label": "Full page width" }
+      ],
+      "default": "narrow"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    }
+  ],
+  "presets": [
+    {
+      "name": "CTA box",
+      "category": "t:categories.text"
+    }
+  ]
+}
+{% endschema %}

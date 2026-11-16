@@ -1,0 +1,195 @@
+{%- doc -%}
+  Shared wrapper for Zorelle's general content sections (content banner, callout box,
+  numbered cards, data table, checklist, CTA box). Handles the section background (with
+  automatic text contrast), top/bottom padding, content width and an optional header
+  (eyebrow, heading, intro). Each section passes its own body as `children`.
+
+  Reads these section settings: background_color, content_width (narrow | normal | wide),
+  alignment (left | center), eyebrow, heading, intro, padding-block-start, padding-block-end.
+
+  @param {object} settings - The section's settings (section.settings).
+  @param {string} section_id - The section's ID, used to scope styles.
+  @param {string} children - The section body markup.
+  @param {string} [modifier] - Extra class for the inner wrapper, for example 'content-section--table'.
+  @param {string} [settings_tint] - Box tint colour (palette colour 2); pass settings.color_palette.color2.
+  @param {string} [settings_accent] - Accent colour (palette colour 1); pass settings.color_palette.color1.
+
+  @example
+  {% render 'content-section', settings: section.settings, section_id: section.id, children: body %}
+{%- enddoc -%}
+
+{%- liquid
+  assign has_background = false
+  if settings.background_color != blank and settings.background_color.alpha > 0
+    assign has_background = true
+    render 'contrast-override', background_color: settings.background_color, section_id: section_id
+  endif
+
+  assign width = settings.content_width | default: 'normal'
+  assign alignment = settings.alignment | default: 'left'
+  assign heading_tag = settings.heading_tag | default: 'h2'
+
+  # Palette colours: blush tint for boxes (sections may override with a box_color setting)
+  # and dusty rose accent for numbers, ticks and button hover.
+  assign global_tint = settings_tint | default: '#f4e5e1'
+  assign global_accent = settings_accent | default: '#a56770'
+-%}
+
+{% style %}
+  #shopify-section-{{ section_id }} .content-section {
+    {% render 'spacing-style', settings: settings %}
+    --content-section-tint: {{ settings.box_color | default: global_tint }};
+    --content-section-accent: {{ global_accent }};
+  }
+{% endstyle %}
+
+<div class="section-background{% if has_background %} color-custom-{{ section_id }}{% endif %}"></div>
+
+<div
+  class="section section--page-width spacing-style content-section{% if has_background %} color-custom-{{ section_id }}{% endif %}"
+>
+  <div class="content-section__inner content-section__inner--{{ width }} content-section__inner--{{ alignment }} {{ modifier }}">
+    {%- if settings.eyebrow != blank or settings.heading != blank or settings.intro != blank -%}
+      <header class="content-section__header">
+        {%- if settings.eyebrow != blank -%}
+          <p class="content-section__eyebrow">{{ settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        {%- if settings.heading != blank -%}
+          <{{ heading_tag }} class="content-section__heading">{{ settings.heading | escape }}</{{ heading_tag }}>
+        {%- endif -%}
+        {%- if settings.intro != blank -%}
+          <div class="content-section__intro">{{ settings.intro }}</div>
+        {%- endif -%}
+      </header>
+    {%- endif -%}
+
+    {{ children }}
+  </div>
+</div>
+
+{% stylesheet %}
+  /* Shared layout and type for Zorelle's general content sections. */
+  .content-section {
+    color: var(--color-foreground);
+  }
+
+  .content-section__inner {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.25rem, 1rem + 1vw, 2rem);
+    width: 100%;
+    margin-inline: auto;
+    min-width: 0;
+  }
+
+  .content-section__inner--narrow {
+    max-width: 48rem;
+  }
+
+  .content-section__inner--normal {
+    max-width: 68rem;
+  }
+
+  .content-section__inner--wide {
+    max-width: none;
+  }
+
+  .content-section__inner--center {
+    text-align: center;
+  }
+
+  .content-section__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .content-section__inner--center .content-section__header {
+    align-items: center;
+  }
+
+  .content-section__eyebrow {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  .content-section__heading {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem);
+    line-height: 1.1;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+
+  .content-section__intro {
+    max-width: 42rem;
+    font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+    line-height: 1.6;
+  }
+
+  .content-section__inner--center .content-section__intro {
+    margin-inline: auto;
+  }
+
+  .content-section__intro > :first-child {
+    margin-block-start: 0;
+  }
+
+  .content-section__intro > :last-child {
+    margin-block-end: 0;
+  }
+
+  /* Shared bits used by several sections */
+  .content-section__rich > :first-child {
+    margin-block-start: 0;
+  }
+
+  .content-section__rich > :last-child {
+    margin-block-end: 0;
+  }
+
+  .content-section__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.875rem;
+    padding-inline: 1.75rem;
+    border: 1px solid var(--color-foreground);
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .content-section__button:hover {
+    border-color: var(--content-section-accent);
+    background-color: var(--content-section-accent);
+    color: #fff;
+  }
+
+  .content-section__button--outline {
+    background-color: transparent;
+    color: var(--color-foreground);
+  }
+
+  .content-section__button--outline:hover {
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .content-section__button {
+      transition: none;
+    }
+  }
+{% endstylesheet %}

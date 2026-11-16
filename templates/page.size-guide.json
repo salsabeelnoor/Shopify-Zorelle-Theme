@@ -1,0 +1,390 @@
+{
+  "sections": {
+    "banner": {
+      "type": "content-banner",
+      "settings": {
+        "eyebrow": "Size guide",
+        "heading": "Ring size chart",
+        "heading_tag": "h1",
+        "intro": "<p>The perfect ring slides over your knuckle with a little resistance and sits comfortably without spinning. Find your size at home in a few minutes.</p>",
+        "button_label": "Shop rings",
+        "button_link": "shopify://collections/rings",
+        "alignment": "center",
+        "content_width": "normal",
+        "background_color": "{{ settings.color_palette.color2 }}",
+        "padding-block-start": 56,
+        "padding-block-end": 56
+      }
+    },
+    "before": {
+      "type": "callout-box",
+      "blocks": {
+        "tip_1": {
+          "type": "point",
+          "settings": {
+            "text": "Measure at the end of the day, when your fingers are at their largest."
+          }
+        },
+        "tip_2": {
+          "type": "point",
+          "settings": {
+            "text": "Avoid measuring when your hands are cold, as fingers shrink slightly."
+          }
+        },
+        "tip_3": {
+          "type": "point",
+          "settings": {
+            "text": "Measure the exact finger you will wear the ring on. Your dominant hand is usually a little larger."
+          }
+        },
+        "tip_4": {
+          "type": "point",
+          "settings": {
+            "text": "Measure two or three times to be sure."
+          }
+        }
+      },
+      "block_order": [
+        "tip_1",
+        "tip_2",
+        "tip_3",
+        "tip_4"
+      ],
+      "settings": {
+        "box_heading": "Before you measure",
+        "box_style": "filled",
+        "list_style": "checks",
+        "alignment": "left",
+        "content_width": "normal",
+        "padding-block-start": 48,
+        "padding-block-end": 16
+      }
+    },
+    "methods": {
+      "type": "numbered-cards",
+      "blocks": {
+        "card_1": {
+          "type": "card",
+          "settings": {
+            "title": "Measure a ring you own",
+            "text": "<ol><li>Choose a ring that fits the finger you are buying for.</li><li>Place it on a ruler and measure the <strong>inside diameter</strong> from edge to edge, in millimetres.</li><li>Find that number in the <em>Diameter</em> column of the chart below.</li></ol>"
+          }
+        },
+        "card_2": {
+          "type": "card",
+          "settings": {
+            "title": "Measure your finger",
+            "text": "<ol><li>Wrap a thin strip of paper or string around the base of your finger.</li><li>Mark where the ends meet. It should be snug but still slide over your knuckle.</li><li>Lay it flat, measure the length in millimetres and find it in the <em>Circumference</em> column.</li></ol>"
+          }
+        }
+      },
+      "block_order": [
+        "card_1",
+        "card_2"
+      ],
+      "settings": {
+        "eyebrow": "Step by step",
+        "heading": "Two easy ways to find your size",
+        "columns": "2",
+        "card_style": "outline",
+        "show_numbers": true,
+        "alignment": "left",
+        "content_width": "normal",
+        "padding-block-start": 40,
+        "padding-block-end": 24
+      }
+    },
+    "chart": {
+      "type": "data-table",
+      "blocks": {
+        "row_01": {
+          "type": "row",
+          "settings": {
+            "cell_1": "3",
+            "cell_2": "F",
+            "cell_3": "44",
+            "cell_4": "14.1",
+            "cell_5": "44.2"
+          }
+        },
+        "row_02": {
+          "type": "row",
+          "settings": {
+            "cell_1": "4",
+            "cell_2": "H",
+            "cell_3": "47",
+            "cell_4": "14.9",
+            "cell_5": "46.8"
+          }
+        },
+        "row_03": {
+          "type": "row",
+          "settings": {
+            "cell_1": "4.5",
+            "cell_2": "I",
+            "cell_3": "48",
+            "cell_4": "15.3",
+            "cell_5": "48.0"
+          }
+        },
+        "row_04": {
+          "type": "row",
+          "settings": {
+            "cell_1": "5",
+            "cell_2": "J½",
+            "cell_3": "49",
+            "cell_4": "15.7",
+            "cell_5": "49.3"
+          }
+        },
+        "row_05": {
+          "type": "row",
+          "settings": {
+            "cell_1": "5.5",
+            "cell_2": "K½",
+            "cell_3": "50.5",
+            "cell_4": "16.1",
+            "cell_5": "50.6"
+          }
+        },
+        "row_06": {
+          "type": "row",
+          "settings": {
+            "cell_1": "6",
+            "cell_2": "L½",
+            "cell_3": "52",
+            "cell_4": "16.5",
+            "cell_5": "51.9"
+          }
+        },
+        "row_07": {
+          "type": "row",
+          "settings": {
+            "cell_1": "6.5",
+            "cell_2": "M½",
+            "cell_3": "53",
+            "cell_4": "16.9",
+            "cell_5": "53.1"
+          }
+        },
+        "row_08": {
+          "type": "row",
+          "settings": {
+            "cell_1": "7",
+            "cell_2": "N½",
+            "cell_3": "54.5",
+            "cell_4": "17.3",
+            "cell_5": "54.4"
+          }
+        },
+        "row_09": {
+          "type": "row",
+          "settings": {
+            "cell_1": "7.5",
+            "cell_2": "O½",
+            "cell_3": "56",
+            "cell_4": "17.7",
+            "cell_5": "55.7"
+          }
+        },
+        "row_10": {
+          "type": "row",
+          "settings": {
+            "cell_1": "8",
+            "cell_2": "P½",
+            "cell_3": "57",
+            "cell_4": "18.1",
+            "cell_5": "57.0"
+          }
+        },
+        "row_11": {
+          "type": "row",
+          "settings": {
+            "cell_1": "8.5",
+            "cell_2": "Q½",
+            "cell_3": "58",
+            "cell_4": "18.5",
+            "cell_5": "58.3"
+          }
+        },
+        "row_12": {
+          "type": "row",
+          "settings": {
+            "cell_1": "9",
+            "cell_2": "R½",
+            "cell_3": "59.5",
+            "cell_4": "18.9",
+            "cell_5": "59.5"
+          }
+        },
+        "row_13": {
+          "type": "row",
+          "settings": {
+            "cell_1": "9.5",
+            "cell_2": "S½",
+            "cell_3": "61",
+            "cell_4": "19.4",
+            "cell_5": "60.8"
+          }
+        },
+        "row_14": {
+          "type": "row",
+          "settings": {
+            "cell_1": "10",
+            "cell_2": "T½",
+            "cell_3": "62",
+            "cell_4": "19.8",
+            "cell_5": "62.1"
+          }
+        },
+        "row_15": {
+          "type": "row",
+          "settings": {
+            "cell_1": "10.5",
+            "cell_2": "U½",
+            "cell_3": "63.5",
+            "cell_4": "20.2",
+            "cell_5": "63.4"
+          }
+        },
+        "row_16": {
+          "type": "row",
+          "settings": {
+            "cell_1": "11",
+            "cell_2": "V½",
+            "cell_3": "65",
+            "cell_4": "20.6",
+            "cell_5": "64.6"
+          }
+        },
+        "row_17": {
+          "type": "row",
+          "settings": {
+            "cell_1": "12",
+            "cell_2": "Y",
+            "cell_3": "67.5",
+            "cell_4": "21.4",
+            "cell_5": "67.2"
+          }
+        },
+        "row_18": {
+          "type": "row",
+          "settings": {
+            "cell_1": "13",
+            "cell_2": "Z+1",
+            "cell_3": "70",
+            "cell_4": "22.2",
+            "cell_5": "69.7"
+          }
+        }
+      },
+      "block_order": [
+        "row_01",
+        "row_02",
+        "row_03",
+        "row_04",
+        "row_05",
+        "row_06",
+        "row_07",
+        "row_08",
+        "row_09",
+        "row_10",
+        "row_11",
+        "row_12",
+        "row_13",
+        "row_14",
+        "row_15",
+        "row_16",
+        "row_17",
+        "row_18"
+      ],
+      "settings": {
+        "heading": "Ring size chart",
+        "intro": "<p>Find your measurement in millimetres, then read across for your size in each system.</p>",
+        "column_1": "US / Canada",
+        "column_2": "UK / Australia",
+        "column_3": "EU / ISO",
+        "column_4": "Diameter (mm)",
+        "column_5": "Circumference (mm)",
+        "column_6": "",
+        "cell_alignment": "center",
+        "striped": true,
+        "bold_first_column": true,
+        "alignment": "left",
+        "content_width": "normal",
+        "padding-block-start": 40,
+        "padding-block-end": 24
+      }
+    },
+    "tips": {
+      "type": "checklist",
+      "blocks": {
+        "tip_a": {
+          "type": "item",
+          "settings": {
+            "title": "Between two sizes?",
+            "text": "Choose the larger one, especially if your knuckles are wider than the base of your finger."
+          }
+        },
+        "tip_b": {
+          "type": "item",
+          "settings": {
+            "title": "Wide bands",
+            "text": "(6 mm or more) feel tighter. Go up half a size."
+          }
+        },
+        "tip_c": {
+          "type": "item",
+          "settings": {
+            "title": "Stacking rings",
+            "text": "sit close together, so a snug fit keeps them from turning."
+          }
+        },
+        "tip_d": {
+          "type": "item",
+          "settings": {
+            "title": "Buying a gift?",
+            "text": "Borrow a ring they wear on the same finger and measure it, or ask someone who knows their size."
+          }
+        }
+      },
+      "block_order": [
+        "tip_a",
+        "tip_b",
+        "tip_c",
+        "tip_d"
+      ],
+      "settings": {
+        "heading": "Tips for the perfect fit",
+        "columns": "2",
+        "alignment": "left",
+        "content_width": "normal",
+        "padding-block-start": 40,
+        "padding-block-end": 24
+      }
+    },
+    "help": {
+      "type": "cta-box",
+      "settings": {
+        "box_heading": "Still not sure?",
+        "box_text": "<p>Our team is happy to help you find the right size before you order.</p>",
+        "button_label": "Contact us",
+        "button_link": "/pages/contact",
+        "box_style": "filled",
+        "box_alignment": "center",
+        "content_width": "normal",
+        "alignment": "center",
+        "padding-block-start": 24,
+        "padding-block-end": 72
+      }
+    }
+  },
+  "order": [
+    "banner",
+    "before",
+    "methods",
+    "chart",
+    "tips",
+    "help"
+  ]
+}

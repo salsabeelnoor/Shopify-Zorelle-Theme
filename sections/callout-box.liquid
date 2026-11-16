@@ -1,0 +1,270 @@
+{% comment %}
+  Section contract.
+  A highlighted box (tinted or outlined) with an optional eyebrow, heading and text, and a
+  list of short points as blocks (bullets, ticks or numbers). Good for "Before you measure",
+  care tips, shipping notes or any short reminder on a page.
+  @example
+  <!-- Add "Callout box" and one Point block per line. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+-%}
+
+{%- capture body -%}
+  <div class="callout-box callout-box--{{ s.box_style }}">
+    {%- if s.box_heading != blank -%}
+      <p class="callout-box__label">{{ s.box_heading | escape }}</p>
+    {%- endif -%}
+    {%- if s.box_text != blank -%}
+      <div class="callout-box__text content-section__rich">{{ s.box_text }}</div>
+    {%- endif -%}
+    {%- if section.blocks.size > 0 -%}
+      {%- if s.list_style == 'numbers' -%}
+        <ol class="callout-box__list callout-box__list--numbers">
+      {%- else -%}
+        <ul class="callout-box__list callout-box__list--{{ s.list_style }}" role="list">
+      {%- endif -%}
+      {%- for block in section.blocks -%}
+        <li class="callout-box__item" {{ block.shopify_attributes }}>{{ block.settings.text }}</li>
+      {%- endfor -%}
+      {%- if s.list_style == 'numbers' -%}
+        </ol>
+      {%- else -%}
+        </ul>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+{%- endcapture -%}
+
+{% render 'content-section',
+  settings: s,
+  section_id: section.id,
+  children: body,
+  settings_tint: settings.color_palette.color2,
+  settings_accent: settings.color_palette.color1
+%}
+
+{% stylesheet %}
+  .callout-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: clamp(1.25rem, 1rem + 1vw, 2rem);
+    text-align: start;
+  }
+
+  .callout-box--filled {
+    background-color: var(--content-section-tint);
+  }
+
+  .callout-box--outline {
+    border: 1px solid var(--color-foreground);
+  }
+
+  .callout-box--accent {
+    border-inline-start: 3px solid var(--content-section-accent);
+    background-color: var(--content-section-tint);
+  }
+
+  .callout-box__label {
+    margin: 0;
+    color: var(--content-section-accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .callout-box__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0;
+    padding-inline-start: 1.25rem;
+    line-height: 1.6;
+  }
+
+  .callout-box__list--checks {
+    padding-inline-start: 0;
+    list-style: none;
+  }
+
+  .callout-box__list--checks .callout-box__item {
+    position: relative;
+    padding-inline-start: 1.75rem;
+  }
+
+  .callout-box__list--checks .callout-box__item::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0.15rem;
+    top: 0.45em;
+    width: 0.65rem;
+    height: 0.35rem;
+    border-inline-start: 2px solid var(--content-section-accent);
+    border-block-end: 2px solid var(--content-section-accent);
+    transform: rotate(-45deg);
+  }
+
+  .callout-box__item p {
+    display: inline;
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Callout box",
+  "tag": "section",
+  "class": "section-callout-box",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section heading"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Small text above heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "Intro text"
+    },
+    {
+      "type": "header",
+      "content": "Box"
+    },
+    {
+      "type": "text",
+      "id": "box_heading",
+      "label": "Box label",
+      "default": "Good to know"
+    },
+    {
+      "type": "richtext",
+      "id": "box_text",
+      "label": "Box text",
+      "info": "Optional. Shown above the points."
+    },
+    {
+      "type": "select",
+      "id": "box_style",
+      "label": "Box style",
+      "options": [
+        { "value": "filled", "label": "Tinted" },
+        { "value": "accent", "label": "Tinted with accent line" },
+        { "value": "outline", "label": "Outline" }
+      ],
+      "default": "filled"
+    },
+    {
+      "type": "color",
+      "id": "box_color",
+      "label": "Box tint colour",
+      "info": "Leave empty to use palette colour 2."
+    },
+    {
+      "type": "select",
+      "id": "list_style",
+      "label": "List style",
+      "options": [
+        { "value": "bullets", "label": "Bullets" },
+        { "value": "checks", "label": "Ticks" },
+        { "value": "numbers", "label": "Numbers" }
+      ],
+      "default": "bullets"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "t:options.left" },
+        { "value": "center", "label": "t:options.center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "wide", "label": "Full page width" }
+      ],
+      "default": "narrow"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    }
+  ],
+  "blocks": [
+    {
+      "type": "point",
+      "name": "Point",
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "t:settings.text",
+          "default": "Add a short point here."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Callout box",
+      "category": "t:categories.text",
+      "blocks": [
+        { "type": "point", "settings": { "text": "First point to remember." } },
+        { "type": "point", "settings": { "text": "Second point to remember." } },
+        { "type": "point", "settings": { "text": "Third point to remember." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

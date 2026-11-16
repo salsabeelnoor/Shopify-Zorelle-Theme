@@ -1,0 +1,217 @@
+{% comment %}
+  Section contract.
+  A list of tips or benefits, each with a tick, a bold lead-in and a short text, separated
+  by thin lines. One or two columns. Good for "Tips for the perfect fit", care advice or
+  "Why shop with us".
+  @example
+  <!-- Add "Checklist" and one Item block per tip. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+-%}
+
+{%- capture body -%}
+  {%- if section.blocks.size > 0 -%}
+    <ul class="checklist checklist--columns-{{ s.columns }}" role="list">
+      {%- for block in section.blocks -%}
+        <li class="checklist__item" {{ block.shopify_attributes }}>
+          {%- if block.settings.title != blank -%}
+            <strong class="checklist__title">{{ block.settings.title | escape }}</strong>
+          {%- endif -%}
+          {%- if block.settings.text != blank -%}
+            <span class="checklist__text">{{ block.settings.text }}</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+{%- endcapture -%}
+
+{% render 'content-section',
+  settings: s,
+  section_id: section.id,
+  children: body,
+  settings_tint: settings.color_palette.color2,
+  settings_accent: settings.color_palette.color1
+%}
+
+{% stylesheet %}
+  .checklist {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: clamp(1.5rem, 3vw, 3rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: start;
+  }
+
+  @media screen and (min-width: 750px) {
+    .checklist--columns-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .checklist__item {
+    position: relative;
+    padding-block: 0.9rem;
+    padding-inline-start: 2rem;
+    border-block-end: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+    line-height: 1.6;
+  }
+
+  .checklist__item::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0.2rem;
+    top: calc(0.9rem + 0.45em);
+    width: 0.7rem;
+    height: 0.38rem;
+    border-inline-start: 2px solid var(--content-section-accent);
+    border-block-end: 2px solid var(--content-section-accent);
+    transform: rotate(-45deg);
+  }
+
+  .checklist__title {
+    font-weight: 600;
+  }
+
+  .checklist__title + .checklist__text::before {
+    content: ' ';
+  }
+
+  .checklist__text p {
+    display: inline;
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Checklist",
+  "tag": "section",
+  "class": "section-checklist",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "max_blocks": 16,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section heading"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Small text above heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Good to know"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "Intro text"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "columns",
+      "label": "Columns on desktop",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "t:options.left" },
+        { "value": "center", "label": "t:options.center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "wide", "label": "Full page width" }
+      ],
+      "default": "narrow"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Bold lead-in",
+          "default": "Tip"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "t:settings.text",
+          "default": "A short explanation."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Checklist",
+      "category": "t:categories.text",
+      "blocks": [
+        { "type": "item", "settings": { "title": "First tip.", "text": "A short explanation." } },
+        { "type": "item", "settings": { "title": "Second tip.", "text": "A short explanation." } },
+        { "type": "item", "settings": { "title": "Third tip.", "text": "A short explanation." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

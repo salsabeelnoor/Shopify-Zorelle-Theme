@@ -1,0 +1,280 @@
+{% comment %}
+  Section contract.
+  General page banner: eyebrow, heading (h1 or h2), intro text, up to two buttons and an
+  optional image beside the text. Uses the shared content-section wrapper for background,
+  padding, width and alignment. Reusable at the top of any page (guides, about, care).
+  @example
+  <!-- Add "Content banner" as the first section of a page template. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+  if section.index == 1
+    assign image_loading = 'eager'
+  else
+    assign image_loading = 'lazy'
+  endif
+-%}
+
+{%- capture body -%}
+  {%- if s.button_label != blank or s.button_2_label != blank -%}
+    <div class="content-banner__buttons">
+      {%- if s.button_label != blank -%}
+        <a class="content-section__button" href="{{ s.button_link | default: routes.all_products_collection_url }}">
+          {{- s.button_label | escape -}}
+        </a>
+      {%- endif -%}
+      {%- if s.button_2_label != blank -%}
+        <a class="content-section__button content-section__button--outline" href="{{ s.button_2_link | default: routes.root_url }}">
+          {{- s.button_2_label | escape -}}
+        </a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- capture banner -%}
+  {%- if s.image != blank -%}
+    <div class="content-banner content-banner--with-image content-banner--image-{{ s.image_position }}">
+      <div class="content-banner__media">
+        {{
+          s.image
+          | image_url: width: 1600
+          | image_tag:
+            widths: '480, 720, 960, 1200, 1600',
+            sizes: '(min-width: 990px) 50vw, 100vw',
+            loading: image_loading,
+            class: 'content-banner__image',
+            alt: s.image.alt
+        }}
+      </div>
+      <div class="content-banner__body">{{ body }}</div>
+    </div>
+  {%- else -%}
+    {{ body }}
+  {%- endif -%}
+{%- endcapture -%}
+
+{% render 'content-section',
+  settings: s,
+  section_id: section.id,
+  children: banner,
+  modifier: 'content-section--banner',
+  settings_tint: settings.color_palette.color2,
+  settings_accent: settings.color_palette.color1
+%}
+
+{% stylesheet %}
+  .content-section--banner .content-section__heading {
+    font-size: clamp(2rem, 1.5rem + 2.2vw, 3.5rem);
+  }
+
+  .content-banner__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .content-section__inner--center .content-banner__buttons {
+    justify-content: center;
+  }
+
+  .content-banner__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  @media screen and (min-width: 990px) {
+    /* With an image, the header and buttons sit beside it. */
+    .content-section--banner:has(.content-banner--with-image) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      column-gap: clamp(2rem, 4vw, 4rem);
+    }
+
+    .content-section--banner:has(.content-banner--with-image) > .content-section__header {
+      grid-column: 1;
+      grid-row: 1;
+      align-self: end;
+    }
+
+    .content-section--banner .content-banner--with-image {
+      display: contents;
+    }
+
+    .content-section--banner .content-banner__media {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+
+    .content-section--banner .content-banner__body {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: start;
+    }
+
+    .content-section--banner:has(.content-banner--image-left) > .content-section__header,
+    .content-section--banner .content-banner--image-left .content-banner__body {
+      grid-column: 2;
+    }
+
+    .content-section--banner .content-banner--image-left .content-banner__media {
+      grid-column: 1;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Content banner",
+  "tag": "section",
+  "class": "section-content-banner",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:content.text"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Small text above heading",
+      "default": "Guide"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Page heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading level",
+      "info": "Use H1 when this banner is the page title.",
+      "options": [
+        { "value": "h1", "label": "H1" },
+        { "value": "h2", "label": "H2" }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "t:settings.text",
+      "default": "<p>A short introduction to what this page is about.</p>"
+    },
+    {
+      "type": "header",
+      "content": "t:content.buttons"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "text",
+      "id": "button_2_label",
+      "label": "Second button label"
+    },
+    {
+      "type": "url",
+      "id": "button_2_link",
+      "label": "Second button link"
+    },
+    {
+      "type": "header",
+      "content": "t:content.media"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:settings.image",
+      "info": "Optional. Shown beside the text on desktop, above it on phones."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "options": [
+        { "value": "right", "label": "t:options.right" },
+        { "value": "left", "label": "t:options.left" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "t:options.left" },
+        { "value": "center", "label": "t:options.center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "wide", "label": "Full page width" }
+      ],
+      "default": "normal"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "info": "Text switches to a light or dark palette colour automatically."
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    }
+  ],
+  "presets": [
+    {
+      "name": "Content banner",
+      "category": "t:categories.banners"
+    }
+  ]
+}
+{% endschema %}

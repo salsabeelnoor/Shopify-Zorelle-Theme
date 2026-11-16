@@ -1,0 +1,326 @@
+{% comment %}
+  Section contract.
+  An editable table: up to 6 column headings in the section settings, one Row block per row
+  (a cell per column). Columns without a heading are hidden. Plum header row, optional
+  striped rows and bold first column, an optional note under the table. Scrolls sideways on
+  narrow screens when it doesn't fit. Good for size charts, length guides and comparisons.
+  @example
+  <!-- Add "Data table", fill the column headings, then add one Row block per line. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+
+  # Count the columns in use: headings 1-6, stopping at the first empty one.
+  assign column_count = 0
+  for i in (1..6)
+    assign heading_key = 'column_' | append: i
+    if s[heading_key] != blank
+      assign column_count = i
+    else
+      break
+    endif
+  endfor
+-%}
+
+{%- capture body -%}
+  {%- if column_count > 0 -%}
+    <div
+      class="data-table__scroll"
+      role="region"
+      tabindex="0"
+      aria-label="{{ s.heading | default: s.column_1 | escape }}"
+    >
+      <table class="data-table data-table--align-{{ s.cell_alignment }}{% if s.striped %} data-table--striped{% endif %}{% if s.bold_first_column %} data-table--bold-first{% endif %}">
+        <thead>
+          <tr>
+            {%- for i in (1..column_count) -%}
+              {%- assign heading_key = 'column_' | append: i -%}
+              <th scope="col">{{ s[heading_key] | escape }}</th>
+            {%- endfor -%}
+          </tr>
+        </thead>
+        <tbody>
+          {%- for block in section.blocks -%}
+            <tr {{ block.shopify_attributes }}>
+              {%- for i in (1..column_count) -%}
+                {%- assign cell_key = 'cell_' | append: i -%}
+                {%- if i == 1 -%}
+                  <th scope="row">{{ block.settings[cell_key] | escape }}</th>
+                {%- else -%}
+                  <td>{{ block.settings[cell_key] | escape }}</td>
+                {%- endif -%}
+              {%- endfor -%}
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  {%- endif -%}
+  {%- if s.note != blank -%}
+    <div class="data-table__note content-section__rich">{{ s.note }}</div>
+  {%- endif -%}
+{%- endcapture -%}
+
+{% render 'content-section',
+  settings: s,
+  section_id: section.id,
+  children: body,
+  settings_tint: settings.color_palette.color2,
+  settings_accent: settings.color_palette.color1
+%}
+
+{% stylesheet %}
+  .data-table__scroll {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .data-table__scroll:focus-visible {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 2px;
+  }
+
+  .data-table {
+    width: 100%;
+    min-width: 32rem;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+
+  .data-table--align-center :is(th, td) {
+    text-align: center;
+  }
+
+  .data-table--align-left :is(th, td) {
+    text-align: start;
+  }
+
+  .data-table thead th {
+    padding: 0.9rem 0.75rem;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .data-table tbody :is(th, td) {
+    padding: 0.75rem;
+    border-block-end: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+    font-weight: 400;
+  }
+
+  .data-table--striped tbody tr:nth-child(even) {
+    background-color: var(--content-section-tint);
+  }
+
+  .data-table--bold-first tbody th {
+    font-weight: 600;
+  }
+
+  .data-table__note {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    opacity: 0.85;
+  }
+
+  @media screen and (max-width: 749px) {
+    .data-table {
+      font-size: 0.8125rem;
+    }
+
+    .data-table thead th {
+      font-size: 0.6875rem;
+      letter-spacing: 0.04em;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Data table",
+  "tag": "section",
+  "class": "section-data-table",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "max_blocks": 40,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section heading"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Small text above heading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Size chart"
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "Intro text"
+    },
+    {
+      "type": "header",
+      "content": "Column headings",
+      "info": "Fill the columns you need from left to right. The table stops at the first empty heading."
+    },
+    {
+      "type": "text",
+      "id": "column_1",
+      "label": "Column 1",
+      "default": "Size"
+    },
+    {
+      "type": "text",
+      "id": "column_2",
+      "label": "Column 2",
+      "default": "Measurement"
+    },
+    {
+      "type": "text",
+      "id": "column_3",
+      "label": "Column 3"
+    },
+    {
+      "type": "text",
+      "id": "column_4",
+      "label": "Column 4"
+    },
+    {
+      "type": "text",
+      "id": "column_5",
+      "label": "Column 5"
+    },
+    {
+      "type": "text",
+      "id": "column_6",
+      "label": "Column 6"
+    },
+    {
+      "type": "header",
+      "content": "Table style"
+    },
+    {
+      "type": "select",
+      "id": "cell_alignment",
+      "label": "Cell alignment",
+      "options": [
+        { "value": "center", "label": "t:options.center" },
+        { "value": "left", "label": "t:options.left" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "striped",
+      "label": "Striped rows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "bold_first_column",
+      "label": "Bold first column",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "box_color",
+      "label": "Stripe colour",
+      "info": "Leave empty to use palette colour 2."
+    },
+    {
+      "type": "richtext",
+      "id": "note",
+      "label": "Note under the table"
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "t:options.left" },
+        { "value": "center", "label": "t:options.center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "wide", "label": "Full page width" }
+      ],
+      "default": "normal"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    }
+  ],
+  "blocks": [
+    {
+      "type": "row",
+      "name": "Row",
+      "settings": [
+        { "type": "text", "id": "cell_1", "label": "Column 1" },
+        { "type": "text", "id": "cell_2", "label": "Column 2" },
+        { "type": "text", "id": "cell_3", "label": "Column 3" },
+        { "type": "text", "id": "cell_4", "label": "Column 4" },
+        { "type": "text", "id": "cell_5", "label": "Column 5" },
+        { "type": "text", "id": "cell_6", "label": "Column 6" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Data table",
+      "category": "t:categories.text",
+      "blocks": [
+        { "type": "row", "settings": { "cell_1": "S", "cell_2": "40 cm" } },
+        { "type": "row", "settings": { "cell_1": "M", "cell_2": "45 cm" } },
+        { "type": "row", "settings": { "cell_1": "L", "cell_2": "50 cm" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
