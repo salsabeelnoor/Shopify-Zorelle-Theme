@@ -125,8 +125,8 @@
         "nav_label": "Shop by category",
         "padding_top": 16,
         "padding_bottom": 16,
-        "stuck_background": "#f4e8e5",
-        "stuck_background_opacity": 60
+        "stuck_background": "{{ settings.color_palette.color2 }}",
+        "stuck_background_opacity": 65
       }
     },
     "main": {
