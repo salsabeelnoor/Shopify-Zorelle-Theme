@@ -1,3 +1,12 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "banner": {
@@ -9,6 +18,9 @@
         "intro": "<p>The perfect ring slides over your knuckle with a little resistance and sits comfortably without spinning. Find your size at home in a few minutes.</p>",
         "button_label": "Shop rings",
         "button_link": "shopify://collections/rings",
+        "button_2_label": "",
+        "button_2_link": "",
+        "image_position": "right",
         "alignment": "center",
         "content_width": "normal",
         "background_color": "{{ settings.color_palette.color2 }}",
@@ -51,11 +63,17 @@
         "tip_4"
       ],
       "settings": {
+        "eyebrow": "",
+        "heading": "",
+        "intro": "",
         "box_heading": "Before you measure",
-        "box_style": "filled",
+        "box_text": "",
+        "box_style": "accent",
+        "box_color": "{{ settings.color_palette.background }}",
         "list_style": "checks",
         "alignment": "left",
         "content_width": "normal",
+        "background_color": "",
         "padding-block-start": 48,
         "padding-block-end": 16
       }
@@ -66,15 +84,21 @@
         "card_1": {
           "type": "card",
           "settings": {
+            "number": "",
             "title": "Measure a ring you own",
-            "text": "<ol><li>Choose a ring that fits the finger you are buying for.</li><li>Place it on a ruler and measure the <strong>inside diameter</strong> from edge to edge, in millimetres.</li><li>Find that number in the <em>Diameter</em> column of the chart below.</li></ol>"
+            "text": "<ol><li>Choose a ring that fits the finger you are buying for.</li><li>Place it on a ruler and measure the <strong>inside diameter</strong> from edge to edge, in millimetres.</li><li>Find that number in the <em>Diameter</em> column of the chart below.</li></ol>",
+            "link_label": "",
+            "link": ""
           }
         },
         "card_2": {
           "type": "card",
           "settings": {
+            "number": "",
             "title": "Measure your finger",
-            "text": "<ol><li>Wrap a thin strip of paper or string around the base of your finger.</li><li>Mark where the ends meet. It should be snug but still slide over your knuckle.</li><li>Lay it flat, measure the length in millimetres and find it in the <em>Circumference</em> column.</li></ol>"
+            "text": "<ol><li>Wrap a thin strip of paper or string around the base of your finger.</li><li>Mark where the ends meet. It should be snug but still slide over your knuckle.</li><li>Lay it flat, measure the length in millimetres and find it in the <em>Circumference</em> column.</li></ol>",
+            "link_label": "",
+            "link": ""
           }
         }
       },
@@ -85,11 +109,14 @@
       "settings": {
         "eyebrow": "Step by step",
         "heading": "Two easy ways to find your size",
+        "intro": "",
         "columns": "2",
         "card_style": "outline",
         "show_numbers": true,
+        "box_color": "",
         "alignment": "left",
         "content_width": "normal",
+        "background_color": "",
         "padding-block-start": 40,
         "padding-block-end": 24
       }
@@ -104,7 +131,8 @@
             "cell_2": "F",
             "cell_3": "44",
             "cell_4": "14.1",
-            "cell_5": "44.2"
+            "cell_5": "44.2",
+            "cell_6": ""
           }
         },
         "row_02": {
@@ -114,7 +142,8 @@
             "cell_2": "H",
             "cell_3": "47",
             "cell_4": "14.9",
-            "cell_5": "46.8"
+            "cell_5": "46.8",
+            "cell_6": ""
           }
         },
         "row_03": {
@@ -124,7 +153,8 @@
             "cell_2": "I",
             "cell_3": "48",
             "cell_4": "15.3",
-            "cell_5": "48.0"
+            "cell_5": "48.0",
+            "cell_6": ""
           }
         },
         "row_04": {
@@ -134,7 +164,8 @@
             "cell_2": "J½",
             "cell_3": "49",
             "cell_4": "15.7",
-            "cell_5": "49.3"
+            "cell_5": "49.3",
+            "cell_6": ""
           }
         },
         "row_05": {
@@ -144,7 +175,8 @@
             "cell_2": "K½",
             "cell_3": "50.5",
             "cell_4": "16.1",
-            "cell_5": "50.6"
+            "cell_5": "50.6",
+            "cell_6": ""
           }
         },
         "row_06": {
@@ -154,7 +186,8 @@
             "cell_2": "L½",
             "cell_3": "52",
             "cell_4": "16.5",
-            "cell_5": "51.9"
+            "cell_5": "51.9",
+            "cell_6": ""
           }
         },
         "row_07": {
@@ -164,7 +197,8 @@
             "cell_2": "M½",
             "cell_3": "53",
             "cell_4": "16.9",
-            "cell_5": "53.1"
+            "cell_5": "53.1",
+            "cell_6": ""
           }
         },
         "row_08": {
@@ -174,7 +208,8 @@
             "cell_2": "N½",
             "cell_3": "54.5",
             "cell_4": "17.3",
-            "cell_5": "54.4"
+            "cell_5": "54.4",
+            "cell_6": ""
           }
         },
         "row_09": {
@@ -184,7 +219,8 @@
             "cell_2": "O½",
             "cell_3": "56",
             "cell_4": "17.7",
-            "cell_5": "55.7"
+            "cell_5": "55.7",
+            "cell_6": ""
           }
         },
         "row_10": {
@@ -194,7 +230,8 @@
             "cell_2": "P½",
             "cell_3": "57",
             "cell_4": "18.1",
-            "cell_5": "57.0"
+            "cell_5": "57.0",
+            "cell_6": ""
           }
         },
         "row_11": {
@@ -204,7 +241,8 @@
             "cell_2": "Q½",
             "cell_3": "58",
             "cell_4": "18.5",
-            "cell_5": "58.3"
+            "cell_5": "58.3",
+            "cell_6": ""
           }
         },
         "row_12": {
@@ -214,7 +252,8 @@
             "cell_2": "R½",
             "cell_3": "59.5",
             "cell_4": "18.9",
-            "cell_5": "59.5"
+            "cell_5": "59.5",
+            "cell_6": ""
           }
         },
         "row_13": {
@@ -224,7 +263,8 @@
             "cell_2": "S½",
             "cell_3": "61",
             "cell_4": "19.4",
-            "cell_5": "60.8"
+            "cell_5": "60.8",
+            "cell_6": ""
           }
         },
         "row_14": {
@@ -234,7 +274,8 @@
             "cell_2": "T½",
             "cell_3": "62",
             "cell_4": "19.8",
-            "cell_5": "62.1"
+            "cell_5": "62.1",
+            "cell_6": ""
           }
         },
         "row_15": {
@@ -244,7 +285,8 @@
             "cell_2": "U½",
             "cell_3": "63.5",
             "cell_4": "20.2",
-            "cell_5": "63.4"
+            "cell_5": "63.4",
+            "cell_6": ""
           }
         },
         "row_16": {
@@ -254,7 +296,8 @@
             "cell_2": "V½",
             "cell_3": "65",
             "cell_4": "20.6",
-            "cell_5": "64.6"
+            "cell_5": "64.6",
+            "cell_6": ""
           }
         },
         "row_17": {
@@ -264,7 +307,8 @@
             "cell_2": "Y",
             "cell_3": "67.5",
             "cell_4": "21.4",
-            "cell_5": "67.2"
+            "cell_5": "67.2",
+            "cell_6": ""
           }
         },
         "row_18": {
@@ -274,7 +318,8 @@
             "cell_2": "Z+1",
             "cell_3": "70",
             "cell_4": "22.2",
-            "cell_5": "69.7"
+            "cell_5": "69.7",
+            "cell_6": ""
           }
         }
       },
@@ -299,6 +344,7 @@
         "row_18"
       ],
       "settings": {
+        "eyebrow": "",
         "heading": "Ring size chart",
         "intro": "<p>Find your measurement in millimetres, then read across for your size in each system.</p>",
         "column_1": "US / Canada",
@@ -310,8 +356,11 @@
         "cell_alignment": "center",
         "striped": true,
         "bold_first_column": true,
+        "box_color": "",
+        "note": "",
         "alignment": "left",
         "content_width": "normal",
+        "background_color": "",
         "padding-block-start": 40,
         "padding-block-end": 24
       }
@@ -355,10 +404,13 @@
         "tip_d"
       ],
       "settings": {
+        "eyebrow": "",
         "heading": "Tips for the perfect fit",
+        "intro": "",
         "columns": "2",
         "alignment": "left",
         "content_width": "normal",
+        "background_color": "",
         "padding-block-start": 40,
         "padding-block-end": 24
       }
@@ -370,10 +422,17 @@
         "box_text": "<p>Our team is happy to help you find the right size before you order.</p>",
         "button_label": "Contact us",
         "button_link": "/pages/contact",
+        "button_2_label": "",
+        "button_2_link": "",
         "box_style": "filled",
         "box_alignment": "center",
-        "content_width": "normal",
+        "box_color": "",
+        "eyebrow": "",
+        "heading": "",
+        "intro": "",
         "alignment": "center",
+        "content_width": "normal",
+        "background_color": "",
         "padding-block-start": 24,
         "padding-block-end": 72
       }

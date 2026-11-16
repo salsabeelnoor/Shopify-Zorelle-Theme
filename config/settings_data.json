@@ -13,6 +13,7 @@
     "logo_inverse": "shopify://shop_images/exec-cf6e2510-cc5d-4d42-b4c0-55625f59c655.png",
     "logo_height": 40,
     "logo_height_mobile": 32,
+    "favicon": "shopify://shop_images/favicon.png",
     "page_text_color": "{{ settings.color_palette.foreground }}",
     "type_body_font": "dm_sans_n4",
     "type_subheading_font": "dm_sans_n4",
@@ -116,6 +117,14 @@
     "variant_button_border_width": 1,
     "variant_button_radius": 0,
     "variant_button_width": "equal-width-buttons",
+    "sections": {
+      "password-footer": {
+        "type": "password-footer",
+        "settings": {
+          "background_color": ""
+        }
+      }
+    },
     "content_for_index": [],
     "color_palette": {
       "background": "#fff9f7",
