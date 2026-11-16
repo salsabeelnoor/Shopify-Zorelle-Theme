@@ -93,6 +93,18 @@
     --quick-links-padding-top: {{ s.padding_top }}px;
     --quick-links-padding-bottom: {{ s.padding_bottom }}px;
   }
+
+  {%- liquid
+    assign stuck_color = s.stuck_background | default: settings.color_palette.color2
+    assign stuck_red = stuck_color | color_extract: 'red'
+    assign stuck_green = stuck_color | color_extract: 'green'
+    assign stuck_blue = stuck_color | color_extract: 'blue'
+    assign stuck_opacity = s.stuck_background_opacity | default: 80 | divided_by: 100.0
+  -%}
+  #shopify-section-{{ section.id }} {
+    --quick-links-stuck-rgb: {{ stuck_red }} {{ stuck_green }} {{ stuck_blue }};
+    --quick-links-stuck-opacity: {{ stuck_opacity }};
+  }
 {% endstyle %}
 
 {%- if has_links -%}
@@ -168,6 +180,21 @@
     top: 65px;
     z-index: 3;
     background-color: var(--color-background);
+    transition: background-color 0.3s var(--ease-out-quad, ease-out);
+  }
+
+  /* Zorelle: once the row sticks under the header (set by quick-links-scroller.js), it
+     takes the "Background when stuck" colour so it stands apart from the products. */
+  .section-quick-links[data-stuck] {
+    background-color: rgb(var(--quick-links-stuck-rgb) / var(--quick-links-stuck-opacity, 0.8));
+    box-shadow: rgba(0, 0, 0, 0.05) 0 2px 5px 1px;
+    backdrop-filter: blur(10px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .section-quick-links {
+      transition: none;
+    }
   }
   @media only screen and (max-width: 1200px) {
     .section-quick-links {
@@ -416,6 +443,27 @@
       "step": 2,
       "unit": "px",
       "default": 24
+    },
+    {
+      "type": "header",
+      "content": "While scrolling"
+    },
+    {
+      "type": "color",
+      "id": "stuck_background",
+      "label": "Background when stuck",
+      "info": "Used once the row sticks under the header. Leave empty to use palette colour 2."
+    },
+    {
+      "type": "range",
+      "id": "stuck_background_opacity",
+      "label": "Background opacity",
+      "info": "Lower values let the page show through, softened by the blur.",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 80
     }
   ],
   "presets": [

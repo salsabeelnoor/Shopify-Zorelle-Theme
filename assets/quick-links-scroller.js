@@ -31,19 +31,52 @@ class QuickLinksScroller extends Component {
     this.#controller = new AbortController();
 
     const { track } = this.refs;
-    track.addEventListener('scroll', this.#update, { passive: true, signal: this.#controller.signal });
+    const { signal } = this.#controller;
+    track.addEventListener('scroll', this.#update, { passive: true, signal });
 
     this.#resizeObserver?.disconnect();
     this.#resizeObserver = new ResizeObserver(this.#update);
     this.#resizeObserver.observe(track);
 
+    // Page scroll (window or the .page-wrapper scroller) toggles the section's stuck state.
+    document.addEventListener('scroll', this.#scheduleStuck, { passive: true, capture: true, signal });
+    window.addEventListener('resize', this.#scheduleStuck, { passive: true, signal });
+
     this.#update();
+    this.#updateStuck();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.#controller?.abort();
     this.#resizeObserver?.disconnect();
+    if (this.#stuckFrame) cancelAnimationFrame(this.#stuckFrame);
+  }
+
+  /** @type {number | undefined} */
+  #stuckFrame;
+
+  #scheduleStuck = () => {
+    if (this.#stuckFrame) return;
+    this.#stuckFrame = requestAnimationFrame(() => {
+      this.#stuckFrame = undefined;
+      this.#updateStuck();
+    });
+  };
+
+  /**
+   * Marks the sticky quick links section with data-stuck while it sits at its sticky
+   * offset under the header, so CSS can give it a different background.
+   */
+  #updateStuck() {
+    const section = this.closest('.section-quick-links');
+    if (!(section instanceof HTMLElement)) return;
+
+    const stickyTop = parseFloat(getComputedStyle(section).top);
+    if (Number.isNaN(stickyTop)) return;
+
+    const stuck = section.getBoundingClientRect().top <= stickyTop + 1;
+    section.toggleAttribute('data-stuck', stuck);
   }
 
   /** Slides towards the start of the row. */

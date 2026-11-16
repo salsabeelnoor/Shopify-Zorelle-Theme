@@ -639,6 +639,45 @@
     }
   }
 
+  /* Zorelle: a light hairline under the header bar, shown only once the header sticks
+     while scrolling (not for an open mega menu). Drawn as a pseudo-element at the bar's
+     bottom edge, so nothing in the layout moves. */
+  #header-component::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: calc(var(--header-height, 100%) - 1px);
+    z-index: var(--layer-raised, 2);
+    height: 1px;
+    background-color: rgb(var(--color-foreground-rgb) / 0.12);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--animation-speed, 0.2s) var(--ease-out-quad, ease-out);
+  }
+
+  #header-component:is(
+      [data-sticky-state='active'],
+      [sticky='always'][data-scroll-direction='up'],
+      [sticky='always'][data-scroll-direction='down']
+    )::after {
+    opacity: 1;
+  }
+
+  /* No line while a mega menu or the mobile menu drawer is open. */
+  #header-component:is(
+      :has(header-menu[aria-expanded='true']),
+      :has(.menu-list__submenu:hover),
+      :has(.menu-drawer-container[open])
+    )::after {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #header-component::after {
+      transition: none;
+    }
+  }
+
   /* When top row has transparent background, make it inherit colors from header component */
   [data-transparent-background='top']:hover .header__row--top,
   [data-transparent-background='top']:focus-within .header__row--top,
