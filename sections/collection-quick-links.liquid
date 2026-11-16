@@ -211,8 +211,6 @@
     min-width: 0;
     margin: 0;
     justify-content: center;
-    /* Room for the focus ring, and a sideways scroll when the row is full. */
-    padding-block: 0.25rem;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scroll-snap-type: x proximity;
@@ -247,7 +245,12 @@
     white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
     transition: background-color var(--animation-speed) var(--animation-easing);
-
+    @media only screen and (max-width: 1200px) {
+      min-width: 0;
+      min-height: 0;
+      font-size: 14px;
+      padding-block: 10px;
+    }
     &:hover {
       border-color: var(--palette-darkest);
       background-color: var(--palette-darkest);
@@ -315,8 +318,6 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.75rem;
-    height: 2.25rem;
     padding: 0;
     background: transparent;
     color: var(--color-foreground);
