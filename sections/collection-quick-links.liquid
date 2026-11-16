@@ -205,21 +205,24 @@
     padding-block: var(--quick-links-padding-top) var(--quick-links-padding-bottom);
   }
 
-  .quick-links__list {
+  .section-quick-links .quick-links__list {
     display: flex;
     gap: 0.75rem;
     min-width: 0;
     margin: 0;
-
+    justify-content: center;
     /* Room for the focus ring, and a sideways scroll when the row is full. */
     padding-block: 0.25rem;
     overflow-x: auto;
     overscroll-behavior-inline: contain;
     scroll-snap-type: x proximity;
     scrollbar-width: none;
-
+    transition: all 0.3s ease-in-out;
     &::-webkit-scrollbar {
       display: none;
+    }
+    @media only screen and (max-width: 1200px) {
+      justify-content: flex-start;
     }
   }
 
