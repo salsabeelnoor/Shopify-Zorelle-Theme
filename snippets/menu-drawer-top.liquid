@@ -10,8 +10,26 @@
 
 <div class="menu-drawer__header">
   {%- if shop.customer_accounts_enabled -%}
+    {%- liquid
+      # Signed in: the custom "My account" page when it exists. Signed out: sign-in, which
+      # returns to that page afterwards.
+      assign account_page = pages['my-account']
+      assign drawer_account_url = routes.account_url
+      if account_page != empty and account_page.url != blank
+        if customer
+          assign drawer_account_url = account_page.url
+        else
+          assign drawer_account_url = routes.account_login_url
+          if drawer_account_url contains '?'
+            assign drawer_account_url = drawer_account_url | append: '&return_to=' | append: account_page.url
+          else
+            assign drawer_account_url = drawer_account_url | append: '?return_to=' | append: account_page.url
+          endif
+        endif
+      endif
+    -%}
     <a
-      href="{{ routes.account_url }}"
+      href="{{ drawer_account_url }}"
       class="menu-drawer__header-icon menu-drawer__account-link focus-inset"
       aria-label="{{ 'accessibility.account' | t }}"
     >

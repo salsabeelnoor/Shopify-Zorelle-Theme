@@ -1,0 +1,123 @@
+{%- doc -%}
+  Renders an address form in a dialog for the account page, using Shopify's customer_address
+  form. Pass customer.new_address to add an address, or a saved address to edit it. Opened by
+  a button with data-order-open set to the same ID (account-tabs.js); opens by itself when
+  the form comes back with errors.
+
+  @param {object} address - customer.new_address, or one of customer.addresses.
+  @param {string} dialog_id - Unique ID for the dialog.
+  @param {boolean} [is_new] - True when adding a new address.
+
+  @example
+  {% render 'account-address-dialog', address: customer.new_address, dialog_id: 'AccountAddressNew', is_new: true %}
+{%- enddoc -%}
+
+{%- form 'customer_address', address -%}
+  {%- liquid
+    if is_new
+      assign field_prefix = 'AddressNew'
+    else
+      assign field_prefix = 'Address' | append: address.id
+    endif
+  -%}
+  <dialog
+    class="account-dialog account-dialog--form"
+    id="{{ dialog_id }}"
+    aria-labelledby="{{ dialog_id }}-title"
+    {% if form.errors %}
+      data-auto-open
+    {% endif %}
+  >
+    <div class="account-dialog__inner">
+      <header class="account-dialog__header">
+        <h2 class="account-dialog__title" id="{{ dialog_id }}-title">
+          {%- if is_new -%}
+            {{- 'customer_account.new_address_title' | t -}}
+          {%- else -%}
+            {{- 'customer_account.edit_address_title' | t -}}
+          {%- endif -%}
+        </h2>
+        <button
+          type="button"
+          class="account-dialog__close"
+          data-order-close
+          aria-label="{{ 'customer_account.close' | t }}"
+        >
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="20" height="20">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          </svg>
+        </button>
+      </header>
+
+      {%- if form.errors -%}
+        <div class="account-form__errors" role="alert">{{ form.errors | default_errors }}</div>
+      {%- endif -%}
+
+      <div class="account-form">
+        <div class="account-field">
+          <label for="{{ field_prefix }}-first">{{ 'customer_account.first_name' | t }}</label>
+          <input id="{{ field_prefix }}-first" type="text" name="address[first_name]" value="{{ form.first_name | escape }}" autocomplete="given-name">
+        </div>
+        <div class="account-field">
+          <label for="{{ field_prefix }}-last">{{ 'customer_account.last_name' | t }}</label>
+          <input id="{{ field_prefix }}-last" type="text" name="address[last_name]" value="{{ form.last_name | escape }}" autocomplete="family-name">
+        </div>
+        <div class="account-field account-field--full">
+          <label for="{{ field_prefix }}-company">{{ 'customer_account.company' | t }}</label>
+          <input id="{{ field_prefix }}-company" type="text" name="address[company]" value="{{ form.company | escape }}" autocomplete="organization">
+        </div>
+        <div class="account-field account-field--full">
+          <label for="{{ field_prefix }}-address1">{{ 'customer_account.address1' | t }}</label>
+          <input id="{{ field_prefix }}-address1" type="text" name="address[address1]" value="{{ form.address1 | escape }}" autocomplete="address-line1" required>
+        </div>
+        <div class="account-field account-field--full">
+          <label for="{{ field_prefix }}-address2">{{ 'customer_account.address2' | t }}</label>
+          <input id="{{ field_prefix }}-address2" type="text" name="address[address2]" value="{{ form.address2 | escape }}" autocomplete="address-line2">
+        </div>
+        <div class="account-field">
+          <label for="{{ field_prefix }}-city">{{ 'customer_account.city' | t }}</label>
+          <input id="{{ field_prefix }}-city" type="text" name="address[city]" value="{{ form.city | escape }}" autocomplete="address-level2" required>
+        </div>
+        <div class="account-field">
+          <label for="{{ field_prefix }}-zip">{{ 'customer_account.zip' | t }}</label>
+          <input id="{{ field_prefix }}-zip" type="text" name="address[zip]" value="{{ form.zip | escape }}" autocomplete="postal-code" autocapitalize="characters">
+        </div>
+        <div class="account-field">
+          <label for="{{ field_prefix }}-country">{{ 'customer_account.country' | t }}</label>
+          <select
+            id="{{ field_prefix }}-country"
+            name="address[country]"
+            data-country-select
+            data-default="{{ form.country | escape }}"
+            autocomplete="country-name"
+          >
+            {{ all_country_option_tags }}
+          </select>
+        </div>
+        <div class="account-field" data-province-field hidden>
+          <label for="{{ field_prefix }}-province">{{ 'customer_account.province' | t }}</label>
+          <select
+            id="{{ field_prefix }}-province"
+            name="address[province]"
+            data-province-select
+            data-default="{{ form.province | escape }}"
+            autocomplete="address-level1"
+          ></select>
+        </div>
+        <div class="account-field account-field--full">
+          <label for="{{ field_prefix }}-phone">{{ 'customer_account.phone' | t }}</label>
+          <input id="{{ field_prefix }}-phone" type="tel" name="address[phone]" value="{{ form.phone | escape }}" autocomplete="tel">
+        </div>
+        <label class="account-check account-field--full">
+          {{ form.set_as_default_checkbox }}
+          <span>{{ 'customer_account.set_default' | t }}</span>
+        </label>
+      </div>
+
+      <footer class="account-dialog__footer">
+        <button type="button" class="account-cta account-cta--outline" data-order-close>{{ 'customer_account.cancel' | t }}</button>
+        <button type="submit" class="account-cta">{{ 'customer_account.save' | t }}</button>
+      </footer>
+    </div>
+  </dialog>
+{%- endform -%}

@@ -1,0 +1,102 @@
+{%- doc -%}
+  Renders one order as a card for the account page: number, date, status pills, product
+  thumbnails, total, a Details button that opens the order dialog, and Buy again.
+
+  @param {object} order - The customer's order.
+  @param {string} dialog_id - ID of the order's details dialog (account-order-dialog).
+
+  @example
+  {% render 'account-order-card', order: order, dialog_id: 'AccountOrder-123' %}
+{%- enddoc -%}
+
+<article class="account-order">
+  <div class="account-order__head">
+    <div>
+      <h3 class="account-order__name">{{ order.name }}</h3>
+      <p class="account-order__date">{{ order.created_at | date: format: 'date' }}</p>
+    </div>
+    <div class="account-order__pills">
+      {%- if order.cancelled -%}
+        <span class="account-pill account-pill--muted">{{ 'customer_account.cancelled' | t }}</span>
+      {%- else -%}
+        <span class="account-pill account-pill--soft">{{ order.financial_status_label }}</span>
+        <span class="account-pill">{{ order.fulfillment_status_label }}</span>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <ul class="account-order__thumbs list-unstyled">
+    {%- for line_item in order.line_items limit: 5 -%}
+      <li class="account-order__thumb">
+        {%- if line_item.image -%}
+          {{
+            line_item.image
+            | image_url: width: 200
+            | image_tag:
+              widths: '100, 150, 200',
+              sizes: '72px',
+              loading: 'lazy',
+              alt: line_item.title
+          }}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'account-order__placeholder' }}
+        {%- endif -%}
+        {%- if line_item.quantity > 1 -%}
+          <span class="account-order__qty" aria-hidden="true">×{{ line_item.quantity }}</span>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+    {%- if order.line_items.size > 5 -%}
+      <li class="account-order__thumb account-order__thumb--more">+{{ order.line_items.size | minus: 5 }}</li>
+    {%- endif -%}
+  </ul>
+
+  <div class="account-order__foot">
+    <p class="account-order__total">
+      <span>{{ 'customer_account.total' | t }}</span>
+      <strong>{{ order.total_price | money_with_currency }}</strong>
+    </p>
+    <div class="account-order__actions">
+      <button
+        type="button"
+        class="account-cta account-cta--outline"
+        data-order-open="{{ dialog_id }}"
+        aria-haspopup="dialog"
+      >
+        {{- 'customer_account.details' | t -}}
+      </button>
+
+      {%- liquid
+        assign reorder_count = 0
+        for line_item in order.line_items
+          if line_item.variant.available and line_item.gift_card == false
+            assign reorder_count = reorder_count | plus: 1
+          endif
+        endfor
+      -%}
+      {%- if reorder_count > 0 -%}
+        <form class="account-order__reorder" action="{{ routes.cart_add_url }}" method="post">
+          {%- assign item_index = 0 -%}
+          {%- for line_item in order.line_items -%}
+            {%- if line_item.variant.available and line_item.gift_card == false -%}
+              <input type="hidden" name="items[{{ item_index }}][id]" value="{{ line_item.variant.id }}">
+              <input type="hidden" name="items[{{ item_index }}][quantity]" value="{{ line_item.quantity }}">
+              {%- for property in line_item.properties -%}
+                {%- assign property_first_char = property.first | slice: 0 -%}
+                {%- if property.last != blank and property_first_char != '_' -%}
+                  <input
+                    type="hidden"
+                    name="items[{{ item_index }}][properties][{{ property.first | escape }}]"
+                    value="{{ property.last | escape }}"
+                  >
+                {%- endif -%}
+              {%- endfor -%}
+              {%- assign item_index = item_index | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+          <button type="submit" class="account-cta">{{ 'customer_account.buy_again' | t }}</button>
+        </form>
+      {%- endif -%}
+    </div>
+  </div>
+</article>

@@ -82,10 +82,41 @@
         assign account_actions_style = '--header-actions-font-family: ' | append: font_family_safe | append: '; --header-actions-font-weight: ' | append: font_obj.weight | append: ';'
       endif
     %}
+    {%- liquid
+      # Custom account page (page "My account" with the account template). When it exists,
+      # signed-in customers go there and sign-in returns there.
+      assign account_page = pages['my-account']
+      assign account_page_url = ''
+      if account_page != empty and account_page.url != blank
+        assign account_page_url = account_page.url
+      endif
+
+      assign login_url = routes.account_login_url
+      if account_page_url != blank
+        if login_url contains '?'
+          assign login_url = login_url | append: '&return_to=' | append: account_page_url
+        else
+          assign login_url = login_url | append: '?return_to=' | append: account_page_url
+        endif
+      endif
+    -%}
     <div
       class="account-button header-actions__action{% if display_style == 'text' %} account-button--text{% endif %} color-custom-popover"
     >
-      {% if customer %}
+      {% if customer and account_page_url != blank %}
+        <a
+          href="{{ account_page_url }}"
+          class="account-button__link"
+          aria-label="{{ 'accessibility.account' | t }}"
+          {% if account_actions_style != blank %}
+            style="{{ account_actions_style }}"
+          {% endif %}
+        >
+          <span class="account-button__avatar" aria-hidden="true">
+            {{- customer.first_name | default: customer.email | slice: 0 | upcase -}}
+          </span>
+        </a>
+      {% elsif customer %}
         <shopify-account
           menu="{{ customer_account_menu }}"
           {% if account_actions_style != blank %}
@@ -97,7 +128,7 @@
       {% else %}
         {%- # Signed-out visitors go straight to the sign-in page instead of the account sheet. -%}
         <a
-          href="{{ routes.account_login_url }}"
+          href="{{ login_url }}"
           class="account-button__link"
           aria-label="{{ 'accessibility.account' | t }}"
           {% if account_actions_style != blank %}
@@ -208,6 +239,21 @@
 
   .account-button--text shopify-account {
     color: inherit;
+  }
+
+  /* Signed-in initial, linking to the custom account page. */
+  .account-button__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
   }
 
   .account-button__link {

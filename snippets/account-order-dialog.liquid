@@ -1,0 +1,205 @@
+{%- doc -%}
+  Renders the order details dialog for the account page: statuses, tracking, items,
+  price breakdown, addresses, payment and contact. Opened by a button with
+  data-order-open set to the same ID (account-tabs.js).
+
+  @param {object} order - The customer's order.
+  @param {string} dialog_id - Unique ID for the dialog.
+
+  @example
+  {% render 'account-order-dialog', order: order, dialog_id: 'AccountOrder-123' %}
+{%- enddoc -%}
+
+{%- liquid
+  # Tracking links from the order's fulfilled items, without duplicates.
+  assign tracking_urls = ''
+  assign tracking_count = 0
+  for line_item in order.line_items
+    if line_item.fulfillment
+      for url in line_item.fulfillment.tracking_urls
+        unless tracking_urls contains url
+          assign tracking_urls = tracking_urls | append: url | append: '|'
+          assign tracking_count = tracking_count | plus: 1
+        endunless
+      endfor
+    endif
+  endfor
+  assign tracking_list = tracking_urls | split: '|'
+
+  assign item_count = 0
+  for line_item in order.line_items
+    assign item_count = item_count | plus: line_item.quantity
+  endfor
+-%}
+
+<dialog
+  class="account-dialog"
+  id="{{ dialog_id }}"
+  aria-labelledby="{{ dialog_id }}-title"
+>
+  <div class="account-dialog__inner">
+    <header class="account-dialog__header">
+      <div>
+        <p class="account-eyebrow">{{ 'customer_account.order_summary' | t }}</p>
+        <h2 class="account-dialog__title" id="{{ dialog_id }}-title">
+          {{- 'customer_account.order_heading' | t: name: order.name -}}
+        </h2>
+        {%- assign placed_date = order.created_at | date: format: 'date' -%}
+        <p class="account-muted">{{ 'customer_account.placed_on' | t: date: placed_date }}</p>
+      </div>
+      <button
+        type="button"
+        class="account-dialog__close"
+        data-order-close
+        aria-label="{{ 'customer_account.close' | t }}"
+      >
+        <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="20" height="20">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="account-order__pills">
+      {%- if order.cancelled -%}
+        <span class="account-pill account-pill--muted">{{ 'customer_account.cancelled' | t }}</span>
+      {%- else -%}
+        <span class="account-pill account-pill--soft">
+          {{- 'customer_account.payment_status' | t: status: order.financial_status_label -}}
+        </span>
+        <span class="account-pill">
+          {{- 'customer_account.fulfillment_status' | t: status: order.fulfillment_status_label -}}
+        </span>
+      {%- endif -%}
+    </div>
+
+    <section class="account-dialog__section">
+      <h3 class="account-dialog__heading">{{ 'customer_account.tracking' | t }}</h3>
+      {%- if tracking_count > 0 -%}
+        <ul class="account-dialog__tracking list-unstyled">
+          {%- for url in tracking_list -%}
+            <li>
+              <a class="account-link" href="{{ url }}" target="_blank" rel="noopener">
+                {{- 'customer_account.track_package' | t -}}
+                {%- if tracking_count > 1 %} {{ forloop.index }}{% endif -%}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- else -%}
+        <p class="account-muted">{{ 'customer_account.tracking_pending' | t }}</p>
+      {%- endif -%}
+    </section>
+
+    <section class="account-dialog__section">
+      <h3 class="account-dialog__heading">{{ 'customer_account.items' | t: count: item_count }}</h3>
+      <ul class="account-dialog__items list-unstyled">
+        {%- for line_item in order.line_items -%}
+          <li class="account-line">
+            <div class="account-line__media">
+              {%- if line_item.image -%}
+                {{
+                  line_item.image
+                  | image_url: width: 200
+                  | image_tag: widths: '100, 200', sizes: '80px', loading: 'lazy', alt: line_item.title
+                }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'account-order__placeholder' }}
+              {%- endif -%}
+            </div>
+            <div class="account-line__info">
+              <p class="account-line__title">{{ line_item.product.title | default: line_item.title | escape }}</p>
+              {%- if line_item.variant_title != blank and line_item.product.has_only_default_variant == false -%}
+                <p class="account-muted">{{ line_item.variant_title | escape }}</p>
+              {%- endif -%}
+              {%- for property in line_item.properties -%}
+                {%- assign property_first_char = property.first | slice: 0 -%}
+                {%- if property.last != blank and property_first_char != '_' -%}
+                  <p class="account-muted">{{ property.first | escape }}: {{ property.last | escape }}</p>
+                {%- endif -%}
+              {%- endfor -%}
+              {%- if line_item.sku != blank -%}
+                <p class="account-line__sku">{{ 'customer_account.sku' | t: sku: line_item.sku }}</p>
+              {%- endif -%}
+            </div>
+            <div class="account-line__price">
+              <span class="account-muted">{{ line_item.final_price | money }} × {{ line_item.quantity }}</span>
+              <strong>{{ line_item.final_line_price | money }}</strong>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </section>
+
+    <section class="account-dialog__section">
+      <h3 class="account-dialog__heading">{{ 'customer_account.price_breakdown' | t }}</h3>
+      <dl class="account-totals">
+        <div>
+          <dt>{{ 'customer_account.subtotal' | t }}</dt>
+          <dd>{{ order.line_items_subtotal_price | money }}</dd>
+        </div>
+        {%- if order.total_discounts > 0 -%}
+          <div>
+            <dt>{{ 'customer_account.discounts' | t }}</dt>
+            <dd>-{{ order.total_discounts | money }}</dd>
+          </div>
+        {%- endif -%}
+        <div>
+          <dt>
+            {{- 'customer_account.shipping' | t -}}
+            {%- if order.shipping_methods.first.title != blank %} ({{ order.shipping_methods.first.title | escape }}){% endif -%}
+          </dt>
+          <dd>{{ order.shipping_price | money }}</dd>
+        </div>
+        {%- if order.tax_price > 0 -%}
+          <div>
+            <dt>{{ 'customer_account.taxes' | t }}</dt>
+            <dd>{{ order.tax_price | money }}</dd>
+          </div>
+        {%- endif -%}
+        <div class="account-totals__total">
+          <dt>{{ 'customer_account.total' | t }}</dt>
+          <dd>{{ order.total_price | money_with_currency }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <div class="account-dialog__grid">
+      {%- if order.shipping_address -%}
+        <section class="account-box">
+          <h3 class="account-dialog__heading">{{ 'customer_account.shipping_address' | t }}</h3>
+          <address class="account-address-text">{{ order.shipping_address | format_address }}</address>
+        </section>
+      {%- endif -%}
+      {%- if order.billing_address -%}
+        <section class="account-box">
+          <h3 class="account-dialog__heading">{{ 'customer_account.billing_address' | t }}</h3>
+          <address class="account-address-text">{{ order.billing_address | format_address }}</address>
+        </section>
+      {%- endif -%}
+      {%- assign payment = order.transactions | where: 'status', 'success' | first -%}
+      {%- if payment -%}
+        <section class="account-box">
+          <h3 class="account-dialog__heading">{{ 'customer_account.payment' | t }}</h3>
+          <p class="account-box__row">
+            <span>{{ payment.gateway_display_name | escape }}</span>
+            <strong>{{ payment.amount | money_with_currency }}</strong>
+          </p>
+          <p class="account-muted">{{ payment.created_at | date: format: 'date' }}</p>
+        </section>
+      {%- endif -%}
+      {%- if order.email != blank -%}
+        <section class="account-box">
+          <h3 class="account-dialog__heading">{{ 'customer_account.contact' | t }}</h3>
+          <p>{{ order.email | escape }}</p>
+          {%- if order.phone != blank -%}
+            <p>{{ order.phone | escape }}</p>
+          {%- endif -%}
+        </section>
+      {%- endif -%}
+    </div>
+
+    <footer class="account-dialog__footer">
+      <button type="button" class="account-cta" data-order-close>{{ 'customer_account.close' | t }}</button>
+    </footer>
+  </div>
+</dialog>

@@ -32,6 +32,7 @@
   #shopify-section-{{ section.id }} .collection-tiles {
     --tiles-columns: {{ columns }};
     --tiles-gap: {{ s.gap }}px;
+    --tiles-row-gap: {{ s.row_gap | default: s.gap }}px;
     --tiles-ratio: {{ ratio }};
     --tiles-padding-top: {{ s.padding_top }}px;
     --tiles-padding-bottom: {{ s.padding_bottom }}px;
@@ -94,7 +95,7 @@
   .collection-tiles__grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr); /* one column on mobile */
-    gap: var(--tiles-gap);
+    gap: var(--tiles-row-gap) var(--tiles-gap);
     margin-block: 0;
     padding: 0;
   }
@@ -208,9 +209,20 @@
     {
       "type": "range",
       "id": "gap",
-      "label": "t:settings.gap",
+      "label": "t:settings.horizontal_gap",
       "min": 0,
       "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "row_gap",
+      "label": "t:settings.vertical_gap",
+      "info": "Space between rows when the tiles wrap, for example on mobile.",
+      "min": 0,
+      "max": 80,
       "step": 2,
       "unit": "px",
       "default": 20
