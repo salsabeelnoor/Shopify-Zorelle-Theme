@@ -156,6 +156,23 @@
     -%}
 
     {%- if render_trigger -%}
+      {%- comment -%} Zorelle: CSS anchor positioning in a scoped style block, not inline. {%- endcomment -%}
+      {% style %}
+        #cart-disclosure-anchor-{{ popover_id }} .cart-disclosure-tooltip__button {
+          anchor-name: {{ anchor_name }};
+        }
+
+        #{{ popover_id }} {
+          position-anchor: {{ anchor_name }};
+          {%- if variant_anchor_name != blank %}
+            --cart-disclosure-tooltip-popover-top: anchor(
+              {{ variant_anchor_name }} top,
+              var(--cart-disclosure-tooltip-popover-native-fallback-top)
+            );
+            --cart-disclosure-tooltip-popover-fixed-fallback-top: calc(var(--anchor-top) * 1px);
+          {%- endif %}
+        }
+      {% endstyle %}
       <anchored-popover-component
         data-hover-triggered="true"
         {% if variant_anchor_name != blank %}
@@ -173,7 +190,6 @@
           ref="trigger"
           popovertarget="{{ popover_id }}"
           on:click="/openDialog/{{ dialog_component_id }}"
-          style="anchor-name: {{ anchor_name }};"
         >
           <span class="svg-wrapper">{{- 'icon-warning.svg' | inline_asset_content -}}</span>
         </button>
@@ -183,16 +199,6 @@
           class="cart-disclosure-tooltip__popover color-custom-popover"
           ref="popover"
           popover="auto"
-          style="
-            position-anchor: {{ anchor_name }};
-            {%- if variant_anchor_name != blank -%}
-              --cart-disclosure-tooltip-popover-top: anchor(
-                {{ variant_anchor_name }} top,
-                var(--cart-disclosure-tooltip-popover-native-fallback-top)
-              );
-              --cart-disclosure-tooltip-popover-fixed-fallback-top: calc(var(--anchor-top) * 1px);
-            {%- endif -%}
-          "
         >
           <ul class="cart-disclosure-tooltip__list list-unstyled">
             {{- disclosure_rows -}}

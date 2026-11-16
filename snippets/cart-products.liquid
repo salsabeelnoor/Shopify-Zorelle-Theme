@@ -28,6 +28,49 @@
   {%- endcapture -%}
 {%- endif -%}
 
+{%- liquid
+  # Zorelle: every setting-driven value goes in this scoped style block (no inline styles).
+  # The scope is the cart products block on the cart page, or "drawer" in the cart drawer.
+  assign scope_id = block.id | default: context | default: 'cart'
+  assign cart_scope = 'cart-items-scope-' | append: scope_id
+
+  if block_settings.image_ratio == 'portrait'
+    assign media_ratio_class = 'portrait'
+  elsif block_settings.image_ratio == 'adapt'
+    assign media_ratio_class = 'adapt'
+  else
+    assign media_ratio_class = 'square'
+  endif
+
+  assign thumbnail_border_opacity = settings.cart_thumbnail_border_opacity | divided_by: 100.0
+-%}
+
+{% style %}
+  .{{ cart_scope }} {
+    {%- if settings.product_title_case == 'uppercase' %}
+      --product-title-case: uppercase;
+    {%- endif %}
+    {{ custom_style }}
+  }
+
+  .{{ cart_scope }} .cart-items {
+    {% render 'spacing-style', settings: block_settings %}
+    {%- if block_settings.gap != blank %}
+      --cart-items-gap: {{ block_settings.gap }}px;
+    {%- endif %}
+  }
+
+  .{{ cart_scope }} .cart-items__media-image {
+    --border-width: {{ settings.cart_thumbnail_border_width }}px;
+    --border-style: {{ settings.cart_thumbnail_border }};
+    --border-color: rgb(var(--color-border-rgb) / {{ thumbnail_border_opacity }});
+    --border-radius: {{ settings.cart_thumbnail_border_radius }}px;
+    {%- if settings.cart_thumbnail_border_radius > 0 %}
+      overflow: hidden;
+    {%- endif %}
+  }
+{% endstyle %}
+
 <script
   src="{{ 'component-cart-items.js' | asset_url }}"
   type="module"
@@ -48,14 +91,10 @@
 
 <div
   {{ block.shopify_attributes }}
-  class="cart-items__wrapper{% if context == 'drawer' and cart.empty? or force_empty %} cart-items__wrapper--drawer-empty{% endif %}"
+  class="cart-items__wrapper {{ cart_scope }}{% if context == 'drawer' and cart.empty? or force_empty %} cart-items__wrapper--drawer-empty{% endif %}"
   {% if context == 'drawer' and cart.empty? or force_empty %}
     data-cart-drawer-empty
   {% endif %}
-  style="
-    {%- if settings.product_title_case == 'uppercase' -%}--product-title-case: uppercase;{%- endif -%}
-    {{- custom_style -}}
-  "
 >
   {% if cart.empty? or force_empty %}
     {%- if shop.customer_accounts_enabled and customer == null -%}
@@ -88,7 +127,6 @@
     >
       <div
         class="cart-items spacing-style{% if block_settings.dividers %} cart-items--dividers{% endif %}"
-        style="{% render 'spacing-style', settings: block_settings %} --cart-items-gap:{{ block_settings.gap | append: "px" }};"
       >
         <table
           class="cart-items__table"
@@ -159,27 +197,16 @@
                   headers="productImage"
                 >
                   {% if item.image -%}
-                    {% liquid
-                      assign ratio = 1
-                      assign border_opacity = settings.cart_thumbnail_border_opacity | divided_by: 100.0
-                      assign border_override = '--border-width: [cart_thumbnail_border_width]px; --border-style: [cart_thumbnail_border_style]; --border-color: rgb(var(--color-border-rgb) / [cart_thumbnail_border_opacity]); --border-radius: [cart_thumbnail_border_radius]px;' | replace: '[cart_thumbnail_border_width]', settings.cart_thumbnail_border_width | replace: '[cart_thumbnail_border_style]', settings.cart_thumbnail_border | replace: '[cart_thumbnail_border_opacity]', border_opacity | replace: '[cart_thumbnail_border_radius]', settings.cart_thumbnail_border_radius
-
-                      if settings.cart_thumbnail_border_radius > 0
-                        assign border_override = border_override | append: ' overflow: hidden;'
-                      endif
-                      if block_settings.image_ratio == 'portrait'
-                        assign ratio = 0.8
-                      elsif block_settings.image_ratio == 'adapt'
-                        assign ratio = item.image.aspect_ratio
-                      endif
-                    %}
+                    {%- comment -%}
+                      Zorelle: ratio and thumbnail border come from classes and the scoped style
+                      block at the top (square = 1, portrait = 0.8, adapt = the image's own shape).
+                    {%- endcomment -%}
                     <a
                       href="{{ item.url }}"
-                      class="cart-items__media-container"
-                      style="--ratio:{{ ratio }};"
+                      class="cart-items__media-container cart-items__media-container--{{ media_ratio_class }}"
                     >
                       {%- liquid
-                        echo item.image | image_url: width: 250 | image_tag: class: 'cart-items__media-image border-style', style: border_override
+                        echo item.image | image_url: width: 250 | image_tag: class: 'cart-items__media-image border-style'
                       -%}
                     </a>
                   {%- endif %}
@@ -241,10 +268,8 @@
                         <dl class="cart-items__variants">
                           {%- for option in item.options_with_values -%}
                             <div class="cart-items__variant">
-                              {%- comment -%} Zorelle: the cart drawer shows the option name ("Color: Gold"). {%- endcomment -%}
-                              <dt class="{% if context == 'drawer' %}cart-items__variant-name{% else %}visually-hidden{% endif %}">
-                                {{- option.name }}:&nbsp;
-                              </dt>
+                              {%- comment -%} Zorelle: the cart drawer and cart page show the option name ("Color: Gold"). {%- endcomment -%}
+                              <dt class="cart-items__variant-name">{{- option.name }}:&nbsp;</dt>
                               <dd>
                                 {{- option.value -}}
                                 {%- if forloop.last != true %},&nbsp;{% endif -%}
@@ -629,7 +654,7 @@
   }
 
   .cart-items__details * {
-    font-size: var(--font-size--sm);
+    font-size: clamp(13px, calc(13px + 1px * (100vw - 320px) / 1600px), 14px);
   }
 
   .cart-items__details a {
@@ -723,6 +748,19 @@
   .cart-items__price-unit {
     font-size: var(--font-size--xs);
     padding-block-start: var(--padding-2xs);
+  }
+
+  .cart-items__media-container--square {
+    --ratio: 1;
+  }
+
+  .cart-items__media-container--portrait {
+    --ratio: 0.8;
+  }
+
+  /* Adapt: no fixed ratio, the image keeps its own shape from its width/height attributes. */
+  .cart-items__media-container--adapt {
+    --ratio: auto;
   }
 
   .cart-items__media-container {

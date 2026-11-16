@@ -44,7 +44,7 @@
   {% if settings.show_cart_note or settings.show_add_discount_code %}
     <div class="cart-actions">
       {% if settings.show_cart_note %}
-        <cart-note style="display: flex;">
+        <cart-note class="cart-note-component">
           {% capture cart_note_accordion_children %}
             <details
               {% if settings.cart_note_open_by_default %}
@@ -287,6 +287,11 @@
 </div>
 
 {% stylesheet %}
+  /* Zorelle: was an inline style on <cart-note>. */
+  .cart-note-component {
+    display: flex;
+  }
+
   .cart-actions {
     display: flex;
     flex-direction: column;

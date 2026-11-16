@@ -8,6 +8,13 @@
   endif
 %}
 
+{%- comment -%} Zorelle: setting-driven spacing in a scoped style block, not inline. {%- endcomment -%}
+{% style %}
+  #shopify-section-{{ section.id }} .cart-page {
+    {% render 'spacing-style', settings: section.settings %}
+  }
+{% endstyle %}
+
 {% capture cart_page_more_blocks_content %}
   <div class="cart-page__more-blocks">
     {%- content_for 'blocks' -%}
@@ -22,7 +29,6 @@
     >
       <div
         class="cart-page spacing-style{% if cart.empty? %} cart-page--empty{% endif %}"
-        style="{% render 'spacing-style', settings: section.settings %}"
       >
         <div class="cart-page__title">
           {%- content_for 'block', id: 'cart-page-title', type: '_cart-title', force_empty: true %}
@@ -41,10 +47,14 @@
   >
     <div
       class="cart-page spacing-style{% if cart.empty? %} cart-page--empty{% endif %}"
-      style="{% render 'spacing-style', settings: section.settings %}"
     >
       <div class="cart-page__title">
         {%- content_for 'block', id: 'cart-page-title', type: '_cart-title' %}
+        {%- unless cart.empty? -%}
+          <a class="cart-page__continue" href="{{ routes.all_products_collection_url }}">
+            {{- 'actions.continue_shopping' | t -}}
+          </a>
+        {%- endunless -%}
       </div>
 
       <div class="cart-page__items">
@@ -102,7 +112,7 @@
     margin-block-start: var(--margin-lg);
   }
 
-  @media screen and (min-width: 750px) {
+  @media screen and (min-width: 1025px) {
     .cart-page {
       grid-template-columns: 1fr min(50vw, var(--sidebar-width));
       grid-template-rows: min-content min-content 1fr;
@@ -133,6 +143,177 @@
   @media screen and (min-width: 1400px) {
     .cart-page {
       grid-template-columns: 1fr var(--sidebar-width);
+    }
+  }
+
+  /* ------------------------------------------------------------------
+     Zorelle cart page: title row with a continue link, roomy line items
+     with a tinted image box, option names, red sale prices, discount pills,
+     a square plum quantity box and a bold line total. Scoped to .cart-page
+     so the cart drawer keeps its own styling.
+     ------------------------------------------------------------------ */
+  .cart-page:not(.cart-page--empty) .cart-page__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding-block-end: 40px;
+    border-block-end: 1px solid var(--color-foreground);
+  }
+
+  .cart-page .cart-title h1 {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+
+  .cart-page__continue {
+    display: inline-block;
+    padding-block-end: 0.3em;
+    color: var(--color-foreground);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 1px;
+    transition: background-size 0.3s ease, color 0.3s ease;
+  }
+
+  .cart-page__continue:hover,
+  .cart-page__continue:focus-visible {
+    background-position: 100% 100%;
+    background-size: 0 1px;
+  }
+
+  .cart-page .cart-page__title + .cart-page__items {
+    margin-block-start: 0;
+  }
+
+  /* Line items */
+  .cart-page .cart-items--dividers .cart-items__table-row {
+    padding-block: 1.75rem;
+    border-block-end-color: rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+  }
+
+  .cart-page .cart-items__media-container {
+    display: block;
+    background-color: rgb(var(--color-foreground-rgb) / 0.04);
+    overflow: hidden;
+  }
+
+  .cart-page .cart-items__media-image {
+    transition: transform 0.6s var(--ease-out-quad, ease-out);
+  }
+
+  .cart-page .cart-items__media-container:hover .cart-items__media-image {
+    transform: scale(1.04);
+  }
+
+  .cart-page .cart-items__title {
+    color: var(--color-foreground);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.35;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.25em;
+    transition: text-decoration-color 0.2s ease;
+  }
+
+  .cart-page .cart-items__title:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .cart-page .cart-items__variants-wrapper {
+    margin-block-start: 0.4rem;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-70, 0.7));
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+
+  .cart-page .cart-items__variant-name,
+  .cart-page .cart-items__property dt {
+    color: var(--color-foreground);
+    font-weight: 500;
+  }
+
+  /* Automatic discount names (for example "Friday Sale") as small pills. */
+  .cart-page .cart-items__variants-wrapper ul[role='list'] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-block-start: 0.4rem;
+  }
+
+  .cart-page .cart-items__variants-wrapper ul[role='list'] li {
+    padding: 0.15rem 0.6rem;
+    border-radius: 100px;
+    background-color: var(--color-sale-price, var(--color-foreground));
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .cart-page .cart-items__unit-price-wrapper {
+    margin-block-start: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .cart-page .cart-items__unit-price-wrapper div:has(.compare-at-price) > span:not(.visually-hidden) {
+    color: var(--color-sale-price, var(--color-foreground));
+    font-weight: 600;
+  }
+
+  .cart-page .cart-items__unit-price-wrapper .compare-at-price {
+    margin-inline-start: 0.35rem;
+  }
+
+  .cart-page .quantity-selector {
+    --color-input-text: var(--color-foreground);
+
+    border: 1px solid var(--color-foreground);
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  .cart-page .cart-items__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    color: var(--color-foreground);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .cart-page .cart-items__remove:hover {
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+  }
+
+  .cart-page .cart-items__price {
+    color: var(--color-foreground);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cart-page .cart-items__media-image,
+    .cart-page__continue {
+      transition: none;
     }
   }
 {% endstylesheet %}

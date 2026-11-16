@@ -47,6 +47,16 @@
       endif
     endif
   -%}
+  {%- comment -%} Zorelle: CSS anchor names in a scoped style block, not inline. {%- endcomment -%}
+  {% style %}
+    #volume-pricing-anchor-{{ popover_id }} .volume-pricing-info__button {
+      anchor-name: {{ anchor_name }};
+    }
+
+    #{{ popover_id }} {
+      position-anchor: {{ anchor_name }};
+    }
+  {% endstyle %}
   <anchored-popover-component
     data-hover-triggered="true"
     class="volume-pricing-info"
@@ -58,7 +68,6 @@
       aria-label="{{ 'accessibility.view_pricing_info' | t }}"
       ref="trigger"
       popovertarget="{{ popover_id }}"
-      style="anchor-name: {{ anchor_name }};"
     >
       <span class="svg-wrapper">{{- 'icon-info.svg' | inline_asset_content -}}</span>
       {% if show_label %}
@@ -71,7 +80,6 @@
       class="volume-pricing-info__popover"
       ref="popover"
       popover="auto"
-      style="position-anchor: {{ anchor_name }};"
     >
       <volume-pricing-info>
         {%- if has_quantity_rules -%}

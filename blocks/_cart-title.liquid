@@ -18,9 +18,14 @@
   endif
 %}
 
+{% style %}
+  .cart-title--{{ block.id }} {
+    {% render 'spacing-style', settings: block_settings %}
+  }
+{% endstyle %}
+
 <div
-  class="cart-title spacing-style text-{{ block_settings.alignment }}{% if block_settings.text_color != blank %} color-custom-{{ block.id }}{% endif %}"
-  style="{% render 'spacing-style', settings: block_settings %}"
+  class="cart-title cart-title--{{ block.id }} spacing-style text-{{ block_settings.alignment }}{% if block_settings.text_color != blank %} color-custom-{{ block.id }}{% endif %}"
   {{ block.shopify_attributes }}
 >
   <h1 class="{{ block_settings.type_preset | default: 'h2' }}">
