@@ -19,12 +19,10 @@
         if customer
           assign drawer_account_url = account_page.url
         else
-          assign drawer_account_url = routes.account_login_url
-          if drawer_account_url contains '?'
-            assign drawer_account_url = drawer_account_url | append: '&return_to=' | append: account_page.url
-          else
-            assign drawer_account_url = drawer_account_url | append: '?return_to=' | append: account_page.url
-          endif
+          capture drawer_account_url
+            render 'account-login-url'
+          endcapture
+          assign drawer_account_url = drawer_account_url | strip
         endif
       endif
     -%}

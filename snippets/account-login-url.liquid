@@ -1,0 +1,19 @@
+{%- doc -%}
+  Outputs the sign-in URL for the storefront. When the custom "My account" page exists
+  (handle `my-account`), customers return there after signing in, using Shopify's documented
+  `/customer_authentication/login?return_to=<relative path>` route. Otherwise it falls back to
+  Shopify's default sign-in link. Capture the output to use it in an attribute.
+
+  @example
+  {%- capture login_url -%}{% render 'account-login-url' %}{%- endcapture -%}
+{%- enddoc -%}
+
+{%- liquid
+  assign account_page = pages['my-account']
+  if account_page != empty and account_page.url != blank
+    assign return_path = account_page.url | url_encode
+    echo '/customer_authentication/login?return_to=' | append: return_path
+  else
+    echo routes.account_login_url
+  endif
+-%}

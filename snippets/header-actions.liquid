@@ -91,14 +91,11 @@
         assign account_page_url = account_page.url
       endif
 
-      assign login_url = routes.account_login_url
-      if account_page_url != blank
-        if login_url contains '?'
-          assign login_url = login_url | append: '&return_to=' | append: account_page_url
-        else
-          assign login_url = login_url | append: '?return_to=' | append: account_page_url
-        endif
-      endif
+      # Sign-in that returns to My account (Shopify's /customer_authentication/login?return_to=).
+      capture login_url
+        render 'account-login-url'
+      endcapture
+      assign login_url = login_url | strip
     -%}
     <div
       class="account-button header-actions__action{% if display_style == 'text' %} account-button--text{% endif %} color-custom-popover"

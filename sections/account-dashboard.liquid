@@ -256,7 +256,8 @@
     <div class="account-signed-out">
       <h1 class="account-panel__title">{{ 'customer_account.signed_out_heading' | t }}</h1>
       <p class="account-muted">{{ 'customer_account.signed_out_text' | t }}</p>
-      <a class="account-cta" href="{{ routes.account_login_url }}">{{ 'customer_account.sign_in' | t }}</a>
+      {%- capture login_url -%}{% render 'account-login-url' %}{%- endcapture -%}
+      <a class="account-cta" href="{{ login_url | strip }}">{{ 'customer_account.sign_in' | t }}</a>
     </div>
   </div>
 {%- endif -%}
