@@ -70,6 +70,7 @@
         "section_width": "full",
         "columns": 4,
         "gap": 20,
+        "row_gap": 20,
         "aspect_ratio": "square",
         "padding_top": 40,
         "padding_bottom": 52
@@ -469,7 +470,31 @@
         "rows_gap": 32,
         "background_color": "",
         "padding_top": 52,
-        "padding_bottom": 104
+        "padding_bottom": 36
+      }
+    },
+    "reviews_wall": {
+      "type": "reviews-wall",
+      "settings": {
+        "kicker": "Customer reviews",
+        "title": "Loved by our customers",
+        "text": "<p>Explore the stories behind the Zorelle jewellery customers choose for everyday wear. From elegant finishing touches to meaningful personal pieces, discover how each design brings a little more beauty, confidence, and individuality to the moments that matter.</p>",
+        "button_label": "Shop all jewellery",
+        "button_link": "/collections/all",
+        "button_note": "",
+        "link_label": "",
+        "link_url": "",
+        "slider_position": "right",
+        "lanes": "2",
+        "slider_height": 640,
+        "speed": 60,
+        "min_rating": 4,
+        "max_reviews": 16,
+        "show_product": true,
+        "content_width": "wide",
+        "background_color": "",
+        "padding-block-start": 30,
+        "padding-block-end": 56
       }
     },
     "trust_badges_main": {
@@ -509,30 +534,6 @@
         "background_color": "{{ settings.color_palette.foreground }}",
         "padding-block-start": 28,
         "padding-block-end": 28
-      }
-    },
-    "reviews_wall": {
-      "type": "reviews-wall",
-      "settings": {
-        "kicker": "Customer reviews",
-        "title": "Loved by our customers",
-        "text": "<p>Nothing says it better than the people who wear our pieces every day. Read what our customers think about their Zorelle jewellery.</p>",
-        "button_label": "Shop all jewellery",
-        "button_link": "/collections/all",
-        "button_note": "",
-        "link_label": "",
-        "link_url": "",
-        "slider_position": "right",
-        "lanes": "2",
-        "slider_height": 640,
-        "speed": 60,
-        "min_rating": 4,
-        "max_reviews": 16,
-        "show_product": true,
-        "content_width": "wide",
-        "background_color": "",
-        "padding-block-start": 56,
-        "padding-block-end": 56
       }
     }
   },
