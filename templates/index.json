@@ -510,6 +510,30 @@
         "padding-block-start": 28,
         "padding-block-end": 28
       }
+    },
+    "reviews_wall": {
+      "type": "reviews-wall",
+      "settings": {
+        "kicker": "Customer reviews",
+        "title": "Loved by our customers",
+        "text": "<p>Nothing says it better than the people who wear our pieces every day. Read what our customers think about their Zorelle jewellery.</p>",
+        "button_label": "Shop all jewellery",
+        "button_link": "/collections/all",
+        "button_note": "",
+        "link_label": "",
+        "link_url": "",
+        "slider_position": "right",
+        "lanes": "2",
+        "slider_height": 640,
+        "speed": 60,
+        "min_rating": 4,
+        "max_reviews": 16,
+        "show_product": true,
+        "content_width": "wide",
+        "background_color": "",
+        "padding-block-start": 56,
+        "padding-block-end": 56
+      }
     }
   },
   "order": [
@@ -519,6 +543,7 @@
     "featured_products_slider_4mHTPQ",
     "product_showcase_yTgh7m",
     "product_showcase_EC7EEz",
+    "reviews_wall",
     "trust_badges_main"
   ]
 }

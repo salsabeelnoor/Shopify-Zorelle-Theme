@@ -1,0 +1,99 @@
+{%- doc -%}
+  Renders a row of 5 stars for a rating (full, half or empty stars) with a screen-reader
+  label such as "4.5 out of 5 stars". Colours come from the surrounding .review-stars
+  styles (filled stars use the accent colour).
+
+  @param {number} rating - The rating, 0 to 5 (decimals allowed).
+  @param {string} [size] - 'small' | 'medium' | 'large' (default 'medium').
+
+  @example
+  {% render 'review-stars', rating: 4.5, size: 'large' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign rating_value = rating | default: 0 | times: 1.0
+  assign rating_label = rating_value | round: 1
+  assign star_size = size | default: 'medium'
+-%}
+
+<span
+  class="review-stars review-stars--{{ star_size }}"
+  role="img"
+  aria-label="{{ 'product_reviews.rating_label' | t: rating: rating_label }}"
+>
+  {%- for i in (1..5) -%}
+    {%- liquid
+      assign half_point = i | minus: 0.5
+      if rating_value >= i
+        assign state = 'full'
+      elsif rating_value >= half_point
+        assign state = 'half'
+      else
+        assign state = 'empty'
+      endif
+    -%}
+    <span class="review-stars__star review-stars__star--{{ state }}" aria-hidden="true">
+      <svg class="review-stars__back" viewBox="0 0 24 24" focusable="false">
+        <path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52l-5.88 3.09 1.12-6.55-4.76-4.64 6.58-.96z"/>
+      </svg>
+      <svg class="review-stars__front" viewBox="0 0 24 24" focusable="false">
+        <path d="M12 2.5l2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52l-5.88 3.09 1.12-6.55-4.76-4.64 6.58-.96z"/>
+      </svg>
+    </span>
+  {%- endfor -%}
+</span>
+
+{% stylesheet %}
+  .review-stars {
+    --review-star-size: 1.125rem;
+    --review-star-color: var(--review-accent, #a56770);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    vertical-align: middle;
+  }
+
+  .review-stars--small {
+    --review-star-size: 0.9375rem;
+  }
+
+  .review-stars--large {
+    --review-star-size: 1.5rem;
+  }
+
+  .review-stars__star {
+    position: relative;
+    display: block;
+    width: var(--review-star-size);
+    height: var(--review-star-size);
+  }
+
+  .review-stars__star svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .review-stars__back {
+    fill: rgb(var(--color-foreground-rgb) / 0.15);
+  }
+
+  .review-stars__front {
+    fill: var(--review-star-color);
+  }
+
+  .review-stars__star--empty .review-stars__front {
+    display: none;
+  }
+
+  /* Half star: show the left half of the filled star (mirrored in RTL). */
+  .review-stars__star--half .review-stars__front {
+    clip-path: inset(0 50% 0 0);
+  }
+
+  [dir='rtl'] .review-stars__star--half .review-stars__front {
+    clip-path: inset(0 0 0 50%);
+  }
+{% endstylesheet %}

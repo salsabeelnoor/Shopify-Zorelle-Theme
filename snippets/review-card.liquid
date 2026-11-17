@@ -1,0 +1,241 @@
+{%- doc -%}
+  Renders one approved review (metaobject `zorelle_review`, from the Zorelle Reviews app):
+  stars, optional title, text, up to 3 photos (open in the reviews lightbox), and a footer
+  with the reviewer's initial, name, verified badge, optional product link and date.
+
+  @param {object} review - A `zorelle_review` metaobject.
+  @param {boolean} [show_product] - Show a link to the reviewed product (home page reviews wall).
+  @param {boolean} [hidden] - Render hidden (revealed by "Show more").
+
+  @example
+  {% render 'review-card', review: review, show_product: true %}
+{%- enddoc -%}
+
+{%- liquid
+  assign reviewer = review.customer_name.value | default: review.customer_name
+  assign reviewer_initial = reviewer | strip | slice: 0 | upcase
+  assign review_rating = review.rating.value.rating | default: 0
+  assign reviewed_product = review.product.value
+-%}
+
+<article class="review-card"{% if hidden %} hidden data-review-more{% endif %}>
+  <div class="review-card__top">
+    {% render 'review-stars', rating: review_rating, size: 'small' %}
+    <span class="review-card__score">{{ review_rating | round: 1 }} / 5</span>
+  </div>
+
+  {%- if review.title.value != blank -%}
+    <h3 class="review-card__title">{{ review.title.value | escape }}</h3>
+  {%- endif -%}
+
+  {%- if review.body.value != blank -%}
+    <p class="review-card__body">{{ review.body.value | escape | newline_to_br }}</p>
+  {%- endif -%}
+
+  {%- assign review_images = review.images.value -%}
+  {%- if review_images.size > 0 -%}
+    <ul class="review-card__photos list-unstyled">
+      {%- for image in review_images limit: 3 -%}
+        {%- assign photo_alt = 'product_reviews.photo_alt' | t: name: reviewer -%}
+        <li>
+          <button
+            type="button"
+            class="review-card__photo"
+            data-review-photo="{{ image | image_url: width: 1600 }}"
+            data-review-photo-alt="{{ photo_alt | escape }}"
+            aria-label="{{ 'product_reviews.open_photo' | t }}"
+          >
+            {{
+              image
+              | image_url: width: 240
+              | image_tag: widths: '120, 240', sizes: '72px', loading: 'lazy', alt: photo_alt, class: 'review-card__photo-image'
+            }}
+          </button>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- endif -%}
+
+  <footer class="review-card__footer">
+    <span class="review-card__avatar" aria-hidden="true">{{ reviewer_initial }}</span>
+    <div class="review-card__meta">
+      <p class="review-card__name">
+        {{ reviewer | escape }}
+        {%- if review.verified.value -%}
+          <span class="review-card__verified" title="{{ 'product_reviews.verified' | t }}">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.4 2.1 3.2-.3.9 3.1 2.8 1.6-1 3 1 3-2.8 1.6-.9 3.1-3.2-.3L12 22l-2.4-2.1-3.2.3-.9-3.1L2.7 15.5l1-3-1-3 2.8-1.6.9-3.1 3.2.3z"/><path d="M8.5 12.2l2.3 2.3 4.7-4.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="visually-hidden">{{ 'product_reviews.verified' | t }}</span>
+          </span>
+        {%- endif -%}
+      </p>
+      <p class="review-card__details">
+        {%- if show_product and reviewed_product -%}
+          <a class="review-card__product" href="{{ reviewed_product.url }}">{{ reviewed_product.title | escape }}</a>
+          <span aria-hidden="true"> · </span>
+        {%- endif -%}
+        {%- if review.submitted_at.value -%}
+          <time datetime="{{ review.submitted_at.value | date: '%Y-%m-%d' }}">
+            {{- review.submitted_at.value | date: format: 'date' -}}
+          </time>
+        {%- endif -%}
+      </p>
+    </div>
+  </footer>
+</article>
+
+{% stylesheet %}
+  .review-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    min-width: 0;
+    height: 100%;
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    border: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    text-align: start;
+  }
+
+  .review-card[hidden] {
+    display: none;
+  }
+
+  .review-card__top {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .review-card__score {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+
+  .review-card__title {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+
+  .review-card__body {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+
+  .review-card__photos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .review-card__photo {
+    display: block;
+    width: 4.5rem;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    background: rgb(var(--color-foreground-rgb) / 0.05);
+    cursor: zoom-in;
+  }
+
+  .review-card__photo-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s var(--ease-out-quad, ease-out);
+  }
+
+  .review-card__photo:hover .review-card__photo-image {
+    transform: scale(1.06);
+  }
+
+  .review-card__photo:focus-visible {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 2px;
+  }
+
+  .review-card__footer {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-block-start: auto;
+    padding-block-start: 1rem;
+    border-block-start: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-15, 0.15));
+  }
+
+  .review-card__avatar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font-weight: 600;
+  }
+
+  .review-card__meta {
+    min-width: 0;
+  }
+
+  .review-card__name {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .review-card__verified {
+    display: inline-flex;
+    color: var(--review-accent, #a56770);
+  }
+
+  .review-card__verified svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    fill: currentColor;
+  }
+
+  .review-card__verified svg path + path {
+    stroke: var(--color-background);
+  }
+
+  .review-card__details {
+    margin: 0.15rem 0 0;
+    font-size: 0.8125rem;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-70, 0.7));
+    overflow-wrap: anywhere;
+  }
+
+  .review-card__product {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .review-card__product:hover {
+    color: var(--color-foreground);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .review-card__photo-image {
+      transition: none;
+    }
+  }
+{% endstylesheet %}

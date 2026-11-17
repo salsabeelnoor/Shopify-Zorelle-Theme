@@ -587,11 +587,29 @@
         "padding-block-start": 48,
         "padding-block-end": 48
       }
+    },
+    "product_reviews": {
+      "type": "product-reviews",
+      "settings": {
+        "eyebrow": "",
+        "heading": "Customer reviews",
+        "intro": "",
+        "show_breakdown": true,
+        "columns": "2",
+        "initial_count": 6,
+        "box_color": "",
+        "alignment": "center",
+        "content_width": "normal",
+        "background_color": "",
+        "padding-block-start": 56,
+        "padding-block-end": 56
+      }
     }
   },
   "order": [
     "breadcrumbs",
     "main",
+    "product_reviews",
     "product_recommendations_qggXJq"
   ]
 }

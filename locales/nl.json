@@ -427,5 +427,52 @@
     "toast_added": "Adres toegevoegd",
     "toast_updated": "Adres bijgewerkt",
     "toast_deleted": "Adres verwijderd"
+  },
+  "product_reviews": {
+    "write_review": "Schrijf een review",
+    "no_reviews": "Nog geen reviews voor dit sieraad. Deel als eerste je ervaring.",
+    "show_more": "Meer reviews tonen",
+    "verified": "Geverifieerde koper",
+    "rating_label": "{{ rating }} van de 5 sterren",
+    "review_count": {
+      "one": "{{ count }} review",
+      "other": "{{ count }} reviews"
+    },
+    "based_on": {
+      "one": "Gebaseerd op {{ count }} review",
+      "other": "Gebaseerd op {{ count }} reviews"
+    },
+    "stars_row": {
+      "one": "{{ count }} ster",
+      "other": "{{ count }} sterren"
+    },
+    "photo_alt": "Foto van {{ name }}",
+    "open_photo": "Foto openen",
+    "close": "Sluiten",
+    "form_heading": "Schrijf een review",
+    "form_intro": "Vertel hoe jouw sieraad draagt en straalt in het dagelijks leven.",
+    "your_rating": "Jouw beoordeling",
+    "title_label": "Titel (optioneel)",
+    "body_label": "Jouw review",
+    "body_hint": "Minimaal 10 tekens.",
+    "photos_label": "Foto's (optioneel, maximaal 3)",
+    "add_photos": "Foto's toevoegen",
+    "remove_photo": "Foto verwijderen",
+    "submit": "Review versturen",
+    "submitting": "Versturen…",
+    "checking": "Een moment…",
+    "signed_out_title": "Log in om een review te schrijven",
+    "signed_out_text": "Alleen klanten die dit sieraad kochten kunnen een review schrijven. Log in om verder te gaan.",
+    "sign_in": "Inloggen",
+    "not_purchased": "Alleen klanten die dit sieraad kochten kunnen een review schrijven.",
+    "already_reviewed": "Je hebt dit sieraad al beoordeeld. Bedankt!",
+    "success_title": "Bedankt!",
+    "success_text": "Je review is verstuurd en verschijnt zodra hij is goedgekeurd.",
+    "error_rating": "Kies een aantal sterren.",
+    "error_body": "Schrijf minimaal 10 tekens.",
+    "error_title": "De titel mag maximaal 120 tekens zijn.",
+    "error_photos": "Foto's moeten JPG, PNG of WebP zijn, maximaal 5 MB per stuk.",
+    "error_rate_limited": "Je hebt vandaag veel reviews verstuurd. Probeer het morgen opnieuw.",
+    "error_generic": "Er ging iets mis. Probeer het opnieuw."
   }
 }

@@ -455,5 +455,52 @@
     "toast_added": "Address added",
     "toast_updated": "Address updated",
     "toast_deleted": "Address deleted"
+  },
+  "product_reviews": {
+    "write_review": "Write a review",
+    "no_reviews": "No reviews yet for this piece. Share the first story.",
+    "show_more": "Show more reviews",
+    "verified": "Verified buyer",
+    "rating_label": "{{ rating }} out of 5 stars",
+    "review_count": {
+      "one": "{{ count }} review",
+      "other": "{{ count }} reviews"
+    },
+    "based_on": {
+      "one": "Based on {{ count }} review",
+      "other": "Based on {{ count }} reviews"
+    },
+    "stars_row": {
+      "one": "{{ count }} star",
+      "other": "{{ count }} stars"
+    },
+    "photo_alt": "Photo from {{ name }}",
+    "open_photo": "Open photo",
+    "close": "Close",
+    "form_heading": "Write a review",
+    "form_intro": "Share how your piece wears and shines in everyday life.",
+    "your_rating": "Your rating",
+    "title_label": "Review title (optional)",
+    "body_label": "Your review",
+    "body_hint": "At least 10 characters.",
+    "photos_label": "Photos (optional, up to 3)",
+    "add_photos": "Add photos",
+    "remove_photo": "Remove photo",
+    "submit": "Submit review",
+    "submitting": "Sending…",
+    "checking": "One moment…",
+    "signed_out_title": "Sign in to write a review",
+    "signed_out_text": "Only customers who bought this piece can review it. Sign in to continue.",
+    "sign_in": "Sign in",
+    "not_purchased": "Reviews can only be written by customers who bought this piece.",
+    "already_reviewed": "You've already reviewed this piece. Thank you!",
+    "success_title": "Thank you!",
+    "success_text": "Your review was sent and will appear once it's approved.",
+    "error_rating": "Please choose a star rating.",
+    "error_body": "Please write at least 10 characters.",
+    "error_title": "The title can be up to 120 characters.",
+    "error_photos": "Photos must be JPG, PNG or WebP, up to 5 MB each.",
+    "error_rate_limited": "You've sent a lot of reviews today. Please try again tomorrow.",
+    "error_generic": "Something went wrong. Please try again."
   }
 }

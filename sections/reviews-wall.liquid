@@ -1,0 +1,531 @@
+{% comment %}
+  Section contract.
+  "Reviews wall": a text column (small text, heading, text, button and link) next to a
+  slow, endless vertical slider (moved by assets/product-reviews.js) of approved reviews from the Zorelle Reviews app (all
+  published `zorelle_review` metaobjects). The slider sits left or right of the text, shows
+  1 or 2 columns of cards moving in opposite directions, pauses on hover and follows the
+  mouse wheel over a column. Few reviews are repeated so the loop stays
+  full. From 1024px down the text sits above the slider; phones show one column. Reduced motion shows a scrollable list.
+  @example
+  <!-- Add "Reviews wall" to the home page. -->
+{% endcomment %}
+
+{%- liquid
+  assign s = section.settings
+  assign min_rating = s.min_rating | default: 4 | times: 1.0
+  assign max_reviews = s.max_reviews | default: 16
+
+  assign shown_count = 0
+  assign cards = ''
+  assign cards_hidden = ''
+  for review in metaobjects.zorelle_review.values
+    if shown_count >= max_reviews
+      break
+    endif
+    # The rating's value comes back as text ("3.0"), so convert it before comparing.
+    assign review_rating = review.rating.value.rating | default: 0 | times: 1.0
+    if review_rating < min_rating
+      continue
+    endif
+    assign shown_count = shown_count | plus: 1
+    capture card
+      render 'review-card', review: review, show_product: s.show_product
+    endcapture
+    assign cards = cards | append: '<li class="reviews-wall__item">' | append: card | append: '</li>'
+    assign cards_hidden = cards_hidden | append: '<li class="reviews-wall__item" aria-hidden="true" data-reviews-wall-repeat>' | append: card | append: '</li>'
+  endfor
+
+  # Repeat the cards until a column has at least 5, so it is always taller than its window.
+  if shown_count > 0
+    assign repeats = 5 | plus: shown_count | minus: 1 | divided_by: shown_count
+  endif
+-%}
+
+{%- if shown_count > 0 -%}
+  {% style %}
+    #shopify-section-{{ section.id }} {
+      --review-accent: {{ settings.color_palette.color1 | default: '#a56770' }};
+      --reviews-wall-height: {{ s.slider_height }}px;
+      --reviews-wall-duration: {{ s.speed }}s;
+    }
+  {% endstyle %}
+
+  {%- capture body -%}
+    <reviews-wall class="reviews-wall reviews-wall--slider-{{ s.slider_position }}">
+      <div class="reviews-wall__text">
+        {%- if s.kicker != blank -%}
+          <p class="reviews-wall__kicker">{{ s.kicker | escape }}</p>
+        {%- endif -%}
+        {%- if s.title != blank -%}
+          <h2 class="reviews-wall__title">{{ s.title | escape }}</h2>
+        {%- endif -%}
+        {%- if s.text != blank -%}
+          <div class="reviews-wall__body content-section__rich">{{ s.text }}</div>
+        {%- endif -%}
+
+        {%- if s.button_label != blank and s.button_link != blank -%}
+          <div class="reviews-wall__cta">
+            <a class="content-section__button" href="{{ s.button_link }}">{{ s.button_label | escape }}</a>
+            {%- if s.button_note != blank -%}
+              <p class="reviews-wall__note">{{ s.button_note | escape }}</p>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if s.link_label != blank and s.link_url != blank -%}
+          <a class="reviews-wall__link" href="{{ s.link_url }}">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="11"/><path d="M10 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>{{ s.link_label | escape }}</span>
+          </a>
+        {%- endif -%}
+      </div>
+
+      {%- comment -%}
+        Each column is a track of the cards (plus repeats) followed by an identical copy;
+        moving it by 50% loops seamlessly. Column 2 shows the same reviews moving the other
+        way, half a loop apart. Repeats, copies and column 2 are hidden from screen readers.
+      {%- endcomment -%}
+      <div class="reviews-wall__viewport" tabindex="0" aria-label="{{ s.title | default: section.name | escape }}">
+        {%- liquid
+          assign column_count = 1
+          if s.lanes == '2'
+            assign column_count = 2
+          endif
+        -%}
+        {%- for column in (1..column_count) -%}
+          <div class="reviews-wall__track"{% if column == 2 %} aria-hidden="true" data-reviews-wall-repeat{% endif %}>
+            <ul class="reviews-wall__group list-unstyled">
+              {%- if column == 1 -%}{{ cards }}{%- else -%}{{ cards_hidden }}{%- endif -%}
+              {%- for i in (2..repeats) -%}{{ cards_hidden }}{%- endfor -%}
+            </ul>
+            <ul class="reviews-wall__group list-unstyled" aria-hidden="true" data-reviews-wall-copy>
+              {%- for i in (1..repeats) -%}{{ cards_hidden }}{%- endfor -%}
+            </ul>
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {% render 'review-lightbox' %}
+    </reviews-wall>
+  {%- endcapture -%}
+
+  <script src="{{ 'product-reviews.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
+  {% render 'content-section',
+    settings: s,
+    section_id: section.id,
+    children: body,
+    modifier: 'content-section--reviews-wall',
+    settings_tint: settings.color_palette.color2,
+    settings_accent: settings.color_palette.color1
+  %}
+{%- elsif request.design_mode -%}
+  <div class="section section--page-width reviews-wall__placeholder">
+    <p>{{ 'product_reviews.no_reviews' | t }}</p>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .reviews-wall {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 5rem);
+    text-align: start;
+  }
+
+  .reviews-wall--slider-left {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .reviews-wall--slider-left .reviews-wall__viewport {
+    order: -1;
+  }
+
+  /* Text column */
+  .reviews-wall__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.25rem;
+    min-width: 0;
+  }
+
+  .reviews-wall__kicker {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  .reviews-wall__title {
+    margin: 0;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight);
+    font-size: clamp(1.75rem, 1.3rem + 1.8vw, 2.75rem);
+    line-height: 1.1;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+
+  .reviews-wall__body {
+    font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+    line-height: 1.7;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-80, 0.8));
+  }
+
+  .reviews-wall__cta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-block-start: 0.5rem;
+  }
+
+  .reviews-wall__note {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-70, 0.7));
+  }
+
+  .reviews-wall__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    text-decoration: none;
+  }
+
+  .reviews-wall__link svg {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    fill: var(--review-accent);
+    color: var(--color-background);
+    transition: transform 0.2s ease;
+  }
+
+  .reviews-wall__link span {
+    background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1px;
+    transition: background-size 0.3s ease;
+  }
+
+  .reviews-wall__link:hover span {
+    background-size: 100% 1px;
+  }
+
+  .reviews-wall__link:hover svg {
+    transform: translateX(3px);
+  }
+
+  [dir='rtl'] .reviews-wall__link svg {
+    transform: scaleX(-1);
+  }
+
+  [dir='rtl'] .reviews-wall__link:hover svg {
+    transform: scaleX(-1) translateX(3px);
+  }
+
+  /* Slider */
+  .reviews-wall__viewport {
+    --reviews-wall-gap: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+
+    position: relative;
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    column-gap: var(--reviews-wall-gap);
+    min-width: 0;
+    height: var(--reviews-wall-height, 640px);
+    overflow: hidden;
+  }
+
+  /* Static fades at the top and bottom (cheaper than masking the moving track). */
+  .reviews-wall__viewport::before,
+  .reviews-wall__viewport::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    z-index: 1;
+    height: 15%;
+    pointer-events: none;
+  }
+
+  .reviews-wall__viewport::before {
+    inset-block-start: 0;
+    background: linear-gradient(var(--color-background), transparent);
+  }
+
+  .reviews-wall__viewport::after {
+    inset-block-end: 0;
+    background: linear-gradient(transparent, var(--color-background));
+  }
+
+  .reviews-wall__viewport:focus-visible {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 4px;
+  }
+
+  /* Moved by assets/product-reviews.js (auto movement, pause on hover, mouse wheel). */
+  .reviews-wall__track {
+    min-width: 0;
+    will-change: transform;
+  }
+
+  /* Spacing lives on the items (no gap) so both halves of a track are exactly equal. */
+  .reviews-wall__group {
+    margin: 0;
+    padding: 0;
+  }
+
+  .reviews-wall__item {
+    padding-block-end: var(--reviews-wall-gap);
+  }
+
+  .reviews-wall .review-card {
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgb(var(--color-foreground-rgb) / 0.07);
+  }
+
+  .reviews-wall .review-card__body {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
+  }
+
+  /* Tablets and phones: text first, slider below. */
+  @media screen and (max-width: 1024px) {
+    .reviews-wall,
+    .reviews-wall--slider-left {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .reviews-wall--slider-left .reviews-wall__viewport {
+      order: 0;
+    }
+
+    .reviews-wall__viewport {
+      height: min(var(--reviews-wall-height, 640px), 34rem);
+    }
+  }
+
+  /* Phones: one column (it holds every review). */
+  @media screen and (max-width: 749px) {
+    .reviews-wall__track + .reviews-wall__track {
+      display: none;
+    }
+  }
+
+  /* Reduced motion: no movement, a plain scrollable list without the repeats. */
+  @media (prefers-reduced-motion: reduce) {
+    .reviews-wall__viewport {
+      overflow-y: auto;
+    }
+
+    .reviews-wall__viewport::before,
+    .reviews-wall__viewport::after {
+      display: none;
+    }
+
+    [data-reviews-wall-repeat],
+    [data-reviews-wall-copy] {
+      display: none;
+    }
+
+    .reviews-wall__link svg,
+    .reviews-wall__link span {
+      transition: none;
+    }
+  }
+
+  .reviews-wall__placeholder {
+    padding-block: 2rem;
+    text-align: center;
+    opacity: 0.7;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Reviews wall",
+  "tag": "section",
+  "class": "section-reviews-wall",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Text next to a slowly moving column of approved reviews from the Zorelle Reviews app."
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "kicker",
+      "label": "Small text above heading",
+      "default": "Customer reviews"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "t:settings.heading",
+      "default": "Loved by our customers"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Nothing says it better than the people who wear our pieces every day. Read what our customers think about their Zorelle jewellery.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Shop all jewellery"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link",
+      "default": "/collections/all"
+    },
+    {
+      "type": "text",
+      "id": "button_note",
+      "label": "Small text under button"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Extra link label"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Extra link"
+    },
+    {
+      "type": "header",
+      "content": "Review slider"
+    },
+    {
+      "type": "select",
+      "id": "slider_position",
+      "label": "Slider position",
+      "options": [
+        { "value": "right", "label": "t:options.right" },
+        { "value": "left", "label": "t:options.left" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "select",
+      "id": "lanes",
+      "label": "Review columns on desktop",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "range",
+      "id": "slider_height",
+      "label": "Slider height",
+      "min": 400,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 640
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "Time for one full loop",
+      "info": "Higher is slower.",
+      "min": 20,
+      "max": 150,
+      "step": 5,
+      "unit": "s",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "min_rating",
+      "label": "Minimum star rating",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "max_reviews",
+      "label": "Maximum reviews",
+      "min": 3,
+      "max": 30,
+      "step": 1,
+      "default": 16
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product",
+      "label": "Show product name",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:content.layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "normal", "label": "t:options.normal" },
+        { "value": "wide", "label": "Full page width" }
+      ],
+      "default": "wide"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Section background"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    }
+  ],
+  "presets": [
+    {
+      "name": "Reviews wall"
+    }
+  ]
+}
+{% endschema %}
