@@ -261,16 +261,12 @@
   .product-grid.product-grid--grid:not([product-grid-view='zoom-out']) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
 
-    @media screen and (max-width: 1200px) {
+    @media screen and (max-width: 1024px) {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    @media screen and (max-width: 1024px) {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
     @media screen and (max-width: 768px) {
-      grid-template-columns: minmax(0, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 

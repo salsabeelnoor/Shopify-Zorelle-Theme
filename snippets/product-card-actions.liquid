@@ -176,7 +176,7 @@
   */
   .card-actions {
     --card-actions-inset: 0.75rem;
-    --card-actions-icon-size: clamp(40px, calc(40px + 4px * (100vw - 320px) / 1600px), 44px);
+    --card-actions-icon-size: clamp(30px, calc(30px + 14px * (100vw - 320px) / 1600px), 44px);
 
     /* Page-level palette colours: product cards can set --color-background to
        transparent, which made the button see-through. */
@@ -503,6 +503,13 @@
     /* The image slider arrows would sit on top of the open popover. */
     .card-gallery:has(.card-actions[open]) slideshow-arrows {
       visibility: hidden;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .card-actions__icon svg {
+      width: 20px;
+      height: 20px;
     }
   }
 
