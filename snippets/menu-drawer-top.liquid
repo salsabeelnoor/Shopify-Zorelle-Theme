@@ -31,7 +31,14 @@
       class="menu-drawer__header-icon menu-drawer__account-link focus-inset"
       aria-label="{{ 'accessibility.account' | t }}"
     >
-      <span class="svg-wrapper" aria-hidden="true">{{- 'icon-account.svg' | inline_asset_content -}}</span>
+      {%- if customer -%}
+        {%- comment -%} Signed in: the customer's initial, matching the header avatar. {%- endcomment -%}
+        <span class="menu-drawer__avatar" aria-hidden="true">
+          {{- customer.first_name | default: customer.email | slice: 0 | upcase -}}
+        </span>
+      {%- else -%}
+        <span class="svg-wrapper" aria-hidden="true">{{- 'icon-account.svg' | inline_asset_content -}}</span>
+      {%- endif -%}
     </a>
   {%- else -%}
     <span class="menu-drawer__header-icon" aria-hidden="true"></span>
@@ -114,6 +121,20 @@
   .menu-drawer__header-icon svg {
     width: 1.375rem;
     height: 1.375rem;
+  }
+
+  .menu-drawer__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1;
   }
 
   .menu-drawer__logo {

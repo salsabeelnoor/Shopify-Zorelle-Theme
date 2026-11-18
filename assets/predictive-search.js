@@ -233,8 +233,10 @@ class PredictiveSearchComponent extends Component {
           event.preventDefault();
           this.#currentItem?.querySelector('a')?.click();
         } else {
+          event.preventDefault();
           const searchUrl = new URL(Theme.routes.search_url, location.origin);
-          searchUrl.searchParams.set('q', this.refs.searchInput.value);
+          searchUrl.searchParams.set('q', this.refs.searchInput.value.trim());
+          searchUrl.searchParams.set('options[prefix]', 'last');
           window.location.href = searchUrl.toString();
         }
         break;
@@ -284,8 +286,7 @@ class PredictiveSearchComponent extends Component {
    * Reset the current selection index and close results if the search term is empty.
    */
   search = debounce((event) => {
-    // If the input is not a text input (like using the Escape key), don't search
-    if (!event.inputType) return;
+    if (event?.key === 'Escape') return;
 
     const searchTerm = this.refs.searchInput.value.trim();
     this.#currentIndex = -1;
@@ -318,7 +319,11 @@ class PredictiveSearchComponent extends Component {
 
     const url = new URL(Theme.routes.predictive_search_url, location.origin);
     url.searchParams.set('q', searchTerm);
+    url.searchParams.set('resources[type]', 'product,collection,page,article,query');
     url.searchParams.set('resources[limit_scope]', 'each');
+    url.searchParams.set('resources[options][unavailable_products]', 'last');
+    url.searchParams.set('resources[options][fields]', 'author,body,product_type,tag,title,variants.barcode,variants.sku,variants.title,vendor');
+    url.searchParams.set('resources[options][prefix]', 'last');
 
     const { predictiveSearchResults } = this.refs;
 
