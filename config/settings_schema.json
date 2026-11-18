@@ -2261,5 +2261,20 @@
         "default": "equal-width-buttons"
       }
     ]
+  },
+  {
+    "name": "Product reviews",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Connects the review form to the Zorelle reviews API on Netlify. The signing secret is NOT a theme setting: it lives in the shop metafield zorelle_reviews.signing_secret (Settings > Custom data > Shop) so it never ends up in theme files."
+      },
+      {
+        "type": "text",
+        "id": "reviews_api_url",
+        "label": "Reviews API address",
+        "info": "Your Netlify site address, for example https://zorelle-reviews-api.netlify.app"
+      }
+    ]
   }
 ]

@@ -1,13 +1,14 @@
 /**
- * Zorelle reviews (theme side of the Zorelle Reviews app).
+ * Zorelle reviews (theme side of the Zorelle reviews API on Netlify).
  *
  * <product-reviews>  Product page: "Show more", photo lightbox and the "Write a review" popup.
- *                    The popup asks /apps/reviews/eligibility which panel to show, then posts
- *                    the form (with photos downscaled in the browser) to /apps/reviews/submit.
+ *                    The popup asks {api}/api/eligibility which panel to show, then posts the
+ *                    form (with photos downscaled in the browser) to {api}/api/submit. Both
+ *                    requests carry the customer ID, time and HMAC signature that Liquid put on
+ *                    the element; the API rejects anything not signed by the theme.
  * <reviews-wall>     Home page reviews wall: moving columns, mouse wheel control and photo lightbox.
  */
 
-const PROXY = '/apps/reviews';
 const MAX_PHOTOS = 3;
 const MAX_PHOTO_SIDE = 2000;
 const PHOTO_QUALITY = 0.85;
@@ -195,24 +196,62 @@ class ProductReviews extends HTMLElement {
     lightbox.showModal();
   }
 
+  /**
+   * Full URL of a reviews API endpoint, from the theme setting "Reviews API address".
+   * @param {string} path
+   */
+  #apiUrl(path) {
+    const base = (this.dataset.api ?? '').trim().replace(/\/+$/, '');
+    if (!base) {
+      console.warn('Reviews: set "Reviews API address" in Theme settings > Product reviews.');
+      return null;
+    }
+    try {
+      const url = new URL(`${base}${path}`);
+      // The API runs on its own site (e.g. Netlify), never on the store's own address.
+      if (url.origin === window.location.origin || url.search) throw new Error('store address');
+      return url;
+    } catch {
+      console.warn(`Reviews: "Reviews API address" must be the API site only (e.g. https://name.netlify.app), not "${base}".`);
+      return null;
+    }
+  }
+
+  /** The Liquid-made proof of the signed-in customer, or null when it isn't on the page. */
+  get #signature() {
+    const { customerId, signatureTime, signature } = this.dataset;
+    return customerId && signatureTime && signature
+      ? { customer_id: customerId, ts: signatureTime, sig: signature }
+      : null;
+  }
+
   /** @param {HTMLElement} opener */
   async #openForm(opener) {
     const dialog = this.#dialog;
     if (!dialog) return;
 
     this.#opener = opener;
-    this.#showPanel('loading');
     dialog.showModal();
 
+    // Signed-out visitors need no request: Liquid already knows they aren't signed in.
+    if (!this.hasAttribute('data-signed-in')) return this.#showPanel('signed_out');
+
+    const url = this.#apiUrl('/api/eligibility');
+    const signature = this.#signature;
+    // API address or signing secret not set up yet.
+    if (!signature) console.warn('Reviews: no signature on the page. Run "npm run setup" in zorelle-reviews-lite.');
+    if (!url || !signature) return this.#showPanel('unavailable');
+
+    this.#showPanel('loading');
     this.#request?.abort();
     this.#request = new AbortController();
 
     try {
-      const url = new URL(`${PROXY}/eligibility`, window.location.origin);
       url.searchParams.set('product_id', this.dataset.productId ?? '');
+      for (const [key, value] of Object.entries(signature)) url.searchParams.set(key, value);
       const response = await fetch(url, {
         headers: { Accept: 'application/json' },
-        credentials: 'same-origin',
+        credentials: 'omit',
         signal: this.#request.signal,
       });
       if (!response.ok) throw new Error(String(response.status));
@@ -224,8 +263,8 @@ class ProductReviews extends HTMLElement {
       else this.#showPanel('not_purchased');
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return;
-      // The app can't be reached: show the form, the submit call reports the real problem.
-      this.#showPanel('form');
+      console.warn('Reviews: the reviews API could not be reached.', error);
+      this.#showPanel('unavailable');
     }
   }
 
@@ -263,11 +302,16 @@ class ProductReviews extends HTMLElement {
       return this.#showError('invalid_body', form.querySelector('[name="body"]'));
     }
 
+    const url = this.#apiUrl('/api/submit');
+    const signature = this.#signature;
+    if (!url || !signature) return this.#showPanel('unavailable');
+
     this.#showError('');
     this.#setSubmitting(true);
 
     try {
       const payload = new FormData();
+      for (const [key, value] of Object.entries(signature)) payload.set(key, value);
       payload.set('product_id', this.dataset.productId ?? '');
       payload.set('rating', String(rating));
       payload.set('title', title);
@@ -279,10 +323,10 @@ class ProductReviews extends HTMLElement {
         payload.append('photos', blob, `review-photo-${index + 1}.${extension}`);
       }
 
-      const response = await fetch(`${PROXY}/submit`, {
+      const response = await fetch(url, {
         method: 'POST',
         body: payload,
-        credentials: 'same-origin',
+        credentials: 'omit',
         headers: { Accept: 'application/json' },
       });
       const result = await response.json().catch(() => ({ ok: false, error: 'generic' }));

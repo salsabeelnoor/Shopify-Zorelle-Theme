@@ -1,11 +1,14 @@
 {% comment %}
   Section contract.
-  Product page "Customer reviews": the product's approved reviews from the Zorelle Reviews
-  app (product metafields reviews.rating, reviews.rating_count and zorelle_reviews.list of
-  `zorelle_review` metaobjects). Shows the average, a star breakdown, review cards with
-  photos and "Show more", or an empty state. "Write a review" opens a popup that checks
-  /apps/reviews/eligibility (verified buyers only) and posts to /apps/reviews/submit
-  (assets/product-reviews.js). New reviews appear once approved in the app.
+  Product page "Customer reviews": the product's published reviews (product metafields
+  reviews.rating, reviews.rating_count and zorelle_reviews.list of `zorelle_review`
+  metaobjects, kept up to date hourly by the reviews API). Shows the average, a star
+  breakdown, review cards with photos and "Show more", or an empty state. "Write a review"
+  opens a popup that asks the reviews API (theme setting "Reviews API address") whether the
+  signed-in customer bought the product, then posts the review there
+  (assets/product-reviews.js). Requests carry an HMAC signature made in Liquid with the shop
+  metafield zorelle_reviews.signing_secret. New reviews are drafts until set to Active in
+  Content > Metaobjects.
   @example
   <!-- Add "Product reviews" to the product template below the product information. -->
 {% endcomment %}
@@ -22,7 +25,10 @@
   assign count_3 = 0
   assign count_4 = 0
   assign count_5 = 0
+  assign listed_total = 0
+  # `reviews` only holds published reviews: the storefront skips drafts in the list.
   for review in reviews
+    assign listed_total = review.rating.value.rating | times: 1.0 | plus: listed_total
     assign stars = review.rating.value.rating | round
     case stars
       when 1
@@ -39,10 +45,30 @@
   endfor
   assign listed_count = reviews.size | default: 0
 
+  # A product's first review shows as soon as it's set to Active, before the hourly job has
+  # written the average and count: use the published reviews themselves until then.
+  # Later reviews also show straight away; the job updates the average and count.
+  if review_count == 0 and listed_count > 0
+    assign review_count = listed_count
+    assign average = listed_total | divided_by: listed_count
+  endif
+
   capture sign_in_url
     echo '/customer_authentication/login?return_to='
     echo product.url | append: '#ProductReviews-' | append: section.id | url_encode
   endcapture
+
+  # Proof for the reviews API that Shopify rendered this page for this signed-in customer and
+  # product. Signed here on Shopify's servers with a secret kept in a shop metafield
+  # (Settings > Custom data > Shop, storefront access off), never in theme files or the page.
+  assign reviews_api = settings.reviews_api_url | strip
+  assign review_secret = shop.metafields.zorelle_reviews.signing_secret.value
+  assign review_signature = ''
+  if customer and review_secret != blank
+    assign review_time = 'now' | date: '%s'
+    assign review_signature = customer.id | append: ':' | append: product.id | append: ':' | append: review_time | hmac_sha256: review_secret
+  endif
+  assign review_secret = nil
 -%}
 
 {% style %}
@@ -56,6 +82,13 @@
     class="product-reviews"
     id="ProductReviews-{{ section.id }}"
     data-product-id="{{ product.id }}"
+    data-api="{{ reviews_api | escape }}"
+    {%- if customer %} data-signed-in{% endif %}
+    {%- if review_signature != blank %}
+      data-customer-id="{{ customer.id }}"
+      data-signature-time="{{ review_time }}"
+      data-signature="{{ review_signature }}"
+    {%- endif %}
   >
     {%- if review_count > 0 -%}
       <div class="product-reviews__summary">
@@ -160,6 +193,11 @@
 
         <div class="review-dialog__panel" data-review-panel="not_purchased" hidden>
           <p class="review-dialog__message">{{ 'product_reviews.not_purchased' | t }}</p>
+        </div>
+
+        <div class="review-dialog__panel" data-review-panel="unavailable" hidden>
+          <h3 class="review-dialog__subtitle">{{ 'product_reviews.unavailable_title' | t }}</h3>
+          <p class="review-dialog__message">{{ 'product_reviews.unavailable_text' | t }}</p>
         </div>
 
         <div class="review-dialog__panel" data-review-panel="already_reviewed" hidden>
@@ -756,7 +794,7 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "Shows this product's approved reviews from the Zorelle Reviews app. Approve new reviews in the app."
+      "content": "Shows this product's published reviews. New reviews arrive as drafts: publish them by setting the review to Active in Content > Metaobjects > Zorelle review. Ratings update within the hour."
     },
     {
       "type": "text",

@@ -473,6 +473,9 @@
     "error_title": "De titel mag maximaal 120 tekens zijn.",
     "error_photos": "Foto's moeten JPG, PNG of WebP zijn, maximaal 5 MB per stuk.",
     "error_rate_limited": "Je hebt vandaag veel reviews verstuurd. Probeer het morgen opnieuw.",
-    "error_generic": "Er ging iets mis. Probeer het opnieuw."
+    "error_generic": "Er ging iets mis. Probeer het opnieuw.",
+    "unavailable_title": "Beoordelingen kunnen nu niet worden geopend",
+    "unavailable_text": "Vernieuw de pagina en probeer het over een moment opnieuw. Blijft het gebeuren? Neem contact met ons op, we helpen je graag.",
+    "home_slider_empty": "Zet in Content > Metaobjects > Zorelle review \"Show in home slider\" aan voor de beoordelingen die hier moeten verschijnen."
   }
 }

@@ -488,7 +488,6 @@
         "lanes": "2",
         "slider_height": 640,
         "speed": 60,
-        "min_rating": 4,
         "max_reviews": 16,
         "show_product": true,
         "content_width": "wide",

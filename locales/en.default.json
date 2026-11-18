@@ -492,6 +492,9 @@
     "error_title": "The title can be up to 120 characters.",
     "error_photos": "Photos must be JPG, PNG or WebP, up to 5 MB each.",
     "error_rate_limited": "You've sent a lot of reviews today. Please try again tomorrow.",
-    "error_generic": "Something went wrong. Please try again."
+    "error_generic": "Something went wrong. Please try again.",
+    "unavailable_title": "We can't open reviews right now",
+    "unavailable_text": "Please refresh the page and try again in a moment. If it keeps happening, contact us and we'll be happy to help.",
+    "home_slider_empty": "In Content > Metaobjects > Zorelle review, turn on \"Show in home slider\" for the reviews to show here."
   }
 }

@@ -1,8 +1,8 @@
 {% comment %}
   Section contract.
   "Reviews wall": a text column (small text, heading, text, button and link) next to a
-  slow, endless vertical slider (moved by assets/product-reviews.js) of approved reviews from the Zorelle Reviews app (all
-  published `zorelle_review` metaobjects). The slider sits left or right of the text, shows
+  slow, endless vertical slider (moved by assets/product-reviews.js) of published reviews (all
+  reviews with the "Show in home slider" toggle on). The slider sits left or right of the text, shows
   1 or 2 columns of cards moving in opposite directions, pauses on hover and follows the
   mouse wheel over a column. Few reviews are repeated so the loop stays
   full. From 1024px down the text sits above the slider; phones show one column. Reduced motion shows a scrollable list.
@@ -12,21 +12,23 @@
 
 {%- liquid
   assign s = section.settings
-  assign min_rating = s.min_rating | default: 4 | times: 1.0
   assign max_reviews = s.max_reviews | default: 16
 
+  # Only reviews with "Show in home slider" turned on (Content > Metaobjects > Zorelle review).
+  # They come from the short shop list zorelle_reviews.home that the reviews API keeps
+  # (reviews with the toggle on plus the newest ones), so the page never loads every review.
+  # The toggle is checked here, so switching it on or off shows straight away; drafts are
+  # skipped by the storefront automatically.
   assign shown_count = 0
   assign cards = ''
   assign cards_hidden = ''
-  for review in metaobjects.zorelle_review.values
+  for review in shop.metafields.zorelle_reviews.home.value
     if shown_count >= max_reviews
       break
     endif
-    # The rating's value comes back as text ("3.0"), so convert it before comparing.
-    assign review_rating = review.rating.value.rating | default: 0 | times: 1.0
-    if review_rating < min_rating
+    unless review.show_on_home.value
       continue
-    endif
+    endunless
     assign shown_count = shown_count | plus: 1
     capture card
       render 'review-card', review: review, show_product: s.show_product
@@ -121,7 +123,7 @@
   %}
 {%- elsif request.design_mode -%}
   <div class="section section--page-width reviews-wall__placeholder">
-    <p>{{ 'product_reviews.no_reviews' | t }}</p>
+    <p>{{ 'product_reviews.home_slider_empty' | t }}</p>
   </div>
 {%- endif -%}
 
@@ -357,7 +359,7 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "Text next to a slowly moving column of approved reviews from the Zorelle Reviews app."
+      "content": "Text next to a slowly moving column of published reviews (Content > Metaobjects > Zorelle review)."
     },
     {
       "type": "header",
@@ -454,13 +456,8 @@
       "default": 60
     },
     {
-      "type": "range",
-      "id": "min_rating",
-      "label": "Minimum star rating",
-      "min": 1,
-      "max": 5,
-      "step": 1,
-      "default": 4
+      "type": "paragraph",
+      "content": "Shows reviews with \"Show in home slider\" turned on. Turn it on per review in Content > Metaobjects > Zorelle review."
     },
     {
       "type": "range",

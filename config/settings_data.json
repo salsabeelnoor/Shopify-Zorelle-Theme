@@ -117,6 +117,7 @@
     "variant_button_border_width": 1,
     "variant_button_radius": 0,
     "variant_button_width": "equal-width-buttons",
+    "reviews_api_url": "https://zorelle-reviews-api.netlify.app",
     "sections": {
       "password-footer": {
         "type": "password-footer",

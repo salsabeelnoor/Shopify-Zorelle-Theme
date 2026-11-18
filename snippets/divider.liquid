@@ -1,16 +1,16 @@
 {%- doc -%}
   Renders a divider line, used to visually separate content.
 
+  Reads these keys from `settings`:
+  - alignment_horizontal: 'left', 'center' or 'right' (defaults to 'center')
+  - thickness: line thickness in pixels
+  - corner_radius: 'rounded' for rounded line ends
+  - width_percent: line width as a percentage of its container
+  - divider_color: line colour (falls back to `--color-border` when blank)
+  plus the spacing settings read by the spacing-style snippet.
+
   @param {string} id - A unique ID for the divider, linking it to a block or section.
-  @param {object} settings - An object containing style settings for the divider.
-
-  @param {string} [settings.alignment_horizontal] - The horizontal alignment of the divider ('left', 'center', or
-  'right'). Defaults to 'center'.
-  @param {number} [settings.thickness] - The thickness of the divider line in pixels.
-  @param {string} [settings.corner_radius] - The corner radius of the divider, e.g., 'rounded'.
-  @param {number} [settings.width_percent] - The width of the divider as a percentage of its container.
-  @param {string} [settings.divider_color] - The color of the divider line. Falls back to `--color-border` when blank.
-
+  @param {object} settings - Style settings for the divider (keys listed above).
   @param {boolean} [full_width] - When `true`, the divider spans the full width of its container.
   @param {boolean} [attributes] - When `true`, render block.shopify_attributes on the divider container.
   @param {block} [block] - The block object, used for Shopify editor attributes when attributes are enabled.
